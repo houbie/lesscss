@@ -1,0 +1,13 @@
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.spockframework:spock-core:0.7-groovy-2.0'
+}
+
+test {
+    jvmArgs "-Djava.ext.dirs=$projectDir/lib"
+}

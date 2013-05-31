@@ -1,0 +1,18 @@
+#import {
+  color: red;
+}
+#imported1 {
+  color: blue;
+}
+#imported2 {
+  color: black;
+}
+#commonImported1 {
+  color: green;
+}
+#commonInImported2 {
+  color: purple;
+}
+#imported0 {
+  color: orange;
+}
