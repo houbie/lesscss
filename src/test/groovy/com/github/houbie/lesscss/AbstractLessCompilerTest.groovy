@@ -60,7 +60,7 @@ abstract class AbstractLessCompilerTest extends Specification {
         compiler.compile(lessFile,) == getCss(lessFile).text
 
         where:
-        lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') } //TODO + new File('src/test/resources/less.js-tests/less/static-urls/urls.less')
+        lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
     }
 
     def getCss(File lessFile) {

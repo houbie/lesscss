@@ -1,8 +1,10 @@
+@import "import1/../css/background.css";
 #import {
   color: red;
 }
 #imported1 {
   color: blue;
+  background: url('import1/assets/logo.png');
 }
 #imported2 {
   color: black;

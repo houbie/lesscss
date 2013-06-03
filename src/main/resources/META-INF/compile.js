@@ -43,7 +43,7 @@ less.Parser.importer = function (file, paths, callback) {
             throw {name: 'less import error', message: 'less compiler error: import "' + fullPath + '" could not be resolved'};
         }
 
-        new (less.Parser)({ optimization: optimizationLevel, paths: clonedPaths}).parse(String(importedLess), function (e, root) {
+        new (less.Parser)({ optimization: optimizationLevel, paths: clonedPaths, rootpath: clonedPaths.join('')}).parse(String(importedLess), function (e, root) {
             if (e instanceof Object)
                 throw e;
             callback(e, root);
