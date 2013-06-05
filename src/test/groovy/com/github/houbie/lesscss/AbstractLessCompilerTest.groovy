@@ -3,26 +3,36 @@ package com.github.houbie.lesscss
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import javax.script.ScriptEngine
+
+import static com.github.houbie.lesscss.Options.LineNumbersOutput.*
+
 abstract class AbstractLessCompilerTest extends Specification {
     static File LESS_JS_CSS_DIR = new File('src/test/resources/less.js-tests/css')
 
     LessCompiler compiler
 
+    LessCompiler createCompiler(Options options = new Options()) {
+        return new LessCompiler(options, getScriptEngine())
+    }
+
+    abstract ScriptEngine getScriptEngine();
+
     def "compile empty less"() {
         expect:
-        compiler.compile('') == ''
+        createCompiler().compile('') == ''
     }
 
     def "compile css"() {
         def css = 'div {\n  color: black;\n}\n'
 
         expect:
-        compiler.compile(css) == css
+        createCompiler().compile(css) == css
     }
 
     def "compile file with imports"() {
         def file = new File('src/test/resources/less/import.less')
-        def result = compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile))
+        def result = createCompiler().compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), file.name)
 
         expect:
         result.result == new File('src/test/resources/less/import.css').text
@@ -31,24 +41,24 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     def "compile file with errors"() {
         when:
-        compiler.compile(new File('src/test/resources/less/broken.less'))
+        createCompiler().compile(new File('src/test/resources/less/broken.less'))
 
         then:
         def e = thrown(Exception)
-        e.message == 'less parse exception: type:Parse,message:missing closing `}`,filename:null,index:13,line:1,callLine:undefined,callExtract:undefined,stack:undefined,column:13,extract:,#broken less {,,'
+        e.message == 'less parse exception: type:Parse,message:missing closing `}`,filename:UNKNOWN,index:13,line:1,callLine:undefined,callExtract:undefined,stack:undefined,column:13,extract:,#broken less {,,'
     }
 
     def "compile file with missing imports"() {
         when:
-        compiler.compile(new File('src/test/resources/less/brokenImport.less'))
+        createCompiler().compile(new File('src/test/resources/less/brokenImport.less'))
 
         then:
         def e = thrown(Exception)
-        e.message == 'less parse exception: type:Syntax,message:less compiler error: import "doesNotExist.less" could not be resolved,filename:null,index:undefined,line:null,callLine:undefined,callExtract:undefined,stack:undefined,column:-1,extract:,,  color: red;,'
+        e.message == 'less parse exception: type:Syntax,message:less compiler error: import "doesNotExist.less" could not be resolved,filename:UNKNOWN,index:undefined,line:null,callLine:undefined,callExtract:undefined,stack:undefined,column:-1,extract:,,  color: red;,'
     }
 
     def "compile twitter bootstrap"() {
-        def result = compiler.compile(new File('src/test/resources/less/bootstrap/bootstrap.less'))
+        def result = createCompiler().compile(new File('src/test/resources/less/bootstrap/bootstrap.less'))
 
         expect:
         result == new File('src/test/resources/less/bootstrap/bootstrap.css').text
@@ -56,14 +66,38 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     @Unroll
     def "less.js compatibility tests for #lessFile"() {
+        LessCompiler compiler = createCompiler(new Options(customJavaScript: new File('src/test/resources/less.js-tests/functions.js').text, strictImports: true))
         expect:
-        compiler.compile(lessFile,) == getCss(lessFile).text
+        compiler.compile(lessFile) == getCss(lessFile).text
 
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
     }
 
-    def getCss(File lessFile) {
-        return new File(LESS_JS_CSS_DIR, lessFile.getName().replace('.less', '.css'))
+    @Unroll
+    def "less.js debug compatibility test #dumpLineNumbers"() {
+        def lessFile = new File('src/test/resources/less.js-tests/less/debug/linenumbers.less')
+        when:
+        compiler = createCompiler(new Options(dumpLineNumbers: dumpLineNumbers))
+
+        then:
+        compiler.compile(lessFile) == getCss(lessFile, 'debug/', '-' + dumpLineNumbers.optionString).text
+                .replace('{pathimport}', 'import/').replace('{path}linenumbers.less', 'UNKNOWN')
+                .replace('{pathimportesc}', 'import\\/').replace('{pathesc}linenumbers\\.less', 'UNKNOWN')
+
+        where:
+        dumpLineNumbers << [COMMENTS, MEDIA_QUERY, ALL]
+    }
+
+    def "less.js static urls compatibility test"() {
+        def lessFile = new File('src/test/resources/less.js-tests/less/static-urls/urls.less')
+        def compiler = createCompiler(new Options(relativeUrls: false, rootPath: 'folder (1)/'))
+
+        expect:
+        compiler.compile(lessFile) == getCss(lessFile, 'static-urls/').text
+    }
+
+    def getCss(File lessFile, prefix = '', suffix = '') {
+        return new File(LESS_JS_CSS_DIR, prefix + lessFile.getName().replace('.less', suffix + '.css'))
     }
 }

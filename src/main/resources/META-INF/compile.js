@@ -1,20 +1,32 @@
 var less = window.less,
-        optimizationLevel,
         parseException,
 
-        compile = function (source, compress, optimization) {
+        compile = function (source) {
             var result,
-                    prop;
+                    prop,
+                    lessEnv = {
+                        compress: compilerOptions.compress,
+                        optimization: compilerOptions.optimizationLevel,
+                        strictImports: compilerOptions.strictImports,
+                        relativeUrls: compilerOptions.relativeUrls,
+                        filename: compilerOptions.fileName,
+                        paths: []
+                    };
 
-            //save options for import function
-            optimizationLevel = optimization;
+            if (compilerOptions.rootPath.trim().length > 0) {
+                lessEnv.rootpath = compilerOptions.rootPath.trim();
+            }
+            if (compilerOptions.dumpLineNumbers.getOptionString()) {
+                lessEnv.dumpLineNumbers = String(compilerOptions.dumpLineNumbers.getOptionString());
+            }
+
 
             try {
-                new (less.Parser)({ optimization: optimization, paths: [] }).parse(source, function (e, tree) {
+                new (less.Parser)(lessEnv).parse(source, function (e, tree) {
                     if (e instanceof Object) {
                         throw e;
                     }
-                    result = tree.toCSS(compress);
+                    result = tree.toCSS(lessEnv.compress);
                     if (e instanceof Object)
                         throw e;
                 });
@@ -36,14 +48,33 @@ less.Parser.importer = function (file, paths, callback) {
         var fullPath = paths.join('') + file,
                 clonedPaths = paths.slice(0),
                 filePath = file.substring(0, file.lastIndexOf('/') + 1),
-                importedLess = importReader.read(fullPath);
+                importedLess = importReader.read(fullPath),
+                lessEnv;
+
         clonedPaths.push(filePath);
+        lessEnv = {
+            compress: compilerOptions.compress,
+            optimization: compilerOptions.optimizationLevel,
+            strictImports: compilerOptions.strictImports,
+            rootpath: compilerOptions.rootPath,
+            relativeUrls: compilerOptions.relativeUrls,
+            filename: fullPath,
+            paths: clonedPaths
+        };
+
+        if (compilerOptions.dumpLineNumbers.getOptionString()) {
+            lessEnv.dumpLineNumbers = String(compilerOptions.dumpLineNumbers.getOptionString());
+        }
+
+        if (compilerOptions.relativeUrls) {
+            lessEnv.rootpath += clonedPaths.join('');
+        }
 
         if (importedLess == null) {
             throw {name: 'less import error', message: 'less compiler error: import "' + fullPath + '" could not be resolved'};
         }
 
-        new (less.Parser)({ optimization: optimizationLevel, paths: clonedPaths, rootpath: clonedPaths.join('')}).parse(String(importedLess), function (e, root) {
+        new (less.Parser)(lessEnv).parse(String(importedLess), function (e, root) {
             if (e instanceof Object)
                 throw e;
             callback(e, root);
