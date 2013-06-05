@@ -57,7 +57,7 @@ public class LessCompiler {
     }
 
     public String compile(String less, ResourceReader resourceReader, String fileName) {
-        return compileWithDetails(less, resourceReader, UNKNOWN_FILE_NAME).getResult();
+        return compileWithDetails(less, resourceReader, fileName).getResult();
     }
 
     public CompilationDetails compileWithDetails(String less, ResourceReader resourceReader, String fileName) {

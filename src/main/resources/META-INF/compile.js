@@ -4,6 +4,7 @@ var less = window.less,
         compile = function (source) {
             var result,
                     prop,
+                    rootPath = String(compilerOptions.rootPath),
                     lessEnv = {
                         compress: compilerOptions.compress,
                         optimization: compilerOptions.optimizationLevel,
@@ -13,13 +14,12 @@ var less = window.less,
                         paths: []
                     };
 
-            if (compilerOptions.rootPath.trim().length > 0) {
-                lessEnv.rootpath = compilerOptions.rootPath.trim();
+            if (rootPath.length > 0) {
+                lessEnv.rootpath = rootPath;
             }
             if (compilerOptions.dumpLineNumbers.getOptionString()) {
                 lessEnv.dumpLineNumbers = String(compilerOptions.dumpLineNumbers.getOptionString());
             }
-
 
             try {
                 new (less.Parser)(lessEnv).parse(source, function (e, tree) {
@@ -49,14 +49,14 @@ less.Parser.importer = function (file, paths, callback) {
                 clonedPaths = paths.slice(0),
                 filePath = file.substring(0, file.lastIndexOf('/') + 1),
                 importedLess = importReader.read(fullPath),
-                lessEnv;
+                lessEnv,
+                rootPath = String(compilerOptions.rootPath);
 
         clonedPaths.push(filePath);
         lessEnv = {
             compress: compilerOptions.compress,
             optimization: compilerOptions.optimizationLevel,
             strictImports: compilerOptions.strictImports,
-            rootpath: compilerOptions.rootPath,
             relativeUrls: compilerOptions.relativeUrls,
             filename: fullPath,
             paths: clonedPaths
@@ -66,8 +66,10 @@ less.Parser.importer = function (file, paths, callback) {
             lessEnv.dumpLineNumbers = String(compilerOptions.dumpLineNumbers.getOptionString());
         }
 
-        if (compilerOptions.relativeUrls) {
-            lessEnv.rootpath += clonedPaths.join('');
+        if (rootPath.length > 0) {
+            lessEnv.rootpath = rootPath + ((lessEnv.relativeUrls) ? clonedPaths.join('') : '');
+        } else if (lessEnv.relativeUrls) {
+            lessEnv.rootpath = clonedPaths.join('');
         }
 
         if (importedLess == null) {
