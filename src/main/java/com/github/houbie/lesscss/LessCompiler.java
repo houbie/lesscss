@@ -5,6 +5,7 @@ import com.github.houbie.lesscss.utils.IOUtils;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,76 +14,77 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class LessCompiler {
-    protected static final String NASHORN = "nashorn";
-    protected static final String RHINO = "rhino";
+    public static final String NASHORN = "nashorn";
+    public static final String RHINO = "rhino";
 
-    private static final String ENVIRONMENT_SCRIPT = "META-INF/environment.js"; //TODO: compress @build time with closure compiler
-    private static final String LESS_SCRIPT = "META-INF/less-1.3.3.min.js";
-    private static final String COMPILE_SCRIPT = "META-INF/compile.js";
-    private static final String UNKNOWN_FILE_NAME = "UNKNOWN";
+    private static final String ENVIRONMENT_SCRIPT = "js/environment.js"; //TODO: compress @build time with closure compiler
+    private static final String LESS_SCRIPT = "js/less-1.3.3.min.js";
+    private static final String COMPILE_SCRIPT = "js/compile.js";
+    private static final String UNKNOWN_SOURCE_NAME = "unknown";
 
     private static final Logger logger = Logger.getLogger(LessCompiler.class.getName());
 
 
     private ScriptEngine scriptEngine;
-    private Options options;
+    private Reader customJavaScriptReader;
+    private boolean prepared;
 
 
     public LessCompiler() {
-        this(new Options());
+        this((Reader) null);
     }
 
-    public LessCompiler(Options options) {
-        this(options, createScriptEngine());
+    public LessCompiler(String customJavaScript) {
+        this(new StringReader(customJavaScript));
     }
 
-    protected LessCompiler(Options options, ScriptEngine scriptEngine) {
-        this.options = options;
+    public LessCompiler(Reader customJavaScriptReader) {
+        this(customJavaScriptReader, createScriptEngine());
+    }
+
+    protected LessCompiler(Reader customJavaScriptReader, ScriptEngine scriptEngine) {
+        this.customJavaScriptReader = customJavaScriptReader;
         this.scriptEngine = scriptEngine;
     }
 
     public String compile(File file) throws IOException {
+        return compile(file, new Options());
+    }
+
+    public String compile(File file, Options options) throws IOException {
         if (file == null) {
             throw new NullPointerException("less file may not be null");
         }
-        return compile(IOUtils.read(file), new FileSystemResourceReader(file.getParentFile()), file.getName());
+        return compile(IOUtils.read(file), new FileSystemResourceReader(file.getParentFile()), options, file.getName());
     }
 
     public String compile(String less) {
-        return compile(less, null);
+        return compile(less, null, UNKNOWN_SOURCE_NAME);
     }
 
-    public String compile(String less, ResourceReader resourceReader) {
-        return compile(less, resourceReader, UNKNOWN_FILE_NAME);
+    public String compile(String less, ResourceReader resourceReader, String sourceName) {
+        return compile(less, resourceReader, new Options(), sourceName);
     }
 
-    public String compile(String less, ResourceReader resourceReader, String fileName) {
-        return compileWithDetails(less, resourceReader, fileName).getResult();
+    public String compile(String less, ResourceReader resourceReader, Options options, String sourceName) {
+        return compileWithDetails(less, resourceReader, options, sourceName).getResult();
     }
 
-    public CompilationDetails compileWithDetails(String less, ResourceReader resourceReader, String fileName) {
+    public CompilationDetails compileWithDetails(String less, ResourceReader resourceReader, Options options, String sourceName) {
         if (less == null) {
             throw new NullPointerException("less string may not be null");
         }
         logger.fine("start less compilation");
+        Object result;
+        Object parseException;
         ImportReader importReader = new ImportReader(resourceReader);
-        Object result = null;
-        Object parseException = null;
-        Reader scriptReader = null;
-        options.setFileName(fileName);
         try {
-            try {
-                scriptReader = getLessScriptReader();
-                scriptEngine.eval(scriptReader);//TODO check performance difference with compiling script
-                scriptEngine.put("importReader", importReader);
-                scriptEngine.put("compilerOptions", options);
-                result = ((Invocable) scriptEngine).invokeFunction("compile", less);
-                parseException = scriptEngine.get("parseException");
-            } finally {
-                if (scriptReader != null) {
-                    scriptReader.close();
-                }
+            if (!prepared) {
+                prepareScriptEngine();
             }
+            bindVariables(importReader, options, sourceName);
+            result = ((Invocable) scriptEngine).invokeFunction("_compile", less);
+            parseException = scriptEngine.get("_parseException");
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);
         }
@@ -93,13 +95,36 @@ public class LessCompiler {
         return new CompilationDetails(result.toString(), importReader.getImports());
     }
 
+    private void prepareScriptEngine() throws ScriptException, IOException {
+        Reader scriptReader = null;
+        try {
+            scriptEngine.eval(getLessScriptReader());//TODO check performance difference with compiling script
+            if (customJavaScriptReader != null) {
+                scriptEngine.eval(customJavaScriptReader);
+            }
+            prepared = true;
+        } finally {
+            if (scriptReader != null) {
+                scriptReader.close();
+            }
+        }
+    }
+
+    private void bindVariables(ImportReader importReader, Options options, String sourceName) {
+        scriptEngine.put("_importReader", importReader);
+        scriptEngine.put("_compress", options.isCompress());
+        scriptEngine.put("_optimizationLevel", options.getOptimizationLevel());
+        scriptEngine.put("_strictImports", options.isStrictImports());
+        scriptEngine.put("_rootPath", options.getRootPath());
+        scriptEngine.put("_relativeUrls", options.isRelativeUrls());
+        scriptEngine.put("_dumpLineNumbers", options.getDumpLineNumbers().getOptionString());
+        scriptEngine.put("_sourceName", sourceName);
+    }
+
     private Reader getLessScriptReader() {
         ClassLoader cl = getClass().getClassLoader();
         InputStream concatenatedScripts = new SequenceInputStream(cl.getResourceAsStream(ENVIRONMENT_SCRIPT), new SequenceInputStream(cl.getResourceAsStream(LESS_SCRIPT), cl.getResourceAsStream(COMPILE_SCRIPT)));
-//        InputStream concatenatedScripts = cl.getResourceAsStream("META-INF/less-1.3.3.js");
-        if (options.getCustomJavaScript() != null) {
-            concatenatedScripts = new SequenceInputStream(concatenatedScripts, new ByteArrayInputStream(options.getCustomJavaScript().getBytes()));
-        }
+//        InputStream concatenatedScripts = cl.getResourceAsStream("js/less-1.3.3.js");
         return new InputStreamReader(concatenatedScripts);
     }
 

@@ -12,8 +12,9 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     LessCompiler compiler
 
-    LessCompiler createCompiler(Options options = new Options()) {
-        return new LessCompiler(options, getScriptEngine())
+    LessCompiler createCompiler(String customJavaScript = null) {
+        def reader = (customJavaScript) ? new StringReader(customJavaScript) : null
+        return new LessCompiler(reader, getScriptEngine())
     }
 
     abstract ScriptEngine getScriptEngine();
@@ -32,7 +33,7 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     def "compile file with imports"() {
         def file = new File('src/test/resources/less/import.less')
-        def result = createCompiler().compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), file.name)
+        def result = createCompiler().compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name)
 
         expect:
         result.result == new File('src/test/resources/less/import.css').text
@@ -66,9 +67,9 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     @Unroll
     def "less.js compatibility tests for #lessFile"() {
-        LessCompiler compiler = createCompiler(new Options(customJavaScript: new File('src/test/resources/less.js-tests/functions.js').text, strictImports: true))
+        LessCompiler compiler = createCompiler(new File('src/test/resources/less.js-tests/functions.js').text)
         expect:
-        compiler.compile(lessFile) == getCss(lessFile).text
+        compiler.compile(lessFile, new Options(strictImports: true)) == getCss(lessFile).text
 
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
@@ -78,10 +79,10 @@ abstract class AbstractLessCompilerTest extends Specification {
     def "less.js debug compatibility test #dumpLineNumbers"() {
         def lessFile = new File('src/test/resources/less.js-tests/less/debug/linenumbers.less')
         when:
-        compiler = createCompiler(new Options(dumpLineNumbers: dumpLineNumbers))
+        compiler = createCompiler()
 
         then:
-        compiler.compile(lessFile) == getCss(lessFile, 'debug/', '-' + dumpLineNumbers.optionString).text
+        compiler.compile(lessFile, new Options(dumpLineNumbers: dumpLineNumbers)) == getCss(lessFile, 'debug/', '-' + dumpLineNumbers.optionString).text
                 .replace('{pathimport}', 'import/').replace('{path}', '')
                 .replace('{pathimportesc}', 'import\\/').replace('{pathesc}', '')
 
@@ -91,10 +92,10 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     def "less.js static urls compatibility test"() {
         def lessFile = new File('src/test/resources/less.js-tests/less/static-urls/urls.less')
-        def compiler = createCompiler(new Options(relativeUrls: false, rootPath: 'folder (1)/'))
+        def compiler = createCompiler()
 
         expect:
-        compiler.compile(lessFile) == getCss(lessFile, 'static-urls/').text
+        compiler.compile(lessFile, new Options(relativeUrls: false, rootPath: 'folder (1)/')) == getCss(lessFile, 'static-urls/').text
     }
 
     def getCss(File lessFile, prefix = '', suffix = '') {

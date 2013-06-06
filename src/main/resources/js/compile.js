@@ -1,24 +1,24 @@
 var less = window.less,
-        parseException,
+        _parseException,
 
-        compile = function (source) {
+        _compile = function (source) {
             var result,
                     prop,
-                    rootPath = String(compilerOptions.rootPath),
+                    rootPath = String(_rootPath),
                     lessEnv = {
-                        compress: compilerOptions.compress,
-                        optimization: compilerOptions.optimizationLevel,
-                        strictImports: compilerOptions.strictImports,
-                        relativeUrls: compilerOptions.relativeUrls,
-                        filename: compilerOptions.fileName,
+                        compress: _compress,
+                        optimization: _optimizationLevel,
+                        strictImports: _strictImports,
+                        relativeUrls: _relativeUrls,
+                        filename: _sourceName,
                         paths: []
                     };
 
             if (rootPath.length > 0) {
                 lessEnv.rootpath = rootPath;
             }
-            if (compilerOptions.dumpLineNumbers.getOptionString()) {
-                lessEnv.dumpLineNumbers = String(compilerOptions.dumpLineNumbers.getOptionString());
+            if (_dumpLineNumbers) {
+                lessEnv.dumpLineNumbers = String(_dumpLineNumbers);
             }
 
             try {
@@ -30,13 +30,13 @@ var less = window.less,
                     if (e instanceof Object)
                         throw e;
                 });
-                parseException = null;
+                _parseException = null;
                 return result;
             } catch (e) {
-                parseException = 'less parse exception: ';
+                _parseException = 'less parse exception: ';
                 for (prop in e) {
                     if (e.hasOwnProperty(prop)) {
-                        parseException += prop + ':' + e[prop] + ',';
+                        _parseException += prop + ':' + e[prop] + ',';
                     }
                 }
                 return null;
@@ -48,22 +48,22 @@ less.Parser.importer = function (file, paths, callback) {
         var fullPath = paths.join('') + file,
                 clonedPaths = paths.slice(0),
                 filePath = file.substring(0, file.lastIndexOf('/') + 1),
-                importedLess = importReader.read(fullPath),
-                lessEnv,
-                rootPath = String(compilerOptions.rootPath);
+                importedLess = _importReader.read(fullPath),
+                rootPath = String(_rootPath),
+                lessEnv;
 
         clonedPaths.push(filePath);
         lessEnv = {
-            compress: compilerOptions.compress,
-            optimization: compilerOptions.optimizationLevel,
-            strictImports: compilerOptions.strictImports,
-            relativeUrls: compilerOptions.relativeUrls,
+            compress: _compress,
+            optimization: _optimizationLevel,
+            strictImports: _strictImports,
+            relativeUrls: _relativeUrls,
             filename: fullPath,
             paths: clonedPaths
         };
 
-        if (compilerOptions.dumpLineNumbers.getOptionString()) {
-            lessEnv.dumpLineNumbers = String(compilerOptions.dumpLineNumbers.getOptionString());
+        if (_dumpLineNumbers) {
+            lessEnv.dumpLineNumbers = String(_dumpLineNumbers);
         }
 
         if (rootPath.length > 0) {
