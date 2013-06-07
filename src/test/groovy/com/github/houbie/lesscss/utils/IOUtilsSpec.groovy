@@ -24,4 +24,19 @@ class IOUtilsSpec extends Specification {
         IOUtils.read(IOUtils.classLoader.getResource('ioutils/utf16.txt'), 'utf16') == 'utf16 text'
     }
 
+    def "write file with default encoding"() {
+        def file = new File('build/tmp/ioutilstest.txt')
+        IOUtils.writeFile('content', file, null)
+
+        expect:
+        file.text == 'content'
+    }
+
+    def "write file UTF16"() {
+        def file = new File('build/tmp/ioutilstest.txt')
+        IOUtils.writeFile('content', file, 'UTF16')
+
+        expect:
+        file.getText('UTF16') == 'content'
+    }
 }

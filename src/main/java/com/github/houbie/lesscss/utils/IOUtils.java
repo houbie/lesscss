@@ -77,4 +77,14 @@ public class IOUtils {
         return count;
     }
 
+    public static void writeFile(String content, File destination, String charsetName) throws IOException {
+        if (!destination.exists()) {
+            destination.createNewFile();
+        }
+        FileOutputStream fos = new FileOutputStream(destination);
+        OutputStreamWriter writer = (charsetName != null) ? new OutputStreamWriter(fos, charsetName) : new OutputStreamWriter(fos);
+        copyLarge(new StringReader(content), writer);
+        writer.flush();
+        writer.close();
+    }
 }

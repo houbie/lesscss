@@ -17,7 +17,7 @@ public class LessCompiler {
     public static final String NASHORN = "nashorn";
     public static final String RHINO = "rhino";
 
-    private static final String ENVIRONMENT_SCRIPT = "js/environment.js"; //TODO: compress @build time with closure compiler
+    private static final String ENVIRONMENT_SCRIPT = "js/environment.js";
     private static final String LESS_SCRIPT = "js/less-1.3.3.min.js";
     private static final String COMPILE_SCRIPT = "js/compile.js";
     private static final String UNKNOWN_SOURCE_NAME = "unknown";
@@ -47,15 +47,28 @@ public class LessCompiler {
         this.scriptEngine = scriptEngine;
     }
 
-    public String compile(File file) throws IOException {
-        return compile(file, new Options());
+    public String compile(File source) throws IOException {
+        return compile(source, new Options());
     }
 
-    public String compile(File file, Options options) throws IOException {
-        if (file == null) {
+    public String compile(File source, Options options) throws IOException {
+        if (source == null) {
             throw new NullPointerException("less file may not be null");
         }
-        return compile(IOUtils.read(file), new FileSystemResourceReader(file.getParentFile()), options, file.getName());
+        return compile(IOUtils.read(source), new FileSystemResourceReader(source.getParentFile()), options, source.getName());
+    }
+
+    public List<String> compile(File source, File destination) throws IOException {
+        return compile(source, destination, new Options(), new FileSystemResourceReader(source.getParentFile()), null);
+    }
+
+    public List<String> compile(File source, File destination, Options options, ResourceReader resourceReader, String encoding) throws IOException {
+        if (source == null) {
+            throw new NullPointerException("less file may not be null");
+        }
+        CompilationDetails details = compileWithDetails(IOUtils.read(source, encoding), resourceReader, options, source.getName());
+        IOUtils.writeFile(details.getResult(), destination, encoding);
+        return details.getImports();
     }
 
     public String compile(String less) {
@@ -96,9 +109,10 @@ public class LessCompiler {
     }
 
     private void prepareScriptEngine() throws ScriptException, IOException {
-        Reader scriptReader = null;
+        logger.info("prepareScriptEngine");
+        Reader scriptReader = getLessScriptReader();
         try {
-            scriptEngine.eval(getLessScriptReader());//TODO check performance difference with compiling script
+            scriptEngine.eval(scriptReader);
             if (customJavaScriptReader != null) {
                 scriptEngine.eval(customJavaScriptReader);
             }
@@ -159,6 +173,7 @@ public class LessCompiler {
                 //resolve ./ and ../
                 imports.add(new URI(location).normalize().getPath());
             } catch (URISyntaxException e) {
+                logger.warning("exeption while normalizing import url: " + e.getMessage());
                 imports.add(location);
             }
             return resourceReader.read(location);

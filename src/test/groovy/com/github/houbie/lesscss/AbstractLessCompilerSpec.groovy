@@ -4,36 +4,55 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.script.ScriptEngine
+import javax.script.ScriptEngineManager
 
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.*
 
-abstract class AbstractLessCompilerTest extends Specification {
-    static File LESS_JS_CSS_DIR = new File('src/test/resources/less.js-tests/css')
+abstract class AbstractLessCompilerSpec extends Specification {
 
-    LessCompiler compiler
+    static LessCompiler compiler
 
-    LessCompiler createCompiler(String customJavaScript = null) {
-        def reader = (customJavaScript) ? new StringReader(customJavaScript) : null
-        return new LessCompiler(reader, getScriptEngine())
+    LessCompiler createCompiler(ScriptEngine scriptEngine) {
+        Reader reader = new File('src/test/resources/less.js-tests/functions.js').newReader()
+        return new LessCompiler(reader, scriptEngine)
     }
-
-    abstract ScriptEngine getScriptEngine();
 
     def "compile empty less"() {
         expect:
-        createCompiler().compile('') == ''
+        compiler.compile('') == ''
     }
 
     def "compile css"() {
         def css = 'div {\n  color: black;\n}\n'
 
         expect:
-        createCompiler().compile(css) == css
+        compiler.compile(css) == css
+    }
+
+    def "default constructor"() {
+        def compiler = new LessCompiler()
+
+        expect:
+        compiler.compile(new File('src/test/resources/less/basic.less')) == 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
+    }
+
+    def "constructor with custom javascript"() {
+        def compiler = new LessCompiler(new File('src/test/resources/less.js-tests/functions.js').text)
+
+        expect:
+        compiler.compile(new File('src/test/resources/less/basic.less')) == 'p {\n  color: #000000;\n  width: 2;\n}\n'
+    }
+
+    def "compile to file"() {
+        compiler.compile(new File('src/test/resources/less/import.less'), new File('build/tmp/import.css'))
+
+        expect:
+        new File('build/tmp/import.css').text == new File('src/test/resources/less/import.css').text
     }
 
     def "compile file with imports"() {
         def file = new File('src/test/resources/less/import.less')
-        def result = createCompiler().compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name)
+        def result = compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name)
 
         expect:
         result.result == new File('src/test/resources/less/import.css').text
@@ -42,7 +61,7 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     def "compile file with errors"() {
         when:
-        createCompiler().compile(new File('src/test/resources/less/broken.less'))
+        compiler.compile(new File('src/test/resources/less/broken.less'))
 
         then:
         def e = thrown(Exception)
@@ -51,7 +70,7 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     def "compile file with missing imports"() {
         when:
-        createCompiler().compile(new File('src/test/resources/less/brokenImport.less'))
+        compiler.compile(new File('src/test/resources/less/brokenImport.less'))
 
         then:
         def e = thrown(Exception)
@@ -59,7 +78,7 @@ abstract class AbstractLessCompilerTest extends Specification {
     }
 
     def "compile twitter bootstrap"() {
-        def result = createCompiler().compile(new File('src/test/resources/less/bootstrap/bootstrap.less'))
+        def result = compiler.compile(new File('src/test/resources/less/bootstrap/bootstrap.less'))
 
         expect:
         result == new File('src/test/resources/less/bootstrap/bootstrap.css').text
@@ -67,7 +86,6 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     @Unroll
     def "less.js compatibility tests for #lessFile"() {
-        LessCompiler compiler = createCompiler(new File('src/test/resources/less.js-tests/functions.js').text)
         expect:
         compiler.compile(lessFile, new Options(strictImports: true)) == getCss(lessFile).text
 
@@ -78,10 +96,8 @@ abstract class AbstractLessCompilerTest extends Specification {
     @Unroll
     def "less.js debug compatibility test #dumpLineNumbers"() {
         def lessFile = new File('src/test/resources/less.js-tests/less/debug/linenumbers.less')
-        when:
-        compiler = createCompiler()
 
-        then:
+        expect:
         compiler.compile(lessFile, new Options(dumpLineNumbers: dumpLineNumbers)) == getCss(lessFile, 'debug/', '-' + dumpLineNumbers.optionString).text
                 .replace('{pathimport}', 'import/').replace('{path}', '')
                 .replace('{pathimportesc}', 'import\\/').replace('{pathesc}', '')
@@ -92,13 +108,13 @@ abstract class AbstractLessCompilerTest extends Specification {
 
     def "less.js static urls compatibility test"() {
         def lessFile = new File('src/test/resources/less.js-tests/less/static-urls/urls.less')
-        def compiler = createCompiler()
+        def compiler = compiler
 
         expect:
         compiler.compile(lessFile, new Options(relativeUrls: false, rootPath: 'folder (1)/')) == getCss(lessFile, 'static-urls/').text
     }
 
     def getCss(File lessFile, prefix = '', suffix = '') {
-        return new File(LESS_JS_CSS_DIR, prefix + lessFile.getName().replace('.less', suffix + '.css'))
+        return new File(new File('src/test/resources/less.js-tests/css'), prefix + lessFile.getName().replace('.less', suffix + '.css'))
     }
 }

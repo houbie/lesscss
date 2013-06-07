@@ -2,13 +2,14 @@ package com.github.houbie.lesscss.scriptengine
 
 import com.github.houbie.lesscss.LessCompiler
 import spock.lang.Specification
+import spock.lang.Unroll
 
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineManager
+import javax.script.*
 
 class ScriptEngineSpec extends Specification {
 
-    def "compile multiple scripts with the same engine"() {
+    @Unroll
+    def "evaluate multiple scripts with the same engine with #engineName"() {
         ScriptEngineManager factory = new ScriptEngineManager()
 
         when:
