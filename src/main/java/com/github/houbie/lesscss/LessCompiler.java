@@ -1,17 +1,18 @@
 package com.github.houbie.lesscss;
 
 import com.github.houbie.lesscss.utils.IOUtils;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.tools.shell.Global;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class LessCompiler {
     public static final String RHINO = "rhino";
@@ -21,12 +22,13 @@ public class LessCompiler {
     private static final String COMPILE_SCRIPT = "js/compile.js";
     private static final String UNKNOWN_SOURCE_NAME = "unknown";
 
-    private static final Logger logger = Logger.getLogger(LessCompiler.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(LessCompiler.class);
 
 
-    private ScriptEngine scriptEngine;
     private Reader customJavaScriptReader;
     private boolean prepared;
+    private Scriptable scope;
+    private Function compileFunction;
 
 
     public LessCompiler() {
@@ -38,12 +40,7 @@ public class LessCompiler {
     }
 
     public LessCompiler(Reader customJavaScriptReader) {
-        this(customJavaScriptReader, createScriptEngine());
-    }
-
-    protected LessCompiler(Reader customJavaScriptReader, ScriptEngine scriptEngine) {
         this.customJavaScriptReader = customJavaScriptReader;
-        this.scriptEngine = scriptEngine;
     }
 
     public String compile(File source) throws IOException {
@@ -86,7 +83,7 @@ public class LessCompiler {
         if (less == null) {
             throw new NullPointerException("less string may not be null");
         }
-        logger.fine("start less compilation");
+        logger.debug("start less compilation");
         Object result;
         Object parseException;
         ImportReader importReader = new ImportReader(resourceReader);
@@ -94,27 +91,37 @@ public class LessCompiler {
             if (!prepared) {
                 prepareScriptEngine();
             }
-            bindVariables(importReader, options, sourceName);
-            result = ((Invocable) scriptEngine).invokeFunction("_compile", less);
-            parseException = scriptEngine.get("_parseException");
+            Object[] args = {less, options, sourceName, importReader};
+            result = Context.call(null, compileFunction, scope, scope, args);
+            parseException = scope.get("parseException", scope);
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);
         }
         if (parseException != null) {
             throw new RuntimeException(parseException.toString());
         }
-        logger.fine("finished less compilation");
+        logger.debug("finished less compilation");
         return new CompilationDetails(result.toString(), importReader.getImports());
     }
 
-    private void prepareScriptEngine() throws ScriptException, IOException {
+    private void prepareScriptEngine() throws IOException {
         logger.info("prepareScriptEngine");
         Reader scriptReader = getLessScriptReader();
+
         try {
-            scriptEngine.eval(scriptReader);
+            Context cx = Context.enter();
+            logger.debug("Using implementation version: " + cx.getImplementationVersion());
+            cx.setOptimizationLevel(9);
+            cx.setLanguageVersion(170);
+            Global global = new Global();
+            global.init(cx);
+            scope = cx.initStandardObjects(global);
+            cx.evaluateReader(scope, scriptReader, "environment+less-1.3.3+compileFunction.js", 1, null);
+
             if (customJavaScriptReader != null) {
-                scriptEngine.eval(customJavaScriptReader);
+                cx.evaluateReader(scope, customJavaScriptReader, "customJavaScript", 1, null);
             }
+            compileFunction = (Function) scope.get("compile", scope);
             prepared = true;
         } finally {
             if (scriptReader != null) {
@@ -123,31 +130,11 @@ public class LessCompiler {
         }
     }
 
-    private void bindVariables(ImportReader importReader, Options options, String sourceName) {
-        scriptEngine.put("_importReader", importReader);
-        scriptEngine.put("_compress", options.isCompress());
-        scriptEngine.put("_optimizationLevel", options.getOptimizationLevel());
-        scriptEngine.put("_strictImports", options.isStrictImports());
-        scriptEngine.put("_rootPath", options.getRootPath());
-        scriptEngine.put("_relativeUrls", options.isRelativeUrls());
-        scriptEngine.put("_dumpLineNumbers", options.getDumpLineNumbers().getOptionString());
-        scriptEngine.put("_sourceName", sourceName);
-    }
-
     private Reader getLessScriptReader() {
         ClassLoader cl = getClass().getClassLoader();
         InputStream concatenatedScripts = new SequenceInputStream(cl.getResourceAsStream(ENVIRONMENT_SCRIPT), new SequenceInputStream(cl.getResourceAsStream(LESS_SCRIPT), cl.getResourceAsStream(COMPILE_SCRIPT)));
 //        InputStream concatenatedScripts = cl.getResourceAsStream("js/less-1.3.3.js");
         return new InputStreamReader(concatenatedScripts);
-    }
-
-    private static ScriptEngine createScriptEngine() {
-        ScriptEngineManager factory = new ScriptEngineManager();
-        ScriptEngine scriptEngine = factory.getEngineByName(RHINO);
-        if (scriptEngine == null) {
-            throw new RuntimeException("No JavaScript script engine found");
-        }
-        return scriptEngine;
     }
 
     public static class ImportReader {
@@ -160,7 +147,7 @@ public class LessCompiler {
         }
 
         public String read(String location) throws IOException {
-            logger.fine("reading @import " + location);
+            logger.debug("reading @import " + location);
             if (resourceReader == null) {
                 throw new RuntimeException("Error in less compilation: import of " + location + " failed because no ResourceReader is configured");
             }
@@ -168,7 +155,7 @@ public class LessCompiler {
                 //resolve ./ and ../
                 imports.add(new URI(location).normalize().getPath());
             } catch (URISyntaxException e) {
-                logger.warning("exeption while normalizing import url: " + e.getMessage());
+                logger.warn("exeption while normalizing import url: " + e.getMessage());
                 imports.add(location);
             }
             return resourceReader.read(location);

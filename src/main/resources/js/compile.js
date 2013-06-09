@@ -1,24 +1,28 @@
 var less = window.less,
-        _parseException,
+        parseException,
+        options,
+        importReader,
 
-        _compile = function (source) {
+        compile = function (source, optionsArg, sourceName, importReaderArg) {
             var result,
                     prop,
-                    rootPath = String(_rootPath),
+                    rootPath = String(optionsArg.rootPath),
                     lessEnv = {
-                        compress: _compress,
-                        optimization: _optimizationLevel,
-                        strictImports: _strictImports,
-                        relativeUrls: _relativeUrls,
-                        filename: _sourceName,
+                        compress: optionsArg.compress,
+                        optimization: optionsArg.optimizationLevel,
+                        strictImports: optionsArg.strictImports,
+                        relativeUrls: optionsArg.relativeUrls,
+                        filename: sourceName,
                         paths: []
                     };
+            options = optionsArg;
+            importReader = importReaderArg;
 
             if (rootPath.length > 0) {
                 lessEnv.rootpath = rootPath;
             }
-            if (_dumpLineNumbers) {
-                lessEnv.dumpLineNumbers = String(_dumpLineNumbers);
+            if (options.dumpLineNumbers.getOptionString()) {
+                lessEnv.dumpLineNumbers = String(options.dumpLineNumbers.getOptionString());
             }
 
             try {
@@ -30,13 +34,13 @@ var less = window.less,
                     if (e instanceof Object)
                         throw e;
                 });
-                _parseException = null;
+                parseException = null;
                 return result;
             } catch (e) {
-                _parseException = 'less parse exception: ';
+                parseException = 'less parse exception: ';
                 for (prop in e) {
                     if (e.hasOwnProperty(prop)) {
-                        _parseException += prop + ':' + e[prop] + ',';
+                        parseException += prop + ':' + e[prop] + ',';
                     }
                 }
                 return null;
@@ -48,22 +52,22 @@ less.Parser.importer = function (file, paths, callback) {
         var fullPath = paths.join('') + file,
                 clonedPaths = paths.slice(0),
                 filePath = file.substring(0, file.lastIndexOf('/') + 1),
-                importedLess = _importReader.read(fullPath),
-                rootPath = String(_rootPath),
+                importedLess = importReader.read(fullPath),
+                rootPath = String(options.rootPath),
                 lessEnv;
 
         clonedPaths.push(filePath);
         lessEnv = {
-            compress: _compress,
-            optimization: _optimizationLevel,
-            strictImports: _strictImports,
-            relativeUrls: _relativeUrls,
+            compress: options.compress,
+            optimization: options.optimizationLevel,
+            strictImports: options.strictImports,
+            relativeUrls: options.relativeUrls,
             filename: fullPath,
             paths: clonedPaths
         };
 
-        if (_dumpLineNumbers) {
-            lessEnv.dumpLineNumbers = String(_dumpLineNumbers);
+        if (options.dumpLineNumbers.getOptionString()) {
+            lessEnv.dumpLineNumbers = String(options.dumpLineNumbers.getOptionString());
         }
 
         if (rootPath.length > 0) {

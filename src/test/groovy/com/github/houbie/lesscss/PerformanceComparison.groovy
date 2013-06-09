@@ -1,20 +1,17 @@
 package com.github.houbie.lesscss
 
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineManager
+import ch.qos.logback.classic.Level
+import org.slf4j.LoggerFactory
 
 class PerformanceComparison {
     static File source = new File('src/test/resources/less/bootstrap/bootstrap.less')
     static File destination = new File('build/tmp/bootstrap.css')
 
-    static LessCompiler createCompiler(ScriptEngine scriptEngine) {
-        return new LessCompiler(null, scriptEngine)
-    }
-
     static void main(String[] args) {
         long start = System.currentTimeMillis()
 
-        LessCompiler compiler = createCompiler(new ScriptEngineManager().getEngineByName(LessCompiler.RHINO))
+        LessCompiler compiler = new LessCompiler()
+        LoggerFactory.getLogger(LessCompiler).level = Level.WARN
 
         then:
         (1..5).each {

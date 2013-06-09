@@ -3,9 +3,6 @@ package com.github.houbie.lesscss
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineManager
-
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.*
 
 class LessCompilerSpec extends Specification {
@@ -13,12 +10,8 @@ class LessCompilerSpec extends Specification {
     static LessCompiler compiler
 
     def setupSpec() {
-        compiler = createCompiler(new ScriptEngineManager().getEngineByName(LessCompiler.RHINO))
-    }
-
-    LessCompiler createCompiler(ScriptEngine scriptEngine) {
         Reader reader = new File('src/test/resources/less.js-tests/functions.js').newReader()
-        return new LessCompiler(reader, scriptEngine)
+        compiler = new LessCompiler(reader)
     }
 
     def "compile empty less"() {
