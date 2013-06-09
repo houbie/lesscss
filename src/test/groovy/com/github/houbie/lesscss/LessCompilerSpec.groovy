@@ -8,9 +8,13 @@ import javax.script.ScriptEngineManager
 
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.*
 
-abstract class AbstractLessCompilerSpec extends Specification {
+class LessCompilerSpec extends Specification {
 
     static LessCompiler compiler
+
+    def setupSpec() {
+        compiler = createCompiler(new ScriptEngineManager().getEngineByName(LessCompiler.RHINO))
+    }
 
     LessCompiler createCompiler(ScriptEngine scriptEngine) {
         Reader reader = new File('src/test/resources/less.js-tests/functions.js').newReader()

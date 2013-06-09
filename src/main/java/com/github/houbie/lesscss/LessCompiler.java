@@ -14,11 +14,10 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class LessCompiler {
-    public static final String NASHORN = "nashorn";
     public static final String RHINO = "rhino";
 
     private static final String ENVIRONMENT_SCRIPT = "js/environment.js";
-    private static final String LESS_SCRIPT = "js/less-1.3.3.min.js";
+    private static final String LESS_SCRIPT = "js/less-1.3.3.js";
     private static final String COMPILE_SCRIPT = "js/compile.js";
     private static final String UNKNOWN_SOURCE_NAME = "unknown";
 
@@ -144,11 +143,7 @@ public class LessCompiler {
 
     private static ScriptEngine createScriptEngine() {
         ScriptEngineManager factory = new ScriptEngineManager();
-        ScriptEngine scriptEngine = factory.getEngineByName(NASHORN);
-        if (scriptEngine == null) {
-            logger.info("nashorn Script Engine not available, using rhino");
-            scriptEngine = factory.getEngineByName(RHINO);
-        }
+        ScriptEngine scriptEngine = factory.getEngineByName(RHINO);
         if (scriptEngine == null) {
             throw new RuntimeException("No JavaScript script engine found");
         }

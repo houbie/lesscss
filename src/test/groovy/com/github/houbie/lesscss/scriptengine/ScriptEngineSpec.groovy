@@ -9,11 +9,11 @@ import javax.script.*
 class ScriptEngineSpec extends Specification {
 
     @Unroll
-    def "evaluate multiple scripts with the same engine with #engineName"() {
+    def "evaluate multiple scripts with the same engine"() {
         ScriptEngineManager factory = new ScriptEngineManager()
 
         when:
-        ScriptEngine scriptEngine = factory.getEngineByName(engineName)
+        ScriptEngine scriptEngine = factory.getEngineByName(LessCompiler.RHINO)
         scriptEngine.eval(new StringReader('function f1(){return "result1"} var v1="value1";'))
         scriptEngine.eval(new StringReader('function f2(){return "result2"} var v2="value2";'))
 
@@ -22,8 +22,5 @@ class ScriptEngineSpec extends Specification {
         scriptEngine.invokeFunction("f2") == 'result2'
         scriptEngine.get('v1') == 'value1'
         scriptEngine.get('v2') == 'value2'
-
-        where:
-        engineName << [LessCompiler.NASHORN, LessCompiler.RHINO]
     }
 }

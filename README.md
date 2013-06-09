@@ -1,4 +1,4 @@
 lesscss
 =======
 
-Java Nashorn Less Compiler
+Java Less Compiler
