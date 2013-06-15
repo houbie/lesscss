@@ -17,9 +17,6 @@ import java.util.List;
 public class LessCompiler {
     public static final String RHINO = "rhino";
 
-    private static final String ENVIRONMENT_SCRIPT = "js/environment.js";
-    private static final String LESS_SCRIPT = "js/less-1.3.3.js";
-    private static final String COMPILE_SCRIPT = "js/compile.js";
     private static final String UNKNOWN_SOURCE_NAME = "unknown";
 
     private static final Logger logger = LoggerFactory.getLogger(LessCompiler.class);
@@ -132,9 +129,7 @@ public class LessCompiler {
 
     private Reader getLessScriptReader() {
         ClassLoader cl = getClass().getClassLoader();
-        InputStream concatenatedScripts = new SequenceInputStream(cl.getResourceAsStream(ENVIRONMENT_SCRIPT), new SequenceInputStream(cl.getResourceAsStream(LESS_SCRIPT), cl.getResourceAsStream(COMPILE_SCRIPT)));
-//        InputStream concatenatedScripts = cl.getResourceAsStream("js/less-1.3.3.js");
-        return new InputStreamReader(concatenatedScripts);
+        return new InputStreamReader(cl.getResourceAsStream("js/all-min.js"));
     }
 
     public static class ImportReader {
