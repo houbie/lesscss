@@ -74,13 +74,6 @@ class LessCompilerSpec extends Specification {
         e.message == 'less parse exception: type:Syntax,message:less compiler error: import "doesNotExist.less" could not be resolved,filename:brokenImport.less,index:undefined,line:null,callLine:undefined,callExtract:undefined,stack:undefined,column:-1,extract:,,  color: red;,'
     }
 
-    def "compile twitter bootstrap"() {
-        def result = compiler.compile(new File('src/test/resources/less/bootstrap/bootstrap.less'))
-
-        expect:
-        result == new File('src/test/resources/less/bootstrap/bootstrap.css').text
-    }
-
     @Unroll
     def "less.js compatibility tests for #lessFile"() {
         expect:
