@@ -74,6 +74,13 @@ class LessCompilerSpec extends Specification {
         e.message == 'less parse exception: type:Syntax,message:less compiler error: import "doesNotExist.less" could not be resolved,filename:brokenImport.less,index:undefined,line:null,callLine:undefined,callExtract:undefined,stack:undefined,column:-1,extract:,,  color: red;,'
     }
 
+    def "compile and minify"() {
+        def minified = compiler.compile(new File('src/test/resources/less/minify.less'), new Options(minify: true))
+
+        expect:
+        minified == 'p{background-color:#000;margin-left:1px;margin-bottom:1px;margin-top:1px;margin-right:1px}'
+    }
+
     @Unroll
     def "less.js compatibility tests for #lessFile"() {
         expect:

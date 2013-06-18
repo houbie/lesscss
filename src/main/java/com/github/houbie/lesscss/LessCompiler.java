@@ -1,5 +1,6 @@
 package com.github.houbie.lesscss;
 
+import com.github.houbie.lesscss.compiledjs.LessImpl;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -8,7 +9,10 @@ import org.mozilla.javascript.tools.shell.Global;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -103,33 +107,21 @@ public class LessCompiler {
 
     private void prepareScriptEngine() throws IOException {
         logger.info("prepareScriptEngine");
-        Reader scriptReader = getLessScriptReader();
 
-        try {
-            Context cx = Context.enter();
-            logger.debug("Using implementation version: " + cx.getImplementationVersion());
-            cx.setOptimizationLevel(9);
-            cx.setLanguageVersion(170);
-            Global global = new Global();
-            global.init(cx);
-            scope = cx.initStandardObjects(global);
-            cx.evaluateReader(scope, scriptReader, "environment+less-1.3.3+compileFunction.js", 1, null);
+        Context cx = Context.enter();
+        logger.debug("Using implementation version: " + cx.getImplementationVersion());
+        cx.setOptimizationLevel(9);
+        cx.setLanguageVersion(170);
+        Global global = new Global();
+        global.init(cx);
+        scope = cx.initStandardObjects(global);
+        new LessImpl().exec(cx, scope);
 
-            if (customJavaScriptReader != null) {
-                cx.evaluateReader(scope, customJavaScriptReader, "customJavaScript", 1, null);
-            }
-            compileFunction = (Function) scope.get("compile", scope);
-            prepared = true;
-        } finally {
-            if (scriptReader != null) {
-                scriptReader.close();
-            }
+        if (customJavaScriptReader != null) {
+            cx.evaluateReader(scope, customJavaScriptReader, "customJavaScript", 1, null);
         }
-    }
-
-    private Reader getLessScriptReader() {
-        ClassLoader cl = getClass().getClassLoader();
-        return new InputStreamReader(cl.getResourceAsStream("js/all-min.js"));
+        compileFunction = (Function) scope.get("compile", scope);
+        prepared = true;
     }
 
     public static class ImportReader {

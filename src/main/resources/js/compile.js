@@ -35,7 +35,7 @@ var less = window.less,
                         throw e;
                 });
                 parseException = null;
-                return result;
+                return (optionsArg.minify) ? cssmin(result) : result;
             } catch (e) {
                 parseException = 'less parse exception: ';
                 for (prop in e) {

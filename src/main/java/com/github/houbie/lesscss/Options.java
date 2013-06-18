@@ -8,6 +8,7 @@ public class Options {
     private String rootPath = "";
     private boolean relativeUrls = true;
     private LineNumbersOutput dumpLineNumbers = LineNumbersOutput.NONE;
+    private boolean minify = false;
 
     public boolean isCompress() {
         return compress;
@@ -61,6 +62,14 @@ public class Options {
             throw new NullPointerException("Options.dumpLineNumbers may not be null");
         }
         this.dumpLineNumbers = dumpLineNumbers;
+    }
+
+    public boolean isMinify() {
+        return minify;
+    }
+
+    public void setMinify(boolean minify) {
+        this.minify = minify;
     }
 
     public enum LineNumbersOutput {
