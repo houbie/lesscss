@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 public class FileSystemResourceReader implements ResourceReader {
     private static Logger logger = Logger.getLogger(FileSystemResourceReader.class.getName());
 
-    private File baseDir;
+    private File[] baseDirs;
     private String encoding;
 
     public FileSystemResourceReader() {
@@ -18,25 +18,35 @@ public class FileSystemResourceReader implements ResourceReader {
     }
 
     public FileSystemResourceReader(String encoding) {
-        this(new File("."), encoding);
+        this(encoding, new File("."));
     }
 
-    public FileSystemResourceReader(File baseDir) {
-        this(baseDir, null);
+    public FileSystemResourceReader(File... baseDirs) {
+        this(null, baseDirs);
     }
 
-    public FileSystemResourceReader(File baseDir, String encoding) {
-        this.baseDir = baseDir;
+    public FileSystemResourceReader(String encoding, File... baseDirs) {
+        this.baseDirs = baseDirs;
         this.encoding = encoding;
     }
 
     @Override
     public String read(String location) throws IOException {
-        logger.fine("reading " + location + " relative to " + baseDir.getAbsolutePath());
-        File file = new File(baseDir, location);
-        if (file.canRead()) {
-            return IOUtils.read(file, encoding);
+        for (File dir : baseDirs) {
+            logger.fine("reading " + location + " relative to " + dir.getAbsolutePath());
+            File file = new File(dir, location);
+            if (file.canRead()) {
+                return IOUtils.read(file, encoding);
+            }
         }
         return null;
+    }
+
+    public File[] getBaseDirs() {
+        return baseDirs;
+    }
+
+    public String getEncoding() {
+        return encoding;
     }
 }

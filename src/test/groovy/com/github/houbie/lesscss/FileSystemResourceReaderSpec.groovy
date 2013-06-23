@@ -24,7 +24,7 @@ class FileSystemResourceReaderSpec extends Specification {
 
     def "read file from specified dir with encoding"() {
         when:
-        def reader = new FileSystemResourceReader(new File('src/test/resources'), 'utf16')
+        def reader = new FileSystemResourceReader('utf16', new File('src/test/resources'))
         then:
         reader.read('ioutils/utf16.txt') == 'utf16 text'
         reader.read('../resources/ioutils/utf16.txt') == 'utf16 text'

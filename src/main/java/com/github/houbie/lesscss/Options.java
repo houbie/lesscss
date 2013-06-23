@@ -87,5 +87,51 @@ public class Options {
         public String getOptionString() {
             return optionString;
         }
+
+        public static LineNumbersOutput fromOptionString(String optionString) {
+            if (optionString == null || optionString.trim().length() == 0) {
+                return NONE;
+            }
+            if (COMMENTS.getOptionString().equals(optionString)) {
+                return COMMENTS;
+            }
+            if (MEDIA_QUERY.getOptionString().equals(optionString)) {
+                return MEDIA_QUERY;
+            }
+            if (ALL.getOptionString().equals(optionString)) {
+                return ALL;
+            }
+            throw new RuntimeException("Invalid line numbers type: " + optionString);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Options options = (Options) o;
+
+        if (compress != options.compress) return false;
+        if (minify != options.minify) return false;
+        if (optimizationLevel != options.optimizationLevel) return false;
+        if (relativeUrls != options.relativeUrls) return false;
+        if (strictImports != options.strictImports) return false;
+        if (dumpLineNumbers != options.dumpLineNumbers) return false;
+        if (rootPath != null ? !rootPath.equals(options.rootPath) : options.rootPath != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (compress ? 1 : 0);
+        result = 31 * result + optimizationLevel;
+        result = 31 * result + (strictImports ? 1 : 0);
+        result = 31 * result + (rootPath != null ? rootPath.hashCode() : 0);
+        result = 31 * result + (relativeUrls ? 1 : 0);
+        result = 31 * result + (dumpLineNumbers != null ? dumpLineNumbers.hashCode() : 0);
+        result = 31 * result + (minify ? 1 : 0);
+        return result;
     }
 }
