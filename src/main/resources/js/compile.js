@@ -13,7 +13,8 @@ var less = window.less,
                         strictImports: optionsArg.strictImports,
                         relativeUrls: optionsArg.relativeUrls,
                         filename: sourceName,
-                        paths: []
+                        paths: [],
+                        dependenciesOnly: optionsArg.dependenciesOnly
                     };
             options = optionsArg;
             importReader = importReaderArg;
@@ -30,7 +31,7 @@ var less = window.less,
                     if (e instanceof Object) {
                         throw e;
                     }
-                    result = tree.toCSS(lessEnv.compress);
+                    result = (lessEnv.dependenciesOnly) ? '' : tree.toCSS(lessEnv.compress);
                     if (e instanceof Object)
                         throw e;
                 });

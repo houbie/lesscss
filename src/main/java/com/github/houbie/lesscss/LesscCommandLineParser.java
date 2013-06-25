@@ -20,6 +20,7 @@ public class LesscCommandLineParser {
     static final String OPTIMIZATION_LEVEL_OPTION = "optimization";
     static final String CUSTOM_JS_OPTION = "custom-js";
     static final String ENCODING_OPTION = "encoding";
+    static final String DEPENDS_OPTION = "depends";
 
     static final String MAIN_COMMAND = "lessc";
     static final String HELP_HEADER = "[option option=parameter ...] <source> [destination]";
@@ -79,6 +80,7 @@ public class LesscCommandLineParser {
         result.addOption(OptionBuilder.hasArg().withLongOpt(OPTIMIZATION_LEVEL_OPTION).withType(Number.class).withDescription("-O1, -O2... Set the parser's optimization level.   (4)").create('O'));
         result.addOption("js", CUSTOM_JS_OPTION, true, "File with custom JavaScript functions.");
         result.addOption("e", ENCODING_OPTION, true, "Character encoding.");
+        result.addOption("M", DEPENDS_OPTION, false, "Output a makefile import dependency list to stdout.");
 
         return result;
     }
@@ -107,9 +109,9 @@ public class LesscCommandLineParser {
 
     private void process(CommandLine cmd) throws ParseException, IOException {
         setVerbosity();
-        setOptions(cmd);
         setSourceFile(cmd);
         setDestinationFile(cmd);
+        setOptions(cmd);
         setEncoding(cmd);
         setIncludePathsReader(cmd, source);
         setCustomJsReader(cmd);
@@ -134,6 +136,10 @@ public class LesscCommandLineParser {
         options.setMinify(cmd.hasOption(YUI_COMPRESS_OPTION));
         if (cmd.hasOption(OPTIMIZATION_LEVEL_OPTION)) {
             options.setOptimizationLevel(((Long) cmd.getParsedOptionValue(OPTIMIZATION_LEVEL_OPTION)).intValue());
+        }
+        options.setDependenciesOnly(cmd.hasOption(DEPENDS_OPTION));
+        if (options.isDependenciesOnly() && destination == null) {
+            throw new RuntimeException("option --depends requires an output path to be specified");
         }
     }
 

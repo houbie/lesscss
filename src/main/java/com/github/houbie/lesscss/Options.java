@@ -9,6 +9,7 @@ public class Options {
     private boolean relativeUrls = true;
     private LineNumbersOutput dumpLineNumbers = LineNumbersOutput.NONE;
     private boolean minify = false;
+    private boolean dependenciesOnly = false;
 
     public boolean isCompress() {
         return compress;
@@ -70,6 +71,14 @@ public class Options {
 
     public void setMinify(boolean minify) {
         this.minify = minify;
+    }
+
+    public boolean isDependenciesOnly() {
+        return dependenciesOnly;
+    }
+
+    public void setDependenciesOnly(boolean dependenciesOnly) {
+        this.dependenciesOnly = dependenciesOnly;
     }
 
     public enum LineNumbersOutput {

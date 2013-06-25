@@ -29,15 +29,17 @@ class LesscCommandLineParserSpec extends Specification {
         commandLineHelper.options == options
 
         where:
-        commandLine                                                                                           | options
-        'src/test/resources/less/basic.less'                                                                  | new Options(
-                dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1)
-        '-rp rootpath -ru -x -O10 src/test/resources/less/basic.less'                                         | new Options(
-                dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10)
-        '--rootpath rootpath --relative-urls --compress --optimization 10 src/test/resources/less/basic.less' | new Options(
-                dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10)
-        '--line-numbers all --strict-imports --yui-compress src/test/resources/less/basic.less'               | new Options(
-                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true, compress: false, minify: true, optimizationLevel: 1)
+        commandLine                                                                                                | options
+        'src/test/resources/less/basic.less'                                                                       | new Options(
+                dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1, dependenciesOnly: false)
+        '-rp rootpath -ru -x -O10 src/test/resources/less/basic.less'                                              | new Options(
+                dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
+        '--rootpath rootpath --relative-urls --compress --optimization 10 src/test/resources/less/basic.less'      | new Options(
+                dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
+        '--line-numbers all --strict-imports --yui-compress -M src/test/resources/less/basic.less destination.css' | new Options(
+                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: false)
+        '--depends src/test/resources/less/basic.less destination.css'                                             | new Options(
+                dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1, dependenciesOnly: true)
     }
 
     def 'check source and destination'() {
@@ -71,6 +73,15 @@ class LesscCommandLineParserSpec extends Specification {
         then:
         def e = thrown(RuntimeException)
         e.message == 'doesNotExist can not be read'
+    }
+
+    def 'depends option requires destination to be set'() {
+        when:
+        commandLineHelper.parse(['-M', 'src/test/resources/less/basic.less'] as String[])
+
+        then:
+        def e = thrown(RuntimeException)
+        e.message == 'option --depends requires an output path to be specified'
     }
 
     def 'check include-paths'() {
@@ -122,6 +133,8 @@ class LesscCommandLineParserSpec extends Specification {
                 ' -js,--custom-js <arg>     File with custom JavaScript functions.\n' +
                 '    --line-numbers <arg>   --line-numbers=TYPE  Outputs filename and line\n' +
                 '                           numbers.  (1)\n' +
+                ' -M,--depends              Output a makefile import dependency list to\n' +
+                '                           stdout.\n' +
                 ' -O,--optimization <arg>   -O1, -O2... Set the parser\'s optimization\n' +
                 '                           level.   (4)\n' +
                 ' -rp,--rootpath <arg>      Set rootpath for URL rewriting in relative\n' +
