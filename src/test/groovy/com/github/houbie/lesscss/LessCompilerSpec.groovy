@@ -30,7 +30,7 @@ class LessCompilerSpec extends Specification {
         def compiler = new LessCompiler()
 
         expect:
-        compiler.compile(new File('src/test/resources/less/basic.less')) == 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
+        compiler.compile(new File('src/test/resources/less/basic.less')) == new File('src/test/resources/less/basic.css').text
     }
 
     def "constructor with custom javascript"() {

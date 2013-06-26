@@ -1,6 +1,7 @@
 package com.github.houbie.lesscss;
 
 
+import com.github.houbie.lesscss.utils.LogbackConfigurator;
 import org.apache.commons.cli.*;
 
 import java.io.*;
@@ -45,6 +46,7 @@ public class LesscCommandLineParser {
     private ResourceReader includePathsReader;
     private String encoding;
     private Reader customJsReader;
+    private boolean verbose;
 
     public LesscCommandLineParser(String version) {
         this.version = version;
@@ -108,18 +110,36 @@ public class LesscCommandLineParser {
     }
 
     private void process(CommandLine cmd) throws ParseException, IOException {
-        setVerbosity();
         setSourceFile(cmd);
         setDestinationFile(cmd);
+        setVerbosity(cmd);
         setOptions(cmd);
         setEncoding(cmd);
         setIncludePathsReader(cmd, source);
         setCustomJsReader(cmd);
     }
 
-    private void setVerbosity() {
+    private void setSourceFile(CommandLine cmd) {
+        if (cmd.getArgs().length < 1) {
+            throw new RuntimeException("<source> is not specified");
+        }
+        String fileName = cmd.getArgs()[0];
+        source = new File(fileName);
+        if (!source.canRead()) {
+            throw new RuntimeException(this.source + " can not be read");
+        }
+    }
 
-        //TODO
+    private void setDestinationFile(CommandLine cmd) {
+        if (cmd.getArgs().length > 1) {
+            destination = new File(cmd.getArgs()[1]);
+        }
+    }
+
+    private void setVerbosity(CommandLine cmd) {
+        verbose = cmd.hasOption(VERBOSE_OPTION);
+        //don't log anything if the result has to go to stdout
+        LogbackConfigurator.configure(verbose && destination != null);
     }
 
     private void setOptions(CommandLine cmd) throws ParseException {
@@ -140,23 +160,6 @@ public class LesscCommandLineParser {
         options.setDependenciesOnly(cmd.hasOption(DEPENDS_OPTION));
         if (options.isDependenciesOnly() && destination == null) {
             throw new RuntimeException("option --depends requires an output path to be specified");
-        }
-    }
-
-    private void setSourceFile(CommandLine cmd) {
-        if (cmd.getArgs().length < 1) {
-            throw new RuntimeException("<source> is not specified");
-        }
-        String fileName = cmd.getArgs()[0];
-        source = new File(fileName);
-        if (!source.canRead()) {
-            throw new RuntimeException(this.source + " can not be read");
-        }
-    }
-
-    private void setDestinationFile(CommandLine cmd) {
-        if (cmd.getArgs().length > 1) {
-            destination = new File(cmd.getArgs()[1]);
         }
     }
 
@@ -209,5 +212,9 @@ public class LesscCommandLineParser {
 
     public Reader getCustomJsReader() {
         return customJsReader;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
     }
 }

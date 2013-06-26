@@ -5,20 +5,8 @@ import spock.lang.Specification
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.ALL
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.NONE
 
-class LesscCommandLineParserSpec extends Specification {
+class LesscCommandLineParserSpec extends OutputCapturingSpec {
     LesscCommandLineParser commandLineHelper = new LesscCommandLineParser('versionInfo')
-
-    PrintStream originalSystemOut
-    ByteArrayOutputStream sysOutCapture = new ByteArrayOutputStream()
-
-    def setup() {
-        originalSystemOut = System.out
-        System.out = new PrintStream(sysOutCapture)
-    }
-
-    def cleanup() {
-        System.out = originalSystemOut
-    }
 
     def 'check compiler options'() {
         when:
