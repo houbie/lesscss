@@ -37,7 +37,7 @@ public class Lessc {
             } else if (cmd.getDestination() != null) {
                 lessCompiler.compile(cmd.getSource(), cmd.getDestination(), cmd.getOptions(), cmd.getIncludePathsReader(), cmd.getEncoding());
             } else {
-                System.out.print(lessCompiler.compile(IOUtils.read(cmd.getSource()), cmd.getIncludePathsReader(), cmd.getOptions(), cmd.getEncoding()));
+                System.out.print(lessCompiler.compile(IOUtils.read(cmd.getSource(), cmd.getEncoding()), cmd.getIncludePathsReader(), cmd.getOptions(), cmd.getSource().getName()));
             }
         } catch (Exception e) {
             if (cmd.isVerbose()) {
