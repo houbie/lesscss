@@ -2,6 +2,7 @@ package com.github.houbie.lesscss;
 
 
 import com.github.houbie.lesscss.utils.IOUtils;
+import org.apache.commons.cli.ParseException;
 
 public class Lessc {
     public static final String VERSION = "0.9";//TODO get from meta-inf
@@ -9,10 +10,15 @@ public class Lessc {
 
     public static void main(String[] args) throws Exception {
         LesscCommandLineParser lesscCommandLineParser = new LesscCommandLineParser(getVersionInfo());
-        boolean done = lesscCommandLineParser.parse(args);
+        try {
+            boolean done = lesscCommandLineParser.parse(args);
 
-        if (!done) {
-            execute(lesscCommandLineParser);
+            if (!done) {
+                execute(lesscCommandLineParser);
+            }
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            LesscCommandLineParser.printHelp();
         }
     }
 

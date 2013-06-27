@@ -65,7 +65,7 @@ public class LesscCommandLineParser {
     }
 
     @SuppressWarnings("static-access")
-    private org.apache.commons.cli.Options createOptions() {
+    private static org.apache.commons.cli.Options createOptions() {
         org.apache.commons.cli.Options result = new org.apache.commons.cli.Options();
 
         result.addOption("h", HELP_OPTION, false, "Print help (this message) and exit.");
@@ -107,6 +107,11 @@ public class LesscCommandLineParser {
             return true;
         }
         return false;
+    }
+
+    public static void printHelp() {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(MAIN_COMMAND, HELP_HEADER, createOptions(), HELP_FOOTER);
     }
 
     private void process(CommandLine cmd) throws ParseException, IOException {

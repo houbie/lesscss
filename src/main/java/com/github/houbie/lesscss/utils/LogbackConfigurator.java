@@ -16,7 +16,7 @@ public class LogbackConfigurator {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         ConsoleAppender<ILoggingEvent> ca = new ConsoleAppender<>();
         ca.setContext(lc);
-        ca.setName("console");
+        ca.setName("less console");
         PatternLayoutEncoder pl = new PatternLayoutEncoder();
         pl.setContext(lc);
         pl.setPattern("%msg%n");
@@ -24,9 +24,12 @@ public class LogbackConfigurator {
 
         ca.setEncoder(pl);
         ca.start();
-        Logger lessLogger = lc.getLogger(LessCompiler.class);
-        lessLogger.detachAndStopAllAppenders();
-        lessLogger.addAppender(ca);
-        lessLogger.setLevel(verbose ? Level.ALL : Level.OFF);
+
+        //prevent double log output
+        lc.getLogger(Logger.ROOT_LOGGER_NAME).detachAndStopAllAppenders();
+        Logger compilerLogger = lc.getLogger(LessCompiler.class);
+        compilerLogger.detachAndStopAllAppenders();
+        compilerLogger.addAppender(ca);
+        compilerLogger.setLevel(verbose ? Level.ALL : Level.OFF);
     }
 }

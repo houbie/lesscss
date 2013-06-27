@@ -12,6 +12,9 @@ apply plugin: 'groovy'
 apply plugin: 'application'
 apply plugin: 'js'
 
+mainClassName = 'com.github.houbie.lesscss.Lessc'
+version = '0.5-less-1.3.3'
+
 repositories {
     mavenCentral()
 }
