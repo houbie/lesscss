@@ -1,4 +1,5 @@
 var less = window.less,
+        originalException,
         parseException,
         options,
         importReader,
@@ -27,21 +28,33 @@ var less = window.less,
             }
 
             try {
+                parseException = null;
+                originalException = null;
                 new (less.Parser)(lessEnv).parse(source, function (e, tree) {
-                    if (e instanceof Object) {
-                        throw e;
+                    originalException = originalException || e;
+                    if (originalException instanceof Object) {
+                        throw originalException;
                     }
                     result = (lessEnv.dependenciesOnly) ? '' : tree.toCSS(lessEnv.compress);
-                    if (e instanceof Object)
-                        throw e;
                 });
-                parseException = null;
+                if (originalException) {
+                    throw originalException;
+                }
                 return (optionsArg.minify) ? cssmin(result) : result;
             } catch (e) {
-                parseException = 'less parse exception: ';
-                for (prop in e) {
-                    if (e.hasOwnProperty(prop)) {
-                        parseException += prop + ':' + e[prop] + ',';
+                originalException = originalException || e;
+
+                parseException = 'less parse exception: ' + originalException.message;
+                if (originalException.filename) {
+                    parseException += '\nin ' + originalException.filename + ' at line ' + originalException.line;
+                }
+                if (originalException.extract) {
+                    var extract = originalException.extract;
+                    parseException += '\nextract';
+                    for (var line in extract) {
+                        if (extract.hasOwnProperty(line) && extract[line]) {
+                            parseException += '\n' + originalException.extract[line];
+                        }
                     }
                 }
                 return null;
@@ -82,11 +95,11 @@ less.Parser.importer = function (file, paths, callback) {
         }
 
         new (less.Parser)(lessEnv).parse(String(importedLess), function (e, root) {
-            if (e instanceof Object)
-                throw e;
-            callback(e, root);
-            if (e instanceof Object)
-                throw e;
+            if (e instanceof Object) {
+                originalException = originalException || e;
+            } else {
+                callback(e, root);
+            }
         });
     }
 };

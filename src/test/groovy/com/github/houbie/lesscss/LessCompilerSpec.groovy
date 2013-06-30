@@ -62,7 +62,10 @@ class LessCompilerSpec extends Specification {
 
         then:
         def e = thrown(Exception)
-        e.message == 'less parse exception: type:Parse,message:missing closing `}`,filename:broken.less,index:13,line:1,callLine:undefined,callExtract:undefined,stack:undefined,column:13,extract:,#broken less {,,'
+        e.message == 'less parse exception: missing closing `}`\n' +
+                'in broken.less at line 1\n' +
+                'extract\n' +
+                '#broken less {'
     }
 
     def "compile file with missing imports"() {
@@ -71,7 +74,10 @@ class LessCompilerSpec extends Specification {
 
         then:
         def e = thrown(Exception)
-        e.message == 'less parse exception: type:Syntax,message:less compiler error: import "doesNotExist.less" could not be resolved,filename:brokenImport.less,index:undefined,line:null,callLine:undefined,callExtract:undefined,stack:undefined,column:-1,extract:,,  color: red;,'
+        e.message == 'less parse exception: less compiler error: import "doesNotExist.less" could not be resolved\n' +
+                'in brokenImport.less at line null\n' +
+                'extract\n' +
+                '  color: red;'
     }
 
     def "compile and minify"() {

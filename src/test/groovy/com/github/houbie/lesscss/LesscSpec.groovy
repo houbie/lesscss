@@ -37,6 +37,9 @@ class LesscSpec extends OutputCapturingSpec {
 
         expect:
         sysOutCapture.toString() == ''
-        sysErrCapture.toString() == 'less parse exception: type:Parse,message:missing closing `}`,filename:broken.less,index:13,line:1,callLine:undefined,callExtract:undefined,stack:undefined,column:13,extract:,#broken less {,,\n'
+        sysErrCapture.toString() == 'less parse exception: missing closing `}`\n' +
+                'in broken.less at line 1\n' +
+                'extract\n' +
+                '#broken less {\n'
     }
 }
