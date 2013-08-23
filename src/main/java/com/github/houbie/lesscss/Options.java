@@ -1,7 +1,11 @@
 package com.github.houbie.lesscss;
 
 
-public class Options {
+import java.io.Serializable;
+
+public class Options implements Serializable {
+    private static final long serialVersionUID = -4196621429522278886L;
+
     private boolean compress = false;
     private int optimizationLevel = 1;
     private boolean strictImports = false;
@@ -10,6 +14,20 @@ public class Options {
     private LineNumbersOutput dumpLineNumbers = LineNumbersOutput.NONE;
     private boolean minify = false;
     private boolean dependenciesOnly = false;
+
+    public Options() {
+    }
+
+    public Options(Options other) {
+        this.compress = other.compress;
+        this.optimizationLevel = other.optimizationLevel;
+        this.strictImports = other.strictImports;
+        this.rootPath = other.rootPath;
+        this.relativeUrls = other.relativeUrls;
+        this.dumpLineNumbers = other.dumpLineNumbers;
+        this.minify = other.minify;
+        this.dependenciesOnly = other.dependenciesOnly;
+    }
 
     public boolean isCompress() {
         return compress;
@@ -122,6 +140,7 @@ public class Options {
         Options options = (Options) o;
 
         if (compress != options.compress) return false;
+        if (dependenciesOnly != options.dependenciesOnly) return false;
         if (minify != options.minify) return false;
         if (optimizationLevel != options.optimizationLevel) return false;
         if (relativeUrls != options.relativeUrls) return false;
@@ -141,6 +160,7 @@ public class Options {
         result = 31 * result + (relativeUrls ? 1 : 0);
         result = 31 * result + (dumpLineNumbers != null ? dumpLineNumbers.hashCode() : 0);
         result = 31 * result + (minify ? 1 : 0);
+        result = 31 * result + (dependenciesOnly ? 1 : 0);
         return result;
     }
 }

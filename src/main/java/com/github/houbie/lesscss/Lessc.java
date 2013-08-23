@@ -25,7 +25,7 @@ public class Lessc {
 
     private static void execute(LesscCommandLineParser cmd) throws Exception {
         try {
-            LessCompiler lessCompiler = new LessCompiler(cmd.getCustomJsReader());
+            LessCompiler lessCompiler = new LessCompilerImpl(cmd.getCustomJsReader());
             if (cmd.getOptions().isDependenciesOnly()) {
                 LessCompiler.CompilationDetails compilationDetails = lessCompiler.compileWithDetails(IOUtils.read(cmd.getSource()), cmd.getIncludePathsReader(), cmd.getOptions(), cmd.getEncoding());
                 StringBuilder dependencies = new StringBuilder();

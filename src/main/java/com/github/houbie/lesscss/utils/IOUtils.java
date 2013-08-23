@@ -42,6 +42,12 @@ public class IOUtils {
         }
     }
 
+    public static String read(Reader reader) throws IOException {
+        StringBuilderWriter writer = new StringBuilderWriter();
+        copyLarge(reader, writer);
+        return writer.toString();
+    }
+
     public static void copy(InputStream input, Writer output, String encoding)
             throws IOException {
         if (encoding == null) {

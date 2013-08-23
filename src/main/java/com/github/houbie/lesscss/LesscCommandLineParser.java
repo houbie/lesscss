@@ -1,6 +1,8 @@
 package com.github.houbie.lesscss;
 
 
+import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
+import com.github.houbie.lesscss.resourcereader.ResourceReader;
 import com.github.houbie.lesscss.utils.LogbackConfigurator;
 import org.apache.commons.cli.*;
 

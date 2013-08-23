@@ -1,5 +1,6 @@
 package com.github.houbie.lesscss
 
+import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 
 class FileSystemResourceReaderSpec extends Specification {
@@ -20,6 +21,13 @@ class FileSystemResourceReaderSpec extends Specification {
         then:
         reader.read('ioutils/plain.txt') == 'plain text'
         reader.read('../resources/ioutils/plain.txt') == 'plain text'
+    }
+
+    def "read absolute file"() {
+        when:
+        def reader = new FileSystemResourceReader(new File('src/test/resources'))
+        then:
+        reader.read(new File('src/test/resources/ioutils/plain.txt').absolutePath) == 'plain text'
     }
 
     def "read file from specified dir with encoding"() {

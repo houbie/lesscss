@@ -1,6 +1,6 @@
 package com.github.houbie.lesscss.scriptengine
 
-import com.github.houbie.lesscss.LessCompiler
+import com.github.houbie.lesscss.LessCompilerImpl
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -13,7 +13,7 @@ class ScriptEngineSpec extends Specification {
         ScriptEngineManager factory = new ScriptEngineManager()
 
         when:
-        ScriptEngine scriptEngine = factory.getEngineByName(LessCompiler.RHINO)
+        ScriptEngine scriptEngine = factory.getEngineByName(LessCompilerImpl.RHINO)
         scriptEngine.eval(new StringReader('function f1(){return "result1"} var v1="value1";'))
         scriptEngine.eval(new StringReader('function f2(){return "result2"} var v2="value2";'))
 

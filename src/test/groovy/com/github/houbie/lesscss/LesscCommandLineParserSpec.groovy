@@ -1,7 +1,5 @@
 package com.github.houbie.lesscss
 
-import spock.lang.Specification
-
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.ALL
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.NONE
 
@@ -25,7 +23,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         '--rootpath rootpath --relative-urls --compress --optimization 10 src/test/resources/less/basic.less'      | new Options(
                 dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
         '--line-numbers all --strict-imports --yui-compress -M src/test/resources/less/basic.less destination.css' | new Options(
-                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: false)
+                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: true)
         '--depends src/test/resources/less/basic.less destination.css'                                             | new Options(
                 dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1, dependenciesOnly: true)
     }
