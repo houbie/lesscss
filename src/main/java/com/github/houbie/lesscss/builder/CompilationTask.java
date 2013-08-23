@@ -23,6 +23,9 @@ public class CompilationTask {
     private Set<CompilationUnit> compilationUnits = new HashSet<>();
     private long customJavaScriptHashCode;
 
+    protected Thread daemon;
+    private boolean stopDaemon;
+
     public CompilationTask() throws IOException {
         this((Reader) null);
     }
@@ -54,9 +57,38 @@ public class CompilationTask {
 
     public void execute() throws IOException {
         logger.debug("CompilationTask: execute");
+        long start = System.currentTimeMillis();
         for (CompilationUnit unit : compilationUnits) {
             compileIfDirty(unit);
         }
+        logger.info("execute finished in {} millis", System.currentTimeMillis() - start);
+    }
+
+    public void startDaemon(final long interval) {
+        if (daemon != null) {
+            throw new RuntimeException("Trying to start daemon while it is still running");
+        }
+        stopDaemon = false;
+        daemon = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (!stopDaemon) {
+                        execute();
+                        Thread.sleep(interval);
+                    }
+                    daemon = null;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, "LessCompilationDaemon");
+        daemon.setDaemon(true);
+        daemon.start();
+    }
+
+    public void stopDaemon() {
+        stopDaemon = true;
     }
 
     private void compileIfDirty(CompilationUnit unit) throws IOException {
@@ -65,9 +97,11 @@ public class CompilationTask {
 
         if (unitToCompile.isDirty()) {
             logger.debug("compiling less: {}", unit);
+            long start = System.currentTimeMillis();
             CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getImportReader(), unit.getOptions(), unit.getSource().getName());
             IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
             updateImportsAndCache(unitToCompile, compilationResult.getImports());
+            logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);
         }
     }
 
@@ -86,7 +120,7 @@ public class CompilationTask {
             try {
                 return (CompilationUnit) new ObjectInputStream(new FileInputStream(cacheFile)).readObject();
             } catch (Exception e) {
-                logger.error("Could not read cached compilationUnit", e);
+                logger.warn("Could not read cached compilationUnit", e);
             }
         }
         return null;

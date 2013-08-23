@@ -104,6 +104,53 @@ class CompilationTaskSpec extends Specification {
         !basicUnit.isDirty()
     }
 
+    def 'start daemon'() {
+        setup:
+        compilationTask.startDaemon(100)
+
+        when:
+        sleep(1000)
+
+        then:
+        importDestination.text == importResult.text
+
+        when:
+        imported0Source << '@import "basic";'
+        sleep(1000)
+
+        then:
+        importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
+    }
+
+    def 'fail to start daemon twice'() {
+        setup:
+        compilationTask.startDaemon(100)
+
+        when:
+        compilationTask.startDaemon(100)
+
+        then:
+        thrown(RuntimeException)
+    }
+
+    def 'stop daemon'() {
+        setup:
+        compilationTask.startDaemon(100)
+
+        when:
+        sleep(100)
+
+        then:
+        compilationTask.daemon.alive
+
+        when:
+        compilationTask.stopDaemon()
+        sleep(1000)
+
+        then:
+        compilationTask.daemon == null
+    }
+
     private void cleanDir(File dir) {
         dir.deleteDir()
         dir.mkdirs()
