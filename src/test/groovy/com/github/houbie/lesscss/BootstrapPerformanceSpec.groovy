@@ -1,6 +1,7 @@
 package com.github.houbie.lesscss
 
 import ch.qos.logback.classic.Level
+import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
@@ -14,11 +15,11 @@ class BootstrapPerformanceSpec extends Specification {
         long start = System.currentTimeMillis()
 
         when:
-        LessCompiler compiler = new LessCompiler()
-        LoggerFactory.getLogger(LessCompiler).level = Level.WARN
+        LessCompilerImpl compiler = new LessCompilerImpl()
+        LoggerFactory.getLogger(LessCompilerImpl).level = Level.WARN
 
         then:
-        (1..5).each {
+        (1..12).each {
             if (it > 1) {
                 start = System.currentTimeMillis()
             }
