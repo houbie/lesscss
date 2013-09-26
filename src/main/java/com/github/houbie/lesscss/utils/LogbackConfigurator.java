@@ -26,8 +26,18 @@ import ch.qos.logback.core.ConsoleAppender;
 import com.github.houbie.lesscss.LessCompilerImpl;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Logback configuration utility for switching compiler logging to the console on/off
+ *
+ * @author Ivo Houbrechts
+ */
 public class LogbackConfigurator {
 
+    /**
+     * Configure the LessCompilerImpl logger with a ConsoleAppender
+     *
+     * @param verbose set logger level to Level.ALL if true, otherwise Level.OFF
+     */
     public static void configure(boolean verbose) {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         ConsoleAppender<ILoggingEvent> ca = new ConsoleAppender<>();

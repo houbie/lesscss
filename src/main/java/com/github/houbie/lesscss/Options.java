@@ -19,6 +19,9 @@ package com.github.houbie.lesscss;
 
 import java.io.Serializable;
 
+/**
+ * @author Ivo Houbrechts
+ */
 public class Options implements Serializable {
     private static final long serialVersionUID = -4196621429522278886L;
 
@@ -45,6 +48,11 @@ public class Options implements Serializable {
         this.dependenciesOnly = other.dependenciesOnly;
     }
 
+    /**
+     * Compress output by removing some whitespaces (default: false)
+     *
+     * @return compress option
+     */
     public boolean isCompress() {
         return compress;
     }
@@ -53,6 +61,11 @@ public class Options implements Serializable {
         this.compress = compress;
     }
 
+    /**
+     * Optimization levels: The lower the number, the fewer nodes created in the tree. Useful for debugging or if you need to access the individual nodes in the tree. (default: 1)
+     *
+     * @return optimization level
+     */
     public int getOptimizationLevel() {
         return optimizationLevel;
     }
@@ -61,6 +74,11 @@ public class Options implements Serializable {
         this.optimizationLevel = optimizationLevel;
     }
 
+    /**
+     * Force evaluation of imports (default: false)
+     *
+     * @return strict imports option
+     */
     public boolean isStrictImports() {
         return strictImports;
     }
@@ -69,6 +87,11 @@ public class Options implements Serializable {
         this.strictImports = strictImports;
     }
 
+    /**
+     * Rootpath for URL rewriting in relative imports and URLs (default: empty string)
+     *
+     * @return rootPath
+     */
     public String getRootPath() {
         return rootPath;
     }
@@ -80,6 +103,11 @@ public class Options implements Serializable {
         this.rootPath = rootPath;
     }
 
+    /**
+     * Re-write relative URLs to the base less file (default: true)
+     *
+     * @return relative urls option
+     */
     public boolean isRelativeUrls() {
         return relativeUrls;
     }
@@ -88,6 +116,11 @@ public class Options implements Serializable {
         this.relativeUrls = relativeUrls;
     }
 
+    /**
+     * If and where to output line number information (default: none)
+     *
+     * @return dumpLineNumbers option
+     */
     public LineNumbersOutput getDumpLineNumbers() {
         return dumpLineNumbers;
     }
@@ -99,6 +132,11 @@ public class Options implements Serializable {
         this.dumpLineNumbers = dumpLineNumbers;
     }
 
+    /**
+     * Minify output using YUI cssmin (default: false)
+     *
+     * @return minify option
+     */
     public boolean isMinify() {
         return minify;
     }
@@ -107,6 +145,11 @@ public class Options implements Serializable {
         this.minify = minify;
     }
 
+    /**
+     * If true, only imports statements are evaluated without actual compilation (default: false)
+     *
+     * @return true if only imports are evaluated
+     */
     public boolean isDependenciesOnly() {
         return dependenciesOnly;
     }
@@ -116,9 +159,21 @@ public class Options implements Serializable {
     }
 
     public enum LineNumbersOutput {
+        /**
+         * No line number output
+         */
         NONE(null),
+        /**
+         * Output line numbers in CSS comments
+         */
         COMMENTS("comments"),
+        /**
+         * Output line numbers within a fake media query which is compatible with the SASS format
+         */
         MEDIA_QUERY("mediaquery"),
+        /**
+         * Output line numbers in both comments and media query
+         */
         ALL("all");
 
         private final String optionString;

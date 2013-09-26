@@ -22,21 +22,90 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * LESS compiler interface
+ *
+ * @author Ivo Houbrechts
+ */
 public interface LessCompiler {
+    /**
+     * Compile a LESS file
+     *
+     * @param source source file
+     * @return the resulting CSS
+     * @throws IOException
+     */
     String compile(File source) throws IOException;
 
+    /**
+     * Compile a LESS file
+     *
+     * @param source  source file
+     * @param options compilation options
+     * @return the resulting CSS
+     * @throws IOException
+     */
     String compile(File source, Options options) throws IOException;
 
-    List<String> compile(File source, File destination) throws IOException;
+    /**
+     * Compile a LESS file
+     *
+     * @param source      source file
+     * @param destination destination file
+     * @throws IOException
+     */
+    void compile(File source, File destination) throws IOException;
 
-    List<String> compile(File source, File destination, Options options, ResourceReader importReader, String encoding) throws IOException;
+    /**
+     * Compile a LESS file
+     *
+     * @param source       source file
+     * @param destination  destination file
+     * @param options      compilation options
+     * @param importReader ResourceReader for resolving imports
+     * @param encoding     character encoding
+     * @throws IOException
+     */
+    void compile(File source, File destination, Options options, ResourceReader importReader, String encoding) throws IOException;
 
+    /**
+     * Compile a LESS String
+     *
+     * @param less LESS source
+     * @return the resulting CSS
+     */
     String compile(String less);
 
+    /**
+     * Compile a LESS String
+     *
+     * @param less         LESS source
+     * @param importReader ResourceReader for resolving imports
+     * @param sourceName   name of the LESS source that can be used for reporting errors
+     * @return the resulting CSS
+     */
     String compile(String less, ResourceReader importReader, String sourceName);
 
+    /**
+     * Compile a LESS String
+     *
+     * @param less         LESS source
+     * @param importReader ResourceReader for resolving imports
+     * @param options      compilation options
+     * @param sourceName   name of the LESS source that can be used for reporting errors
+     * @return the resulting CSS
+     */
     String compile(String less, ResourceReader importReader, Options options, String sourceName);
 
+    /**
+     * Compile a LESS String
+     *
+     * @param less         LESS source
+     * @param importReader ResourceReader for resolving imports
+     * @param options      compilation options
+     * @param sourceName   name of the LESS source that can be used for reporting errors
+     * @return CompilationDetails that holds both the resulting CSS and the list of (recursive) imports
+     */
     CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName);
 
     public static class CompilationDetails {

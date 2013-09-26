@@ -24,6 +24,11 @@ import org.apache.commons.cli.*;
 
 import java.io.*;
 
+/**
+ * Commandline parser based on commons cli.
+ *
+ * @author Ivo Houbrechts
+ */
 public class LesscCommandLineParser {
     static final String HELP_OPTION = "help";
     static final String VERSION_OPTION = "version";

@@ -19,6 +19,12 @@ package com.github.houbie.lesscss.utils;
 import java.io.*;
 import java.net.URL;
 
+/**
+ * Utility class to read/write files and streams.
+ * Most of the code is copied from Apache Commons IO
+ *
+ * @author Ivo Houbrechts
+ */
 public class IOUtils {
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 
@@ -91,7 +97,7 @@ public class IOUtils {
     public static long copyLarge(Reader input, Writer output) throws IOException {
         char[] buffer = new char[DEFAULT_BUFFER_SIZE];
         long count = 0;
-        int n = 0;
+        int n;
         while (-1 != (n = input.read(buffer))) {
             output.write(buffer, 0, n);
             count += n;
@@ -99,6 +105,7 @@ public class IOUtils {
         return count;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void writeFile(String content, File destination, String charsetName) throws IOException {
         if (!destination.exists()) {
             destination.createNewFile();

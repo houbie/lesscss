@@ -20,8 +20,24 @@ package com.github.houbie.lesscss.resourcereader;
 import java.io.IOException;
 import java.io.Serializable;
 
+/**
+ * An object that resolves and reads resources
+ *
+ * @author Ivo Houbrechts
+ */
 public interface ResourceReader extends Serializable {
+    /**
+     * Read a resource into a String
+     *
+     * @param location the location of the resource
+     * @return the content of the resource
+     * @throws IOException
+     */
     String read(String location) throws IOException;
 
+    /**
+     * @param location the location of the resource
+     * @return timestamp of last modification of the resource
+     */
     long lastModified(String location);
 }

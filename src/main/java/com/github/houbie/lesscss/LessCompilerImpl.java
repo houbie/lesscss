@@ -18,8 +18,8 @@ package com.github.houbie.lesscss;
 
 import com.github.houbie.lesscss.compiledjs.LessImpl;
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
-import com.github.houbie.lesscss.resourcereader.ImportCapturingResourceReader;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
+import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -32,8 +32,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.List;
 
+/**
+ * LessCompiler implementation
+ *
+ * @author Ivo Houbrechts
+ */
 public class LessCompilerImpl implements LessCompiler {
     public static final String RHINO = "rhino";
 
@@ -48,14 +52,27 @@ public class LessCompilerImpl implements LessCompiler {
     private Function compileFunction;
 
 
+    /**
+     * Default constructor
+     */
     public LessCompilerImpl() {
         this((Reader) null);
     }
 
+    /**
+     * Constructor with custom JavaScript functions
+     *
+     * @param customJavaScript JavaScript functions that can be called in LESS sources
+     */
     public LessCompilerImpl(String customJavaScript) {
         this(new StringReader(customJavaScript));
     }
 
+    /**
+     * Constructor with custom JavaScript functions
+     *
+     * @param customJavaScriptReader Reader for JavaScript functions that can be called in LESS sources
+     */
     public LessCompilerImpl(Reader customJavaScriptReader) {
         this.customJavaScriptReader = customJavaScriptReader;
     }
@@ -74,18 +91,17 @@ public class LessCompilerImpl implements LessCompiler {
     }
 
     @Override
-    public List<String> compile(File source, File destination) throws IOException {
-        return compile(source, destination, new Options(), new FileSystemResourceReader(source.getParentFile()), null);
+    public void compile(File source, File destination) throws IOException {
+        compile(source, destination, new Options(), new FileSystemResourceReader(source.getParentFile()), null);
     }
 
     @Override
-    public List<String> compile(File source, File destination, Options options, ResourceReader importReader, String encoding) throws IOException {
+    public void compile(File source, File destination, Options options, ResourceReader importReader, String encoding) throws IOException {
         if (source == null) {
             throw new NullPointerException("less file may not be null");
         }
         CompilationDetails details = compileWithDetails(IOUtils.read(source, encoding), importReader, options, source.getName());
         IOUtils.writeFile(details.getResult(), destination, encoding);
-        return details.getImports();
     }
 
     @Override
@@ -111,12 +127,12 @@ public class LessCompilerImpl implements LessCompiler {
         logger.debug("start less compilation");
         Object result;
         Object parseException;
-        ImportCapturingResourceReader importCapturingResourceReader = new ImportCapturingResourceReader(importReader);
+        TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
         try {
             if (!prepared) {
                 prepareScriptEngine();
             }
-            Object[] args = {less, options, sourceName, importCapturingResourceReader};
+            Object[] args = {less, options, sourceName, trackingResourceReader};
             result = Context.call(null, compileFunction, scope, scope, args);
             parseException = scope.get("parseException", scope);
         } catch (Exception e) {
@@ -126,7 +142,7 @@ public class LessCompilerImpl implements LessCompiler {
             throw new RuntimeException(parseException.toString());
         }
         logger.debug("finished less compilation");
-        return new CompilationDetails(result.toString(), importCapturingResourceReader.getImports());
+        return new CompilationDetails(result.toString(), trackingResourceReader.getImports());
     }
 
     private void prepareScriptEngine() throws IOException {

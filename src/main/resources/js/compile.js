@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+
+/**
+ * Compile function to be called from Java
+ */
 var less = window.less,
         originalException,
         parseException,
@@ -22,7 +26,6 @@ var less = window.less,
 
         compile = function (source, optionsArg, sourceName, importReaderArg) {
             var result,
-                    prop,
                     rootPath = String(optionsArg.rootPath),
                     lessEnv = {
                         compress: optionsArg.compress,

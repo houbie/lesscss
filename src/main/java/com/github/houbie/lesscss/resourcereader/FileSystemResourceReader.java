@@ -24,24 +24,48 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+/**
+ * ResourceReader implementation that reads files relative to one or more base directories.
+ *
+ * @author Ivo Houbrechts
+ */
 public class FileSystemResourceReader implements ResourceReader {
     private static Logger logger = Logger.getLogger(FileSystemResourceReader.class.getName());
 
     private File[] baseDirs;
     private String encoding;
 
+    /**
+     * Construct a new FileSystemResourceReader for the current directory and java's default character encoding
+     */
     public FileSystemResourceReader() {
         this(new File("."));
     }
 
+    /**
+     * Construct a new FileSystemResourceReader for the current directory
+     *
+     * @param encoding the encoding used for reading files
+     */
     public FileSystemResourceReader(String encoding) {
         this(encoding, new File("."));
     }
 
+    /**
+     * Construct a new FileSystemResourceReader using java's default character encoding
+     *
+     * @param baseDirs the directories that are used to resolve resources
+     */
     public FileSystemResourceReader(File... baseDirs) {
         this(null, baseDirs);
     }
 
+    /**
+     * Construct a new FileSystemResourceReader
+     *
+     * @param encoding the encoding used for reading files
+     * @param baseDirs the directories that are used to resolve resources
+     */
     public FileSystemResourceReader(String encoding, File... baseDirs) {
         this.baseDirs = baseDirs;
         this.encoding = encoding;
@@ -83,10 +107,16 @@ public class FileSystemResourceReader implements ResourceReader {
         return (file == null) ? Long.MAX_VALUE : file.lastModified();
     }
 
+    /**
+     * @return the directories that are used to resolve resources
+     */
     public File[] getBaseDirs() {
         return baseDirs;
     }
 
+    /**
+     * @return the encoding used for reading files
+     */
     public String getEncoding() {
         return encoding;
     }

@@ -31,6 +31,18 @@ import java.util.Set;
 
 import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
 
+/**
+ * A CompilationTask can be used to lazy compile one or more LESS files that are set with @see setCompilationUnits
+ * <p/>
+ * The compilation will only be executed if one of the (imported) sources is newer than the resulting CSS.
+ * A CompilationTask caches information about imported files by default in ${user.home}\.lesscss
+ * <p/>
+ * This class also provides a daemon that periodically checks for changes in the (imported) LESS sources.
+ * <p/>
+ * This class is typically used in build scripts (ANT, Gradle...).
+ *
+ * @author Ivo Houbrechts
+ */
 public class CompilationTask {
     private static final Logger logger = LoggerFactory.getLogger(CompilationTask.class);
 
@@ -42,23 +54,45 @@ public class CompilationTask {
     protected Thread daemon;
     private boolean stopDaemon;
 
+    /**
+     * Default constructor, uses ${user.home}\.lesscss as cache directory.
+     * @throws IOException
+     */
     public CompilationTask() throws IOException {
         this((Reader) null);
     }
 
 
+    /**
+     * @param cacheDir The directory where import information will be cached.
+     * @throws IOException
+     */
     public CompilationTask(File cacheDir) throws IOException {
         this((Reader) null, cacheDir);
     }
 
+    /**
+     * @param customJavaScript File containing custom JavaScript functions (@see LessCompilerImpl)
+     * @param cacheDir The directory where import information will be cached.
+     * @throws IOException
+     */
     public CompilationTask(File customJavaScript, File cacheDir) throws IOException {
         this(new FileReader(customJavaScript), cacheDir);
     }
 
+    /**
+     * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
+     * @throws IOException
+     */
     public CompilationTask(Reader customJavaScriptReader) throws IOException {
         this(customJavaScriptReader, null);
     }
 
+    /**
+     * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
+     * @param cacheDir The directory where import information will be cached.
+     * @throws IOException
+     */
     public CompilationTask(Reader customJavaScriptReader, File cacheDir) throws IOException {
         if (customJavaScriptReader != null) {
             String customJavaScript = IOUtils.read(customJavaScriptReader);
@@ -71,6 +105,10 @@ public class CompilationTask {
         this.cacheDir = (cacheDir == null) ? new File(new File(System.getProperty("user.home")), ".lesscss") : cacheDir;
     }
 
+    /**
+     * Execute the lazy compilation.
+     * @throws IOException
+     */
     public void execute() throws IOException {
         logger.debug("CompilationTask: execute");
         long start = System.currentTimeMillis();
@@ -80,6 +118,10 @@ public class CompilationTask {
         logger.info("execute finished in {} millis", System.currentTimeMillis() - start);
     }
 
+    /**
+     * Start a daemon thread that will execute this CompilationTask periodically.
+     * @param interval execution interval in milliseconds
+     */
     public void startDaemon(final long interval) {
         if (daemon != null) {
             throw new RuntimeException("Trying to start daemon while it is still running");
@@ -103,6 +145,9 @@ public class CompilationTask {
         daemon.start();
     }
 
+    /**
+     * Stop the daemon thread.
+     */
     public void stopDaemon() {
         stopDaemon = true;
     }
@@ -159,6 +204,7 @@ public class CompilationTask {
         return new File(dir, Long.toHexString(unit.hashCode()));
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void cache(CompilationUnit unit) {
         try {
             File file = getCacheFile(unit);
@@ -172,6 +218,10 @@ public class CompilationTask {
         }
     }
 
+    /**
+     *
+     * @return the cache directory
+     */
     public File getCacheDir() {
         return cacheDir;
     }

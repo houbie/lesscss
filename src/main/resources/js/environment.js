@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/**
+ * Browser environment stubs
+ *
+ */
 var exports = {},
         location = {hostname: '', port: ''},
         window = {location: location},

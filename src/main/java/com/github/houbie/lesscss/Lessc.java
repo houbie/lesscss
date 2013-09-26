@@ -20,6 +20,11 @@ package com.github.houbie.lesscss;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.apache.commons.cli.ParseException;
 
+/**
+ * Commandline interface for the LESS compiler
+ *
+ * @author Ivo Houbrechts
+ */
 public class Lessc {
     public static final String VERSION = "0.9";//TODO get from meta-inf
     public static final String LESS_VERSION = "1.3.3";

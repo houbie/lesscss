@@ -19,6 +19,11 @@ package com.github.houbie.lesscss.utils;
 import java.io.Serializable;
 import java.io.Writer;
 
+/**
+ * StringBuilder based Writer implementation
+ *
+ * @author Ivo Houbrechts
+ */
 public class StringBuilderWriter extends Writer implements Serializable {
 
     private final StringBuilder builder = new StringBuilder();

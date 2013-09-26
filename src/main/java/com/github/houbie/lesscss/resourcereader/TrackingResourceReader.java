@@ -26,17 +26,28 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImportCapturingResourceReader implements ResourceReader {
+/**
+ * ResourceReader implementation that keeps track of the resources that it reads.
+ * Used to capture the import statements during a LESS compilation.
+ * The actual reading of resources is delegated to another ResourceReader.
+ *
+ * @author Ivo Houbrechts
+ */
+public class TrackingResourceReader implements ResourceReader {
     private static final Logger logger = LoggerFactory.getLogger(LessCompilerImpl.class);
 
     private ResourceReader resourceReader;
 
     private List<String> imports = new ArrayList<>();
 
-    public ImportCapturingResourceReader(ResourceReader resourceReader) {
+    /**
+     * @param resourceReader the ResourceReader to delegate to
+     */
+    public TrackingResourceReader(ResourceReader resourceReader) {
         this.resourceReader = resourceReader;
     }
 
+    @Override
     public String read(String location) throws IOException {
         logger.debug("reading @import " + location);
         if (resourceReader == null) {
@@ -57,6 +68,9 @@ public class ImportCapturingResourceReader implements ResourceReader {
         return resourceReader.lastModified(location);
     }
 
+    /**
+     * @return the list of resources that have been read (imported)
+     */
     public List<String> getImports() {
         return imports;
     }
