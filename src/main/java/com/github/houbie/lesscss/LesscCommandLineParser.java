@@ -39,6 +39,8 @@ public class LesscCommandLineParser {
     static final String INCLUDE_PATH_OPTION = "include-path";
     static final String RELATIVE_URLS_OPTION = "relative-urls";
     static final String STRICT_IMPORTS_OPTION = "strict-imports";
+    static final String STRICT_MATH_OPTION = "strict-math";
+    static final String STRICT_UNITS_OPTION = "strict-units";
     static final String COMPRESS_OPTION = "compress";
     static final String YUI_COMPRESS_OPTION = "yui-compress";
     static final String OPTIMIZATION_LEVEL_OPTION = "optimization";
@@ -100,6 +102,8 @@ public class LesscCommandLineParser {
         result.addOption(OptionBuilder.withLongOpt(INCLUDE_PATH_OPTION).hasArg().withDescription("Set include paths.  (3)").create());
         result.addOption("ru", RELATIVE_URLS_OPTION, false, "Re-write relative URLs to the base less file.");
         result.addOption(OptionBuilder.withLongOpt(STRICT_IMPORTS_OPTION).withDescription("Force evaluation of imports.").create());
+        result.addOption(OptionBuilder.withLongOpt(STRICT_MATH_OPTION).withDescription("Use strict math.").create());
+        result.addOption(OptionBuilder.withLongOpt(STRICT_UNITS_OPTION).withDescription("Use strict units.").create());
         result.addOption("x", COMPRESS_OPTION, false, "Compress output by removing some whitespaces.");
         result.addOption(OptionBuilder.withLongOpt(YUI_COMPRESS_OPTION).withDescription("Compress output using YUI cssmin.").create());
         result.addOption(OptionBuilder.hasArg().withLongOpt(OPTIMIZATION_LEVEL_OPTION).withType(Number.class).withDescription("-O1, -O2... Set the parser's optimization level.   (4)").create('O'));
@@ -180,6 +184,8 @@ public class LesscCommandLineParser {
         }
         options.setRelativeUrls(cmd.hasOption(RELATIVE_URLS_OPTION));
         options.setStrictImports(cmd.hasOption(STRICT_IMPORTS_OPTION));
+        options.setStrictMath(cmd.hasOption(STRICT_MATH_OPTION));
+        options.setStrictUnits(cmd.hasOption(STRICT_UNITS_OPTION));
         options.setCompress(cmd.hasOption(COMPRESS_OPTION));
         options.setMinify(cmd.hasOption(YUI_COMPRESS_OPTION));
         if (cmd.hasOption(OPTIMIZATION_LEVEL_OPTION)) {

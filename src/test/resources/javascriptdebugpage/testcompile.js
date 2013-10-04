@@ -6,17 +6,27 @@ var test = (function () {
                 dumpLineNumbers: {getOptionString: function () {
                     return null;
                 }}},
-            source = '#import {\n' +
+            sourceTestImports = '#import {\n' +
                     '  color: red;\n' +
                     '}\n' +
                     '\n' +
                     '@import "import1/imported1";\n' +
                     '@import "imported0";',
-            sourceName = 'import.less',
+            sourceNameTestImports = 'import.less',
+            sourceTestUrls = '#data-uri {\n' +
+                    '  uri: data-uri(\'image/jpeg;base64\', \'../less.js-tests/data/image.jpg\');\n' +
+                    '}\n',
+            sourceNameTestUrls = 'import.less',
             imports = {
+                'import1/import2/../commonImported.less': '#commonImported1 {\n' +
+                        '  color: green;\n' +
+                        '}',
                 'import1/commonImported.less': '#commonImported1 {\n' +
                         '  color: green;\n' +
                         '}',
+                'imported0.less': '#imported0 {\n' +
+                        'color: orange;\n' +
+                        '}\n',
                 'import1/imported1.less': '@import "../css/background.css";\n' +
                         '\n' +
                         '#imported1 {\n' +
@@ -30,19 +40,38 @@ var test = (function () {
                         '}',
                 'import1/import2/imported2.less': '#imported2 {\n' +
                         '  color: black;\n' +
-                        '}}\n' +
+                        '}\n' +
                         '\n' +
                         '@import "../commonImported";\n' +
-                        '@import "commonImported";'
+                        '@import "commonImported";',
+                'import/import-and-relative-paths-test': '#dummy {}'
             },
 
             read = function (fullPath) {
                 console.log('read ' + fullPath);
-                return imports[fullPath];
+                var result = imports[fullPath];
+                if (!result || !result.length) {
+                    console.error('could not find import', fullPath);
+                    return null;
+                }
+                return result;
             },
 
-            doit = function () {
-                var result = compile(source, options, sourceName, test);
+            normalize = function (path) {
+                if (path === 'import1/import2/../commonImported.less') {
+                    return 'import1/commonImported.less';
+                }
+                return path;
+            },
+
+            testImports = function () {
+                var result = compile(sourceTestImports, options, sourceNameTestImports, test);
+                console.error('error', parseException);
+                console.log('result', result);
+            },
+
+            testUrls = function () {
+                var result = compile(sourceTestUrls, options, sourceNameTestUrls, test);
                 console.error('error', parseException);
                 console.log('result', result);
             };
@@ -50,6 +79,8 @@ var test = (function () {
     return {
         read: read,
         compile: compile,
-        doit: doit
+        normalize: normalize,
+        testImports: testImports,
+        testUrls: testUrls
     }
 }());

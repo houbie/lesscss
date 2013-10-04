@@ -19,25 +19,26 @@
  * Compile function to be called from Java
  */
 var less = window.less,
-        originalException,
         parseException,
-        options,
-        importReader,
+        rootFilename,
+        readFile,
+        normalize,
 
-        compile = function (source, optionsArg, sourceName, importReaderArg) {
+        compile = function (source, options, sourceName, importReader) {
             var result,
-                    rootPath = String(optionsArg.rootPath),
+                    rootPath = String(options.rootPath),
                     lessEnv = {
-                        compress: optionsArg.compress,
-                        optimization: optionsArg.optimizationLevel,
-                        strictImports: optionsArg.strictImports,
-                        relativeUrls: optionsArg.relativeUrls,
+                        compress: options.compress,
+                        optimization: options.optimizationLevel,
+                        strictImports: options.strictImports,
+                        strictMath: options.strictMath,
+                        strictUnits: options.strictUnits,
+                        relativeUrls: options.relativeUrls,
                         filename: sourceName,
-                        paths: [],
-                        dependenciesOnly: optionsArg.dependenciesOnly
+                        dependenciesOnly: options.dependenciesOnly
                     };
-            options = optionsArg;
-            importReader = importReaderArg;
+
+            rootFilename = sourceName;
 
             if (rootPath.length > 0) {
                 lessEnv.rootpath = rootPath;
@@ -46,33 +47,47 @@ var less = window.less,
                 lessEnv.dumpLineNumbers = String(options.dumpLineNumbers.getOptionString());
             }
 
+            lessEnv.currentFileInfo = {
+                relativeUrls: lessEnv.relativeUrls,  //option - whether to adjust URL's to be relative
+                filename: sourceName,                //full resolved filename of current file
+                rootpath: rootPath,                  //path to append to normal URLs for this node
+                currentDirectory: '',                //path to the current file, absolute
+                rootFilename: rootFilename,          //filename of the base file
+                entryPath: ''                        //absolute path to the entry file
+            };
+
+            readFile = function (file) {
+                var data = importReader.read(file);
+                if (data === null) {
+                    throw {type: 'File', message: "'" + file + "' wasn't found"};
+                }
+                return String(data);
+            };
+
+            normalize = function (path) {
+                return String(importReader.normalize(path));
+            };
+
             try {
                 parseException = null;
-                originalException = null;
-                new (less.Parser)(lessEnv).parse(source, function (e, tree) {
-                    originalException = originalException || e;
-                    if (originalException instanceof Object) {
-                        throw originalException;
+                new (less.Parser)(lessEnv).parse(String(source), function (e, tree) {
+                    if (e) {
+                        throw e;
                     }
-                    result = (lessEnv.dependenciesOnly) ? '' : tree.toCSS(lessEnv.compress);
+                    result = (lessEnv.dependenciesOnly) ? '' : tree.toCSS(lessEnv);
                 });
-                if (originalException) {
-                    throw originalException;
-                }
-                return (optionsArg.minify) ? cssmin(result) : result;
+                return (options.minify) ? cssmin(result) : result;
             } catch (e) {
-                originalException = originalException || e;
-
-                parseException = 'less parse exception: ' + originalException.message;
-                if (originalException.filename) {
-                    parseException += '\nin ' + originalException.filename + ' at line ' + originalException.line;
+                parseException = 'less parse exception: ' + e.message;
+                if (e.filename) {
+                    parseException += '\nin ' + e.filename + ' at line ' + e.line;
                 }
-                if (originalException.extract) {
-                    var extract = originalException.extract;
+                if (e.extract) {
+                    var extract = e.extract;
                     parseException += '\nextract';
                     for (var line in extract) {
                         if (extract.hasOwnProperty(line) && extract[line]) {
-                            parseException += '\n' + originalException.extract[line];
+                            parseException += '\n' + e.extract[line];
                         }
                     }
                 }
@@ -80,45 +95,53 @@ var less = window.less,
             }
         };
 
-less.Parser.importer = function (file, paths, callback) {
-    if (file != null) {
-        var fullPath = paths.join('') + file,
-                clonedPaths = paths.slice(0),
-                filePath = file.substring(0, file.lastIndexOf('/') + 1),
-                importedLess = importReader.read(fullPath),
-                rootPath = String(options.rootPath),
-                lessEnv;
+less.Parser.importer = function (file, currentFileInfo, callback, env) {
+    var pathname = normalize(currentFileInfo.currentDirectory + file),
+            data,
+            newFileInfo = {
+                relativeUrls: env.relativeUrls,
+                entryPath: currentFileInfo.entryPath,
+                rootpath: currentFileInfo.rootpath,
+                rootFilename: currentFileInfo.rootFilename
+            },
 
-        clonedPaths.push(filePath);
-        lessEnv = {
-            compress: options.compress,
-            optimization: options.optimizationLevel,
-            strictImports: options.strictImports,
-            relativeUrls: options.relativeUrls,
-            filename: fullPath,
-            paths: clonedPaths
-        };
+            parseFile = function (e) {
+                if (e) {
+                    callback(e);
+                    return;
+                }
 
-        if (options.dumpLineNumbers.getOptionString()) {
-            lessEnv.dumpLineNumbers = String(options.dumpLineNumbers.getOptionString());
-        }
+                env = new less.tree.parseEnv(env);
+                env.processImports = false;
 
-        if (rootPath.length > 0) {
-            lessEnv.rootpath = rootPath + ((lessEnv.relativeUrls) ? clonedPaths.join('') : '');
-        } else if (lessEnv.relativeUrls) {
-            lessEnv.rootpath = clonedPaths.join('');
-        }
+                var j = file.lastIndexOf('/');
 
-        if (importedLess == null) {
-            throw {name: 'less import error', message: 'less compiler error: import "' + fullPath + '" could not be resolved'};
-        }
+                // Pass on an updated rootpath if path of imported file is relative and file
+                // is in a (sub|sup) directory
+                //
+                // Examples:
+                // - If path of imported file is 'module/nav/nav.less' and rootpath is 'less/',
+                //   then rootpath should become 'less/module/nav/'
+                // - If path of imported file is '../mixins.less' and rootpath is 'less/',
+                //   then rootpath should become 'less/../'
+                if (newFileInfo.relativeUrls && !/^(?:[a-z-]+:|\/)/.test(file) && j != -1) {
+                    var relativeSubDirectory = file.slice(0, j + 1);
+                    newFileInfo.rootpath = newFileInfo.rootpath + relativeSubDirectory; // append (sub|sup) directory path of imported file
+                }
+                newFileInfo.currentDirectory = pathname.replace(/[^\\\/]*$/, "");
+                newFileInfo.filename = pathname;
 
-        new (less.Parser)(lessEnv).parse(String(importedLess), function (e, root) {
-            if (e instanceof Object) {
-                originalException = originalException || e;
-            } else {
-                callback(e, root);
-            }
-        });
+                env.contents[pathname] = data;      // Updating top importing parser content cache.
+                env.currentFileInfo = newFileInfo;
+                new (less.Parser)(env).parse(data, function (e, root) {
+                    callback(e, root, pathname);
+                });
+            };
+
+    try {
+        data = readFile(pathname);
+        parseFile(null);
+    } catch (e) {
+        parseFile(e);
     }
 };

@@ -91,10 +91,10 @@ class LessCompilerSpec extends Specification {
 
         then:
         def e = thrown(Exception)
-        e.message == 'less parse exception: less compiler error: import "doesNotExist.less" could not be resolved\n' +
-                'in brokenImport.less at line null\n' +
+        e.message == 'less parse exception: \'doesNotExist.less\' wasn\'t found\n' +
+                'in brokenImport.less at line 5\n' +
                 'extract\n' +
-                '  color: red;'
+                '@import "doesNotExist";'
     }
 
     def "compile and minify"() {
@@ -107,7 +107,7 @@ class LessCompilerSpec extends Specification {
     @Unroll
     def "less.js compatibility tests for #lessFile"() {
         expect:
-        compiler.compile(lessFile, new Options(strictImports: true)) == getCss(lessFile).text
+        compiler.compile(lessFile, new Options(strictMath: true, relativeUrls: true)) == getCss(lessFile).text
 
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
@@ -132,6 +132,22 @@ class LessCompilerSpec extends Specification {
 
         expect:
         compiler.compile(lessFile, new Options(relativeUrls: false, rootPath: 'folder (1)/')) == getCss(lessFile, 'static-urls/').text
+    }
+
+    def "less.js compression compatibility test"() {
+        def lessFile = new File('src/test/resources/less.js-tests/less/compression/compression.less')
+        def compiler = compiler
+
+        expect:
+        compiler.compile(lessFile, new Options(compress: true)) == getCss(lessFile, 'compression/').text
+    }
+
+    def "less.js legacy compatibility test"() {
+        def lessFile = new File('src/test/resources/less.js-tests/less/legacy/legacy.less')
+        def compiler = compiler
+
+        expect:
+        compiler.compile(lessFile) == getCss(lessFile, 'legacy/').text
     }
 
     def getCss(File lessFile, prefix = '', suffix = '') {

@@ -38,8 +38,8 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
                 dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
         '--rootpath rootpath --relative-urls --compress --optimization 10 src/test/resources/less/basic.less'      | new Options(
                 dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
-        '--line-numbers all --strict-imports --yui-compress -M src/test/resources/less/basic.less destination.css' | new Options(
-                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: true)
+        '--line-numbers all --strict-imports --strict-math --strict-units --yui-compress -M src/test/resources/less/basic.less destination.css' | new Options(
+                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true,  strictMath: true, strictUnits: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: true)
         '--depends src/test/resources/less/basic.less destination.css'                                             | new Options(
                 dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1, dependenciesOnly: true)
     }
@@ -144,6 +144,8 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
                 ' -ru,--relative-urls       Re-write relative URLs to the base less file.\n' +
                 ' -s,--silent               Suppress output of error messages.\n' +
                 '    --strict-imports       Force evaluation of imports.\n' +
+                '    --strict-math          Use strict math.\n' +
+                '    --strict-units         Use strict units.\n' +
                 ' -v,--version              Print version number and exit.\n' +
                 '    --verbose              Be verbose.\n' +
                 ' -x,--compress             Compress output by removing some whitespaces.\n' +

@@ -53,14 +53,16 @@ public class TrackingResourceReader implements ResourceReader {
         if (resourceReader == null) {
             throw new RuntimeException("Error in less compilation: import of " + location + " failed because no ResourceReader is configured");
         }
-        try {
-            //resolve ./ and ../
-            imports.add(new URI(location).normalize().getPath());
-        } catch (URISyntaxException e) {
-            logger.warn("exeption while normalizing import url: " + e.getMessage());
-            imports.add(location);
-        }
+        imports.add(normalize(location));
         return resourceReader.read(location);
+    }
+
+    public String normalize(String location) {
+        try {
+            return new URI(location).normalize().getPath();
+        } catch (URISyntaxException e) {
+            return location;
+        }
     }
 
     @Override

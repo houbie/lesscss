@@ -33,6 +33,8 @@ public class Options implements Serializable {
     private LineNumbersOutput dumpLineNumbers = LineNumbersOutput.NONE;
     private boolean minify = false;
     private boolean dependenciesOnly = false;
+    private boolean strictMath = false;
+    private boolean strictUnits = false;
 
     public Options() {
     }
@@ -46,6 +48,8 @@ public class Options implements Serializable {
         this.dumpLineNumbers = other.dumpLineNumbers;
         this.minify = other.minify;
         this.dependenciesOnly = other.dependenciesOnly;
+        this.strictMath = other.strictMath;
+        this.strictUnits = other.strictUnits;
     }
 
     /**
@@ -158,6 +162,22 @@ public class Options implements Serializable {
         this.dependenciesOnly = dependenciesOnly;
     }
 
+    public boolean isStrictMath() {
+        return strictMath;
+    }
+
+    public void setStrictMath(boolean strictMath) {
+        this.strictMath = strictMath;
+    }
+
+    public boolean isStrictUnits() {
+        return strictUnits;
+    }
+
+    public void setStrictUnits(boolean strictUnits) {
+        this.strictUnits = strictUnits;
+    }
+
     public enum LineNumbersOutput {
         /**
          * No line number output
@@ -217,6 +237,8 @@ public class Options implements Serializable {
         if (relativeUrls != options.relativeUrls) return false;
         if (strictImports != options.strictImports) return false;
         if (dumpLineNumbers != options.dumpLineNumbers) return false;
+        if (strictMath != options.strictMath) return false;
+        if (strictUnits != options.strictUnits) return false;
         if (rootPath != null ? !rootPath.equals(options.rootPath) : options.rootPath != null) return false;
 
         return true;
@@ -232,6 +254,8 @@ public class Options implements Serializable {
         result = 31 * result + (dumpLineNumbers != null ? dumpLineNumbers.hashCode() : 0);
         result = 31 * result + (minify ? 1 : 0);
         result = 31 * result + (dependenciesOnly ? 1 : 0);
+        result = 31 * result + (strictMath ? 1 : 0);
+        result = 31 * result + (strictUnits ? 1 : 0);
         return result;
     }
 }
