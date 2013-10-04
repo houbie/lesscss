@@ -1,19 +1,27 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven { url 'http://repo.springsource.org/plugins-release' }
     }
     dependencies {
         classpath 'com.eriwen:gradle-js-plugin:1.5.1'
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.1'
     }
 }
 
 
 apply plugin: 'groovy'
 apply plugin: 'application'
+apply plugin: 'maven'
 apply plugin: 'js'
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-maven'
+apply plugin: 'propdeps-idea'
+apply plugin: 'propdeps-eclipse'
 
 mainClassName = 'com.github.houbie.lesscss.Lessc'
 version = '0.5-less-1.4.1'
+group = 'com.github.houbie'
 
 repositories {
     mavenCentral()
@@ -22,8 +30,8 @@ repositories {
 dependencies {
     compile 'org.mozilla:rhino:1.7R4'
     compile 'org.slf4j:slf4j-api:1.7.5'
-    compile 'commons-cli:commons-cli:1.2' //TODO make optional
-    compile 'ch.qos.logback:logback-classic:1.0.13' //TODO make optional
+    optional 'commons-cli:commons-cli:1.2'
+    optional 'ch.qos.logback:logback-classic:1.0.13'
 
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
 }
