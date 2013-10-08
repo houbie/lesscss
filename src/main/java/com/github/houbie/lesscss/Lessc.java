@@ -26,7 +26,6 @@ import org.apache.commons.cli.ParseException;
  * @author Ivo Houbrechts
  */
 public class Lessc {
-    public static final String VERSION = "0.9";//TODO get from meta-inf
     public static final String LESS_VERSION = "1.4.1";
 
     public static void main(String[] args) throws Exception {
@@ -70,7 +69,8 @@ public class Lessc {
     }
 
     private static String getVersionInfo() {
-        return ("LessCompiler version " + VERSION + ", using Less version " + LESS_VERSION);
+        String version = LessCompiler.class.getPackage().getImplementationVersion();
+        return ("LessCompiler version " + version + ", using Less version " + LESS_VERSION);
     }
 
 }
