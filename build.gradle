@@ -5,7 +5,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.eriwen:gradle-js-plugin:1.5.1'
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.1'
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
     }
 }
 
@@ -50,3 +50,10 @@ task compileJs(type: JavaExec, dependsOn: minifyJs) {
 //add generated class to compile classpath
 sourceSets.main.compileClasspath += files("${buildDir}/classes/main")
 compileJava.dependsOn compileJs
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Java LESS compiler', 'Implementation-Version': version
+    }
+    from 'LICENSE', 'NOTICE'
+}

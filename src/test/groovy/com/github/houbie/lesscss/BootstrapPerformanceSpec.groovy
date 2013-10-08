@@ -35,15 +35,15 @@ class BootstrapPerformanceSpec extends Specification {
         LoggerFactory.getLogger(LessCompilerImpl).level = Level.WARN
 
         then:
-        (1..12).each {
+        (1..2).each {
             if (it > 1) {
                 start = System.currentTimeMillis()
             }
-            String result = compiler.compile(source, destination,
+            compiler.compile(source, destination,
                     new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
             long time = System.currentTimeMillis() - start
             println("RHINO\t$it\t$time")
-            result == expected
         }
+        destination.text == expected
     }
 }
