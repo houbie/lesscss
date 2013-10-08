@@ -17,20 +17,21 @@
 package com.github.houbie.lesscss
 
 import org.apache.commons.cli.ParseException
+import spock.lang.Unroll
 
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.ALL
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.NONE
 
 class LesscCommandLineParserSpec extends OutputCapturingSpec {
-    LesscCommandLineParser commandLineHelper = new LesscCommandLineParser('versionInfo')
+    LesscCommandLineParser commandLineParser = new LesscCommandLineParser('versionInfo')
 
     def 'check compiler options'() {
         when:
         def args = commandLine.split(' ')
 
         then:
-        !commandLineHelper.parse(args)
-        commandLineHelper.options == options
+        !commandLineParser.parse(args)
+        commandLineParser.options == options
 
         where:
         commandLine                                                                                                                             | options
@@ -51,9 +52,9 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         def args = commandLine.split(' ')
 
         then:
-        !commandLineHelper.parse(args)
-        commandLineHelper.source == source
-        commandLineHelper.destination == destination
+        !commandLineParser.parse(args)
+        commandLineParser.source == source
+        commandLineParser.destination == destination
 
         where:
         commandLine                                          | source                                         | destination
@@ -63,7 +64,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
     def 'no source throws exception'() {
         when:
-        commandLineHelper.parse(['-x'] as String[])
+        commandLineParser.parse(['-x'] as String[])
 
         then:
         def e = thrown(ParseException)
@@ -72,7 +73,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
     def 'no readable source throws exception'() {
         when:
-        commandLineHelper.parse(['doesNotExist'] as String[])
+        commandLineParser.parse(['doesNotExist'] as String[])
 
         then:
         def e = thrown(ParseException)
@@ -81,55 +82,56 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
     def 'depends option requires destination to be set'() {
         when:
-        commandLineHelper.parse(['-M', 'src/test/resources/less/basic.less'] as String[])
+        commandLineParser.parse(['-M', 'src/test/resources/less/basic.less'] as String[])
 
         then:
         def e = thrown(RuntimeException)
         e.message == 'option --depends requires an output path to be specified'
     }
 
+    @Unroll
     def 'check include-paths'() {
         when:
         def args = commandLine.split(' ')
 
         then:
-        !commandLineHelper.parse(args)
-        commandLineHelper.includePathsReader.baseDirs == baseDirs
-        commandLineHelper.includePathsReader.encoding == encoding
+        !commandLineParser.parse(args)
+        commandLineParser.includePathsReader.baseDirs == baseDirs
+        commandLineParser.includePathsReader.encoding == encoding
 
         where:
         commandLine                                                                      | baseDirs                                                    | encoding
-        'src/test/resources/less/basic.less'                                             | [new File('src/test/resources/less')]                       | null
+        'src/test/resources/less/basic.less'                                             | [new File('src/test/resources/less').absoluteFile]          | null
         '--include-path path1,path2;/path/3 -e utf16 src/test/resources/less/basic.less' | [new File('path1'), new File('path2'), new File('/path/3')] | 'utf16'
         '--include-path path1 --encoding utf8 src/test/resources/less/basic.less'        | [new File('path1')]                                         | 'utf8'
     }
 
     def 'check encoding'() {
         when:
-        commandLineHelper.parse('-e utf16 src/test/resources/less/basic.less'.split(' '))
+        commandLineParser.parse('-e utf16 src/test/resources/less/basic.less'.split(' '))
 
         then:
-        commandLineHelper.encoding == 'utf16'
+        commandLineParser.encoding == 'utf16'
     }
 
     def 'test custom-js'() {
         when:
-        commandLineHelper.parse('-js src/test/resources/less.js-tests/functions.js src/test/resources/less/basic.less'.split(' '))
+        commandLineParser.parse('-js src/test/resources/less.js-tests/functions.js src/test/resources/less/basic.less'.split(' '))
 
         then:
-        commandLineHelper.customJsReader.text == new File('src/test/resources/less.js-tests/functions.js').text
+        commandLineParser.customJsReader.text == new File('src/test/resources/less.js-tests/functions.js').text
     }
 
     def 'check version output'() {
         expect:
-        commandLineHelper.parse(['--version'] as String[])
+        commandLineParser.parse(['--version'] as String[])
         //parse should return true to signal there's nothing left to do
         sysOutCapture.toString() == 'versionInfo\n'
     }
 
     def 'check help output'() {
         expect:
-        commandLineHelper.parse(['--help'] as String[]) //parse should return true to signal there's nothing left to do
+        commandLineParser.parse(['--help'] as String[]) //parse should return true to signal there's nothing left to do
         sysOutCapture.toString() == 'usage: lessc\n' +
                 '[option option=parameter ...] <source> [destination]\n' +
                 ' -e,--encoding <arg>       Character encoding.\n' +

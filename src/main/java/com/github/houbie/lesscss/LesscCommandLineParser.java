@@ -210,7 +210,7 @@ public class LesscCommandLineParser {
             }
             includePathsReader = new FileSystemResourceReader(encoding, files);
         } else {
-            includePathsReader = new FileSystemResourceReader(encoding, source.getParentFile());
+            includePathsReader = new FileSystemResourceReader(encoding, source.getAbsoluteFile().getParentFile());
         }
     }
 
