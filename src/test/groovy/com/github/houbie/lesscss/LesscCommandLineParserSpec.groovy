@@ -16,6 +16,8 @@
 
 package com.github.houbie.lesscss
 
+import org.apache.commons.cli.ParseException
+
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.ALL
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.NONE
 
@@ -31,16 +33,16 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineHelper.options == options
 
         where:
-        commandLine                                                                                                | options
-        'src/test/resources/less/basic.less'                                                                       | new Options(
+        commandLine                                                                                                                             | options
+        'src/test/resources/less/basic.less'                                                                                                    | new Options(
                 dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1, dependenciesOnly: false)
-        '-rp rootpath -ru -x -O10 src/test/resources/less/basic.less'                                              | new Options(
+        '-rp rootpath -ru -x -O10 src/test/resources/less/basic.less'                                                                           | new Options(
                 dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
-        '--rootpath rootpath --relative-urls --compress --optimization 10 src/test/resources/less/basic.less'      | new Options(
+        '--rootpath rootpath --relative-urls --compress --optimization 10 src/test/resources/less/basic.less'                                   | new Options(
                 dumpLineNumbers: NONE, rootPath: 'rootpath', relativeUrls: true, strictImports: false, compress: true, minify: false, optimizationLevel: 10, dependenciesOnly: false)
         '--line-numbers all --strict-imports --strict-math --strict-units --yui-compress -M src/test/resources/less/basic.less destination.css' | new Options(
-                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true,  strictMath: true, strictUnits: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: true)
-        '--depends src/test/resources/less/basic.less destination.css'                                             | new Options(
+                dumpLineNumbers: ALL, rootPath: '', relativeUrls: false, strictImports: true, strictMath: true, strictUnits: true, compress: false, minify: true, optimizationLevel: 1, dependenciesOnly: true)
+        '--depends src/test/resources/less/basic.less destination.css'                                                                          | new Options(
                 dumpLineNumbers: NONE, rootPath: '', relativeUrls: false, strictImports: false, compress: false, minify: false, optimizationLevel: 1, dependenciesOnly: true)
     }
 
@@ -64,7 +66,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineHelper.parse(['-x'] as String[])
 
         then:
-        def e = thrown(RuntimeException)
+        def e = thrown(ParseException)
         e.message == '<source> is not specified'
     }
 
@@ -73,7 +75,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineHelper.parse(['doesNotExist'] as String[])
 
         then:
-        def e = thrown(RuntimeException)
+        def e = thrown(ParseException)
         e.message == 'doesNotExist can not be read'
     }
 
@@ -120,7 +122,8 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
     def 'check version output'() {
         expect:
-        commandLineHelper.parse(['--version'] as String[]) //parse should return true to signal there's nothing left to do
+        commandLineHelper.parse(['--version'] as String[])
+        //parse should return true to signal there's nothing left to do
         sysOutCapture.toString() == 'versionInfo\n'
     }
 

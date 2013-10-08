@@ -151,14 +151,14 @@ public class LesscCommandLineParser {
         setCustomJsReader(cmd);
     }
 
-    private void setSourceFile(CommandLine cmd) {
+    private void setSourceFile(CommandLine cmd) throws ParseException {
         if (cmd.getArgs().length < 1) {
-            throw new RuntimeException("<source> is not specified");
+            throw new ParseException("<source> is not specified");
         }
         String fileName = cmd.getArgs()[0];
         source = new File(fileName);
         if (!source.canRead()) {
-            throw new RuntimeException(this.source + " can not be read");
+            throw new ParseException(this.source + " can not be read");
         }
     }
 
