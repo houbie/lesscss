@@ -80,13 +80,22 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         e.message == 'doesNotExist can not be read'
     }
 
-    def 'depends option requires destination to be set'() {
+    def 'daemon option requires destination to be set'() {
         when:
-        commandLineParser.parse(['-M', 'src/test/resources/less/basic.less'] as String[])
+        commandLineParser.parse(['--daemon', 'src/test/resources/less/basic.less'] as String[])
 
         then:
-        def e = thrown(RuntimeException)
-        e.message == 'option --depends requires an output path to be specified'
+        def e = thrown(ParseException)
+        e.message == 'option --daemon requires an output path to be specified'
+    }
+
+    def 'daemon option is incompatible with depends option'() {
+        when:
+        commandLineParser.parse(['--daemon', '--depends', 'src/test/resources/less/basic.less', 'destination.css'] as String[])
+
+        then:
+        def e = thrown(ParseException)
+        e.message == 'option --daemon cannot be used together with -M or --depends option'
     }
 
     @Unroll
@@ -134,6 +143,8 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineParser.parse(['--help'] as String[]) //parse should return true to signal there's nothing left to do
         sysOutCapture.toString() == 'usage: lessc\n' +
                 '[option option=parameter ...] <source> [destination]\n' +
+                '    --cache-dir            Cache directory.\n' +
+                '    --daemon               Start compiler daemon.\n' +
                 ' -e,--encoding <arg>       Character encoding.\n' +
                 ' -h,--help                 Print help (this message) and exit.\n' +
                 '    --include-path <arg>   Set include paths.  (3)\n' +

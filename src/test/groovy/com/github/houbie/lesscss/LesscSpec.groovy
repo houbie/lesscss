@@ -17,14 +17,42 @@
 package com.github.houbie.lesscss
 
 class LesscSpec extends OutputCapturingSpec {
+    static String expectedResult = new File('src/test/resources/less/basic.css').text
+
+    File destination = new File('build/tmp/lessc.css')
+
+    def setup() {
+        destination.delete()
+    }
 
     def 'compile to destination'() {
         setup:
         Lessc.main('src/test/resources/less/basic.less build/tmp/lessc.css'.split(' '))
 
         expect:
-        new File('build/tmp/lessc.css').text == new File('src/test/resources/less/basic.css').text
+        destination.text == expectedResult
         sysOutCapture.toString() == ''
+    }
+
+    def 'run daemon'() {
+        setup:
+        int i = 0
+        Lessc.systemIn = [read: { ->
+            sleep(500)
+            if (destination.text == expectedResult || ++i > 10) {
+                return 'q'
+            }
+            return 0
+        }] as InputStream;
+
+        Lessc.main('--daemon src/test/resources/less/basic.less build/tmp/lessc.css'.split(' '))
+
+        expect:
+        destination.text == expectedResult
+        sysOutCapture.toString().startsWith(
+                'The LESS compilation daemon started.\n' +
+                        'Press q to quit...\n' +
+                        'compilation of less CompilationUnit{source=src/test/resources/less/basic.less, destination=build/tmp/lessc.css} finished in ')
     }
 
     def 'compile to destination with --verbose'() {
@@ -32,7 +60,7 @@ class LesscSpec extends OutputCapturingSpec {
         Lessc.main('--verbose src/test/resources/less/basic.less build/tmp/lessc.css'.split(' '))
 
         expect:
-        new File('build/tmp/lessc.css').text == new File('src/test/resources/less/basic.css').text
+        destination.text == expectedResult
         sysOutCapture.toString() == 'start less compilation\n' +
                 'prepareScriptEngine\n' +
                 'Using implementation version: Rhino 1.7 release 4 2012 06 18\n' +
@@ -44,7 +72,20 @@ class LesscSpec extends OutputCapturingSpec {
         Lessc.main('--verbose src/test/resources/less/basic.less'.split(' '))
 
         expect:
-        sysOutCapture.toString() == new File('src/test/resources/less/basic.css').text
+        sysOutCapture.toString() == expectedResult + '\n'
+    }
+
+    def 'print dependencies to stdout'() {
+        setup:
+        Lessc.main('--depends src/test/resources/less/import.less'.split(' '))
+
+        expect:
+        sysOutCapture.toString() == 'Dependencies for src/test/resources/less/import.less:\n' +
+                'import1/imported1.less\n' +
+                'import1/import2/imported2.less\n' +
+                'import1/commonImported.less\n' +
+                'import1/import2/commonImported.less\n' +
+                'imported0.less\n'
     }
 
     def 'compile with errors'() {

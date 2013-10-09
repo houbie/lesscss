@@ -47,6 +47,8 @@ public class LesscCommandLineParser {
     static final String CUSTOM_JS_OPTION = "custom-js";
     static final String ENCODING_OPTION = "encoding";
     static final String DEPENDS_OPTION = "depends";
+    static final String CACHE_DIR_OPTION = "cache-dir";
+    static final String DAEMON_OPTION = "daemon";
 
     static final String MAIN_COMMAND = "lessc";
     static final String HELP_HEADER = "[option option=parameter ...] <source> [destination]";
@@ -72,6 +74,8 @@ public class LesscCommandLineParser {
     private String encoding;
     private Reader customJsReader;
     private boolean verbose;
+    private File cacheDir;
+    private boolean daemon;
 
     public LesscCommandLineParser(String version) {
         this.version = version;
@@ -110,6 +114,8 @@ public class LesscCommandLineParser {
         result.addOption("js", CUSTOM_JS_OPTION, true, "File with custom JavaScript functions.");
         result.addOption("e", ENCODING_OPTION, true, "Character encoding.");
         result.addOption("M", DEPENDS_OPTION, false, "Output a makefile import dependency list to stdout.");
+        result.addOption(OptionBuilder.withLongOpt(CACHE_DIR_OPTION).withDescription("Cache directory.").create());
+        result.addOption(OptionBuilder.withLongOpt(DAEMON_OPTION).withDescription("Start compiler daemon.").create());
 
         return result;
     }
@@ -149,6 +155,8 @@ public class LesscCommandLineParser {
         setEncoding(cmd);
         setIncludePathsReader(cmd, source);
         setCustomJsReader(cmd);
+        setCacheDir(cmd);
+        setDaemon(cmd);
     }
 
     private void setSourceFile(CommandLine cmd) throws ParseException {
@@ -171,7 +179,7 @@ public class LesscCommandLineParser {
     private void setVerbosity(CommandLine cmd) {
         verbose = cmd.hasOption(VERBOSE_OPTION);
         //don't log anything if the result has to go to stdout
-        LogbackConfigurator.configure(verbose && destination != null);
+        LogbackConfigurator.configure(verbose && destination != null, cmd.hasOption(DAEMON_OPTION));
     }
 
     private void setOptions(CommandLine cmd) throws ParseException {
@@ -192,9 +200,6 @@ public class LesscCommandLineParser {
             options.setOptimizationLevel(((Long) cmd.getParsedOptionValue(OPTIMIZATION_LEVEL_OPTION)).intValue());
         }
         options.setDependenciesOnly(cmd.hasOption(DEPENDS_OPTION));
-        if (options.isDependenciesOnly() && destination == null) {
-            throw new RuntimeException("option --depends requires an output path to be specified");
-        }
     }
 
     private void setEncoding(CommandLine cmd) {
@@ -224,6 +229,22 @@ public class LesscCommandLineParser {
         }
     }
 
+    private void setCacheDir(CommandLine cmd) {
+        if (cmd.hasOption(CACHE_DIR_OPTION)) {
+            cacheDir = new File(cmd.getOptionValue(CACHE_DIR_OPTION));
+        }
+    }
+
+    private void setDaemon(CommandLine cmd) throws ParseException {
+        daemon = cmd.hasOption(DAEMON_OPTION);
+        if (daemon && destination == null) {
+            throw new ParseException("option --daemon requires an output path to be specified");
+        }
+        if (daemon && options.isDependenciesOnly()) {
+            throw new ParseException("option --daemon cannot be used together with -M or --depends option");
+        }
+    }
+
     public Options getOptions() {
         return options;
     }
@@ -250,5 +271,13 @@ public class LesscCommandLineParser {
 
     public boolean isVerbose() {
         return verbose;
+    }
+
+    public File getCacheDir() {
+        return cacheDir;
+    }
+
+    public boolean isDaemon() {
+        return daemon;
     }
 }

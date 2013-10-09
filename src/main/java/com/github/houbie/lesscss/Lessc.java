@@ -17,8 +17,13 @@
 package com.github.houbie.lesscss;
 
 
+import com.github.houbie.lesscss.builder.CompilationTask;
+import com.github.houbie.lesscss.builder.CompilationUnit;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.apache.commons.cli.ParseException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Commandline interface for the LESS compiler
@@ -27,6 +32,8 @@ import org.apache.commons.cli.ParseException;
  */
 public class Lessc {
     public static final String LESS_VERSION = "1.4.1";
+
+    protected static InputStream systemIn = System.in;
 
     public static void main(String[] args) throws Exception {
         LesscCommandLineParser lesscCommandLineParser = new LesscCommandLineParser(getVersionInfo());
@@ -45,25 +52,59 @@ public class Lessc {
 
     private static void execute(LesscCommandLineParser cmd) throws Exception {
         try {
-            LessCompiler lessCompiler = new LessCompilerImpl(cmd.getCustomJsReader());
             if (cmd.getOptions().isDependenciesOnly()) {
-                LessCompiler.CompilationDetails compilationDetails = lessCompiler.compileWithDetails(IOUtils.read(cmd.getSource()), cmd.getIncludePathsReader(), cmd.getOptions(), cmd.getEncoding());
-                StringBuilder dependencies = new StringBuilder();
-                dependencies.append(cmd.getDestination()).append(": ");
-                for (String importPath : compilationDetails.getImports()) {
-                    dependencies.append(importPath).append(' ');
-                }
-                System.out.println(dependencies);
-            } else if (cmd.getDestination() != null) {
-                lessCompiler.compile(cmd.getSource(), cmd.getDestination(), cmd.getOptions(), cmd.getIncludePathsReader(), cmd.getEncoding());
+                printDependencies(cmd);
+            } else if (cmd.getDestination() == null) {
+                printCompilationResult(cmd);
             } else {
-                System.out.print(lessCompiler.compile(IOUtils.read(cmd.getSource(), cmd.getEncoding()), cmd.getIncludePathsReader(), cmd.getOptions(), cmd.getSource().getName()));
+                compileToDestination(cmd);
             }
         } catch (Exception e) {
             if (cmd.isVerbose()) {
                 throw e;
             } else {
                 System.err.println(e.getMessage());
+            }
+        }
+    }
+
+    private static void printDependencies(LesscCommandLineParser cmd) throws IOException {
+        LessCompiler.CompilationDetails compilationDetails = compileWithDetails(cmd);
+        System.out.println("Dependencies for " + cmd.getSource() + ":");
+        for (String importPath : compilationDetails.getImports()) {
+            System.out.println(importPath);
+        }
+    }
+
+    private static void printCompilationResult(LesscCommandLineParser cmd) throws IOException {
+        LessCompiler.CompilationDetails compilationDetails = compileWithDetails(cmd);
+        System.out.println(compilationDetails.getResult());
+    }
+
+    private static LessCompiler.CompilationDetails compileWithDetails(LesscCommandLineParser cmd) throws IOException {
+        LessCompiler lessCompiler = new LessCompilerImpl(cmd.getCustomJsReader());
+        return lessCompiler.compileWithDetails(IOUtils.read(cmd.getSource(), cmd.getEncoding()), cmd.getIncludePathsReader(), cmd.getOptions(), cmd.getSource().getName());
+    }
+
+    private static void compileToDestination(LesscCommandLineParser cmd) throws IOException {
+        CompilationTask compilationTask = new CompilationTask(cmd.getCustomJsReader(), cmd.getCacheDir());
+        CompilationUnit compilationUnit = new CompilationUnit(cmd.getSource(), cmd.getDestination(), cmd.getOptions(), cmd.getIncludePathsReader());
+        compilationTask.getCompilationUnits().add(compilationUnit);
+        if (cmd.isDaemon()) {
+            runDaemon(compilationTask);
+        } else {
+            compilationTask.execute();
+        }
+    }
+
+    private static void runDaemon(CompilationTask compilationTask) throws IOException {
+        compilationTask.startDaemon(500);
+        System.out.println("The LESS compilation daemon started.");
+        System.out.println("Press q to quit...");
+        while (true) {
+            if (systemIn.read() == 'q') {
+                compilationTask.stopDaemon();
+                return;
             }
         }
     }

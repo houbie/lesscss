@@ -56,6 +56,7 @@ public class CompilationTask {
 
     /**
      * Default constructor, uses ${user.home}\.lesscss as cache directory.
+     *
      * @throws IOException
      */
     public CompilationTask() throws IOException {
@@ -73,7 +74,7 @@ public class CompilationTask {
 
     /**
      * @param customJavaScript File containing custom JavaScript functions (@see LessCompilerImpl)
-     * @param cacheDir The directory where import information will be cached.
+     * @param cacheDir         The directory where import information will be cached.
      * @throws IOException
      */
     public CompilationTask(File customJavaScript, File cacheDir) throws IOException {
@@ -90,7 +91,7 @@ public class CompilationTask {
 
     /**
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
-     * @param cacheDir The directory where import information will be cached.
+     * @param cacheDir               The directory where import information will be cached.
      * @throws IOException
      */
     public CompilationTask(Reader customJavaScriptReader, File cacheDir) throws IOException {
@@ -107,6 +108,7 @@ public class CompilationTask {
 
     /**
      * Execute the lazy compilation.
+     *
      * @throws IOException
      */
     public void execute() throws IOException {
@@ -120,6 +122,7 @@ public class CompilationTask {
 
     /**
      * Start a daemon thread that will execute this CompilationTask periodically.
+     *
      * @param interval execution interval in milliseconds
      */
     public void startDaemon(final long interval) {
@@ -160,7 +163,9 @@ public class CompilationTask {
             logger.debug("compiling less: {}", unit);
             long start = System.currentTimeMillis();
             CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getImportReader(), unit.getOptions(), unit.getSource().getName());
-            IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
+            if (unit.getDestination() != null) {
+                IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
+            }
             updateImportsAndCache(unitToCompile, compilationResult.getImports());
             logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);
         }
@@ -208,7 +213,7 @@ public class CompilationTask {
     private void cache(CompilationUnit unit) {
         try {
             File file = getCacheFile(unit);
-            file.getParentFile().mkdir();
+            file.getParentFile().mkdirs();
             ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(file));
             os.writeObject(unit);
             os.flush();
@@ -219,7 +224,6 @@ public class CompilationTask {
     }
 
     /**
-     *
      * @return the cache directory
      */
     public File getCacheDir() {

@@ -24,6 +24,7 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.github.houbie.lesscss.LessCompilerImpl;
+import com.github.houbie.lesscss.builder.CompilationTask;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -38,7 +39,7 @@ public class LogbackConfigurator {
      *
      * @param verbose set logger level to Level.ALL if true, otherwise Level.OFF
      */
-    public static void configure(boolean verbose) {
+    public static void configure(boolean verbose, boolean daemon) {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         ConsoleAppender<ILoggingEvent> ca = new ConsoleAppender<>();
         ca.setContext(lc);
@@ -53,9 +54,21 @@ public class LogbackConfigurator {
 
         //prevent double log output
         lc.getLogger(Logger.ROOT_LOGGER_NAME).detachAndStopAllAppenders();
+        configureCompilerLogger(verbose, lc, ca);
+        configureCompilationTaskLogger(daemon, lc, ca);
+    }
+
+    private static void configureCompilerLogger(boolean verbose, LoggerContext lc, ConsoleAppender<ILoggingEvent> ca) {
         Logger compilerLogger = lc.getLogger(LessCompilerImpl.class);
         compilerLogger.detachAndStopAllAppenders();
         compilerLogger.addAppender(ca);
         compilerLogger.setLevel(verbose ? Level.ALL : Level.OFF);
+    }
+
+    private static void configureCompilationTaskLogger(boolean daemon, LoggerContext lc, ConsoleAppender<ILoggingEvent> ca) {
+        Logger compilationTaskLogger = lc.getLogger(CompilationTask.class);
+        compilationTaskLogger.detachAndStopAllAppenders();
+        compilationTaskLogger.addAppender(ca);
+        compilationTaskLogger.setLevel(daemon ? Level.INFO : Level.OFF);
     }
 }

@@ -111,7 +111,11 @@ public class IOUtils {
             destination.createNewFile();
         }
         FileOutputStream fos = new FileOutputStream(destination);
-        OutputStreamWriter writer = (charsetName != null) ? new OutputStreamWriter(fos, charsetName) : new OutputStreamWriter(fos);
+        write(content, fos, charsetName);
+    }
+
+    public static void write(String content, OutputStream outputStream, String charsetName) throws IOException {
+        OutputStreamWriter writer = (charsetName != null) ? new OutputStreamWriter(outputStream, charsetName) : new OutputStreamWriter(outputStream);
         copyLarge(new StringReader(content), writer);
         writer.flush();
         writer.close();
