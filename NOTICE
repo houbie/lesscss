@@ -1,2 +1,12 @@
 This product includes software developed by
 The Apache Software Foundation (http://www.apache.org/).
+
+This software includes or is build with:
+- less css: http://lesscss.org/
+- mozilla rhino: https://developer.mozilla.org/en-US/docs/Rhino
+- commons-cli: http://commons.apache.org/proper/commons-cli
+- commons-io: http://commons.apache.org/proper/commons-io
+- slf4j: http://www.slf4j.org
+- logback: http://logback.qos.ch
+- spock framework: http://spockframework.org
+- gradle: http://www.gradle.org
