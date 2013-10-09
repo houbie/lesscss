@@ -1,4 +1,5 @@
 lesscss
 =======
 
-Java Less Compiler
+Java Less Compiler that is compatible with the JavaScript lesscss compiler.
+

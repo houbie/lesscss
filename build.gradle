@@ -1,10 +1,26 @@
+/*
+ * Copyright (c) 2013 Houbrechts IT
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 buildscript {
     repositories {
         mavenCentral()
         maven { url 'http://repo.springsource.org/plugins-release' }
     }
     dependencies {
-        classpath 'com.eriwen:gradle-js-plugin:1.5.1'
+        classpath 'com.eriwen:gradle-js-plugin:1.8.0'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
     }
 }
@@ -13,6 +29,7 @@ buildscript {
 apply plugin: 'groovy'
 apply plugin: 'application'
 apply plugin: 'maven'
+apply plugin: 'signing'
 apply plugin: 'js'
 apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
@@ -64,4 +81,96 @@ applicationDistribution.from(configurations.optional) {
 
 startScripts {
     classpath += configurations.optional
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+    archives distZip
+}
+
+//********* artifact signing *********
+if (hasProperty("release")) {
+    signing {
+        sign configurations.archives
+    }
+} else {
+    task signArchives {
+        // do nothing
+    }
+}
+
+uploadArchives {
+    def isDevBuild
+    def isCiBuild
+    def isReleaseBuild
+
+    def sonatypeRepositoryUrl
+
+    //set build variables based on build type (release, continuous integration, development)
+    if (hasProperty("release")) {
+        isReleaseBuild = true
+        sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+    } else if (hasProperty("ci")) {
+        isCiBuild = true
+        version += "-SNAPSHOT"
+        sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+    } else {
+        isDevBuild = true
+    }
+
+    repositories {
+        if (isDevBuild) {
+            mavenLocal()
+        } else {
+            mavenDeployer {
+                if (isReleaseBuild) {
+                    beforeDeployment { deployment -> signing.signPom(deployment) }
+                }
+
+                repository(url: sonatypeRepositoryUrl) {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+
+                pom.project {
+                    name project.name
+                    packaging 'jar'
+                    description 'Lesscss is a java wrapper for less.js'
+                    url 'https://github.com/houbie/lesscss'
+
+                    scm {
+                        url 'scm:git@github.com:houbie/lesscss.git'
+                        connection 'scm:git@github.com:houbie/lesscss.git'
+                        developerConnection 'scm:git@github.com:houbie/lesscss.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'houbie'
+                            name 'Ivo Houbrechts'
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
