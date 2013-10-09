@@ -19,6 +19,7 @@ package com.github.houbie.lesscss.builder;
 
 import com.github.houbie.lesscss.LessCompiler;
 import com.github.houbie.lesscss.LessCompilerImpl;
+import com.github.houbie.lesscss.LessParseException;
 import com.github.houbie.lesscss.Options;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.slf4j.Logger;
@@ -117,7 +118,7 @@ public class CompilationTask {
         for (CompilationUnit unit : compilationUnits) {
             compileIfDirty(unit);
         }
-        logger.info("execute finished in {} millis", System.currentTimeMillis() - start);
+        logger.debug("execute finished in {} millis", System.currentTimeMillis() - start);
     }
 
     /**
@@ -135,13 +136,17 @@ public class CompilationTask {
             public void run() {
                 try {
                     while (!stopDaemon) {
-                        execute();
+                        try {
+                            execute();
+                        } catch (LessParseException e) {
+                            System.out.println(e.getMessage());
+                        }
                         Thread.sleep(interval);
                     }
-                    daemon = null;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                daemon = null;
             }
         }, "LessCompilationDaemon");
         daemon.setDaemon(true);
@@ -162,12 +167,19 @@ public class CompilationTask {
         if (unitToCompile.isDirty()) {
             logger.debug("compiling less: {}", unit);
             long start = System.currentTimeMillis();
-            CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getImportReader(), unit.getOptions(), unit.getSource().getName());
-            if (unit.getDestination() != null) {
-                IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
+
+            try {
+                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getImportReader(), unit.getOptions(), unit.getSource().getName());
+                if (unit.getDestination() != null) {
+                    IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
+                }
+                updateImportsAndCache(unitToCompile, compilationResult.getImports());
+                logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);
+            } catch (LessParseException e) {
+                unit.setExceptionTimestamp(System.currentTimeMillis());
+                cache(unit);
+                throw e;
             }
-            updateImportsAndCache(unitToCompile, compilationResult.getImports());
-            logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);
         }
     }
 

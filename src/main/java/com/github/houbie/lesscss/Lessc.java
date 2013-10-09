@@ -99,8 +99,7 @@ public class Lessc {
 
     private static void runDaemon(CompilationTask compilationTask) throws IOException {
         compilationTask.startDaemon(500);
-        System.out.println("The LESS compilation daemon started.");
-        System.out.println("Press q to quit...");
+        System.out.println("Compiler daemon running, press q to quit...");
         while (true) {
             if (systemIn.read() == 'q') {
                 compilationTask.stopDaemon();

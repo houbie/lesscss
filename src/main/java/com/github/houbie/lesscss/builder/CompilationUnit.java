@@ -47,6 +47,7 @@ public class CompilationUnit implements Serializable {
     private ResourceReader importReader;
     private List<String> imports = new ArrayList<>();
     private String encoding;
+    private long exceptionTimestamp;
 
     /**
      * Constructs a new CompilationUnit with default compilation options. Imports are searched in the dir of the source.
@@ -87,20 +88,25 @@ public class CompilationUnit implements Serializable {
         this.importReader = importReader;
     }
 
+    public void setExceptionTimestamp(long timestamp) {
+        this.exceptionTimestamp = timestamp;
+    }
+
+
     /**
      * @return true if this if the source or one or more imported sources are older then the destination
      */
     public boolean isDirty() {
-        if (!destination.exists()) {
+        if (!destination.exists() && exceptionTimestamp == 0) {
             return true;
         }
-        long destinationTimestamp = destination.lastModified();
-        if (source.lastModified() > destination.lastModified()) {
+        long refTimeStamp = destination.exists() ? Math.max(destination.lastModified(), exceptionTimestamp) : exceptionTimestamp;
+        if (source.lastModified() > refTimeStamp) {
             return true;
         }
         if (imports != null) {
             for (String imported : imports) {
-                if (importReader.lastModified(imported) > destinationTimestamp) {
+                if (importReader.lastModified(imported) > refTimeStamp) {
                     return true;
                 }
             }
@@ -172,6 +178,7 @@ public class CompilationUnit implements Serializable {
     /**
      * Checks whether two compilation units represent the same compilation.
      * Only the imports may be different when they have not yet been set.
+     *
      * @param other CompilationUnit to compare with
      * @return true if the source, destination, encoding, options and importReader are the same.
      */

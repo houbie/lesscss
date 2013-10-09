@@ -50,9 +50,30 @@ class LesscSpec extends OutputCapturingSpec {
         expect:
         destination.text == expectedResult
         sysOutCapture.toString().startsWith(
-                'The LESS compilation daemon started.\n' +
-                        'Press q to quit...\n' +
+                'Compiler daemon running, press q to quit...\n' +
                         'compilation of less CompilationUnit{source=src/test/resources/less/basic.less, destination=build/tmp/lessc.css} finished in ')
+    }
+
+    def 'run daemon with broken less'() {
+        setup:
+        String expectedOutput = 'Compiler daemon running, press q to quit...\n' +
+                'less parse exception: missing closing `}`\n' +
+                'in broken.less at line 1\n' +
+                'extract\n' +
+                '#broken less {\n'
+        int i = 0
+        Lessc.systemIn = [read: { ->
+            sleep(1000)
+            if (sysOutCapture.toString() == expectedOutput || ++i > 2) {
+                return 'q'
+            }
+            return 0
+        }] as InputStream;
+
+        Lessc.main('--daemon src/test/resources/less/broken.less build/tmp/lessc.css'.split(' '))
+
+        expect:
+        sysOutCapture.toString() == expectedOutput
     }
 
     def 'compile to destination with --verbose'() {

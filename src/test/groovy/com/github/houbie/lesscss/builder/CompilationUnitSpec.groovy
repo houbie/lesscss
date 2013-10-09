@@ -31,8 +31,17 @@ class CompilationUnitSpec extends Specification {
         unit.isDirty()
     }
 
-    def 'isDirty when destination is older than source'() {
+    def 'isDirty when destination does not exist but LessParseException newer than source'() {
+        def unit = new CompilationUnit(source, new File('doesNotExist'))
+        unit.exceptionTimestamp = source.lastModified() + 1;
+
+        expect:
+        !unit.isDirty()
+    }
+
+    def 'isDirty when destination older than source'() {
         def unit = new CompilationUnit(createNewFile(), destination)
+        unit.exceptionTimestamp = source.lastModified() + 1;
 
         expect:
         unit.isDirty()

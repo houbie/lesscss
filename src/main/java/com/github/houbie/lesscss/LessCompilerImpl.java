@@ -139,7 +139,7 @@ public class LessCompilerImpl implements LessCompiler {
             throw new RuntimeException("Exception while compiling less", e);
         }
         if (parseException != null) {
-            throw new RuntimeException(parseException.toString());
+            throw new LessParseException(parseException.toString());
         }
         logger.debug("finished less compilation");
         return new CompilationDetails(result.toString(), trackingResourceReader.getImports());
