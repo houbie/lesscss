@@ -82,8 +82,9 @@ public class CompilationUnit implements Serializable {
         if (source == null || destination == null || options == null) {
             throw new IllegalArgumentException("source, destination and options may not be null");
         }
-        this.source = source;
-        this.destination = destination;
+        //Convert the files to absolute paths to prevent that equals returns true for files with the same name in a different location.
+        this.source = source.getAbsoluteFile();
+        this.destination = destination.getAbsoluteFile();
         this.options = options;
         this.importReader = importReader;
     }
@@ -188,7 +189,6 @@ public class CompilationUnit implements Serializable {
         if (importReader != null ? !importReader.equals(other.importReader) : other.importReader != null) return false;
         if (!options.equals(other.options)) return false;
         return source.equals(other.source);
-
     }
 
     @Override

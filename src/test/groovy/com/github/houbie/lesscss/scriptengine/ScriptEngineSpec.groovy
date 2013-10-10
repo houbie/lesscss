@@ -24,7 +24,6 @@ import javax.script.*
 
 class ScriptEngineSpec extends Specification {
 
-    @Unroll
     def "evaluate multiple scripts with the same engine"() {
         ScriptEngineManager factory = new ScriptEngineManager()
 

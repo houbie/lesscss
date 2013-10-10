@@ -67,8 +67,19 @@ public class FileSystemResourceReader implements ResourceReader {
      * @param baseDirs the directories that are used to resolve resources
      */
     public FileSystemResourceReader(String encoding, File... baseDirs) {
-        this.baseDirs = baseDirs;
+        copyBaseDirs(baseDirs);
         this.encoding = encoding;
+    }
+
+    /**
+     * Convert the dirs to absolute paths to prevent that equals returns true for directories with the same name in a different location.
+     * @param baseDirs
+     */
+    private void copyBaseDirs(File[] baseDirs) {
+        this.baseDirs = new File[baseDirs.length];
+        for (int i = 0; i < baseDirs.length; i++) {
+            this.baseDirs[i] = baseDirs[i].getAbsoluteFile();
+        }
     }
 
     @Override

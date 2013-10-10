@@ -105,7 +105,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
         then:
         !commandLineParser.parse(args)
-        commandLineParser.includePathsReader.baseDirs == baseDirs
+        commandLineParser.includePathsReader.baseDirs == baseDirs*.getAbsoluteFile()
         commandLineParser.includePathsReader.encoding == encoding
 
         where:

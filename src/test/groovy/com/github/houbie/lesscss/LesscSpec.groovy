@@ -36,6 +36,8 @@ class LesscSpec extends OutputCapturingSpec {
 
     def 'run daemon'() {
         setup:
+        File source = new File('src/test/resources/less/basic.less')
+        File destination = new File('build/tmp/lessc.css')
         int i = 0
         Lessc.systemIn = [read: { ->
             sleep(500)
@@ -45,13 +47,13 @@ class LesscSpec extends OutputCapturingSpec {
             return 0
         }] as InputStream;
 
-        Lessc.main('--daemon src/test/resources/less/basic.less build/tmp/lessc.css'.split(' '))
+        Lessc.main("--daemon $source $destination".split(' '))
 
         expect:
         destination.text == expectedResult
         sysOutCapture.toString().startsWith(
                 'Compiler daemon running, press q to quit...\n' +
-                        'compilation of less CompilationUnit{source=src/test/resources/less/basic.less, destination=build/tmp/lessc.css} finished in ')
+                        "compilation of less CompilationUnit{source=$source.absolutePath, destination=$destination.absolutePath} finished in ")
     }
 
     def 'run daemon with broken less'() {
