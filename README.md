@@ -59,9 +59,9 @@ You can also use the LessCompiler directly (again Groovy):
 
 ## Compatibility
 
-Lesscss passes all the tests of the official JavaScript LESS 1.4.1 compiler, except the test for `data-uri`.
-Lesscss handles `data-uri` the same way as the official LESS does when used inside a browser: the `data-uri`'s are translated
-into URL's in stead of embedded in the CSS.
+Lesscss passes all the tests of the official JavaScript LESS 1.4.1 compiler, except the test for _data-uri_.
+Lesscss handles _data-uri_ the same way as the official LESS does when used inside a browser: the _data-uri_'s are translated
+into URL's in stead of being embedded in the CSS.
 
 ## Building from source
 If you use the included gradle wrapper, you don't have to install anything (except a JDK)
@@ -74,11 +74,11 @@ Or use gradle 1.8 or higher
 
 Usefull gradle tasks:
 
-* `install` : installs the lesscss jar into the local maven repo
-* `installApp` : installs lesscss in `build/install/lesscss`
-* `distZip` : creates the zip distribution
-* `clean`, `test`, `jar`, etc.
+* _install_ : installs the lesscss jar into the local maven repo
+* _installApp_ : installs lesscss in _build/install/lesscss_
+* _distZip_ : creates the zip distribution
+* _clean_, _test_, _jar_, etc.
 
 ## What's up next?
 
-Compile main LESS files and/or imports that reside in jar files. This would make it possible to use a jar'ed version of Twitter Bootstrap, without having to copy all the LESS files to your project source tree. Typically you would only need to have your own version of `variables.less`.
+Compile main LESS files and/or imports that reside in jar files. This would make it possible to use a jar'ed version of Twitter Bootstrap, without having to copy all the LESS files to your project source tree. Typically you would only need to have your own version of _variables.less_.
