@@ -37,7 +37,7 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 
 mainClassName = 'com.github.houbie.lesscss.Lessc'
-version = '0.5-less-1.4.1'
+version = '0.6-less-1.4.1-SNAPSHOT'
 group = 'com.github.houbie'
 
 repositories {
@@ -105,39 +105,23 @@ artifacts {
 }
 
 //********* artifact signing and publishing *********
-if (hasProperty("release")) {
+
+ext.sonatypeDeploy = hasProperty('sonatype')
+if (sonatypeDeploy) {
     signing {
         sign configurations.archives
     }
-} else {
-    task signArchives {
-        // do nothing
-    }
 }
+ext.isSnapshot = version.endsWith('-SNAPSHOT')
+ext.sonatypeRepositoryUrl = isSnapshot ? 'https://oss.sonatype.org/content/repositories/snapshots/' : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
 
 uploadArchives {
-    def isDevBuild = true
-    def isReleaseBuild = false
-
-    def sonatypeRepositoryUrl = null
-
-    //set build variables based on build type (release, continuous integration, development)
-    if (hasProperty("release")) {
-        isReleaseBuild = true
-        sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-    } else if (hasProperty("ci")) {
-        version += "-SNAPSHOT"
-        sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-    } else {
-        isDevBuild = true
-    }
-
     repositories {
-        if (isDevBuild) {
+        if (!sonatypeDeploy) {
             mavenLocal()
         } else {
             mavenDeployer {
-                if (isReleaseBuild) {
+                if (!isSnapshot) {
                     beforeDeployment { deployment -> signing.signPom(deployment) }
                 }
 
@@ -148,7 +132,7 @@ uploadArchives {
                 pom.project {
                     name project.name
                     packaging 'jar'
-                    description 'Lesscss is a java wrapper for less.js'
+                    description 'Lesscss is a java wrapper for the JavaScript LESS to CSS compiler'
                     url 'https://github.com/houbie/lesscss'
 
                     scm {
