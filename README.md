@@ -20,6 +20,21 @@ Lesscss can be used at the commandline, but it also provides a simple API for em
 * Lesscss is up to 5 times faster then existing Java implementations.
 
 
+## Download
+
+You can download Lesscss from the [maven central repository](http://central.maven.org/maven2/com/github/houbie/lesscss).
+
+Or you can declare it as dependency in your project:
+
+* Gradle, grab, grails, etc.: `build "com.github.houbie:lesscss:0.7-less-1.4.1"`
+* Maven:
+
+    <dependency>
+      <groupId>com.github.houbie</groupId>
+      <artifactId>lesscss</artifactId>
+      <version>0.7-less-1.4.1</version>
+    </dependency>
+
 ## Commandline usage
 
 The zip distribution contains OS specific shell scripts that are compatible with the official lessc command.
