@@ -1,4 +1,4 @@
-/*
+import com.sun.tools.javah.resources.version /*
  * Copyright (c) 2013 Houbrechts IT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ buildscript {
     dependencies {
         classpath 'com.eriwen:gradle-js-plugin:1.8.0'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
+        classpath 'com.github.townsfolk:gradle-release:1.2'
     }
 }
 
@@ -35,10 +36,7 @@ apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
 apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
-
-mainClassName = 'com.github.houbie.lesscss.Lessc'
-version = '0.6-less-1.4.1-SNAPSHOT'
-group = 'com.github.houbie'
+apply plugin: 'release'
 
 repositories {
     mavenCentral()
@@ -160,3 +158,12 @@ uploadArchives {
         }
     }
 }
+
+//********* release plugin *********
+task updateReadme(type: Copy, dependsOn: updateVersion) {
+    File readme = file('README.md')
+    //replace all occurrences of x.y.z-less-a.b.c with the new release version
+    readme.text = (readme.text =~ /\d\.\d(\.\d)?-less-\d\.\d(\.\d)?/).replaceAll("$version")
+}
+
+commitNewVersion.dependsOn updateReadme
