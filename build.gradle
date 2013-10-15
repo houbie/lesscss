@@ -160,7 +160,7 @@ uploadArchives {
 }
 
 //********* release plugin *********
-task updateReadme(type: Copy, dependsOn: updateVersion) {
+task updateReadme(type: Copy, dependsOn: updateVersion) << {
     File readme = file('README.md')
     //replace all occurrences of x.y.z-less-a.b.c with the new release version
     readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?/).replaceAll("$version")
