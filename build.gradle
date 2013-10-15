@@ -38,6 +38,9 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 apply plugin: 'release'
 
+
+mainClassName = com.github.houbie.lesscss.Lessc
+
 repositories {
     mavenCentral()
 }
