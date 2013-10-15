@@ -110,7 +110,7 @@ if (sonatypeDeploy) {
         sign configurations.archives
     }
 }
-ext.isSnapshot = version.endsWith('-SNAPSHOT')
+ext.isSnapshot = "$version".endsWith('-SNAPSHOT')
 ext.sonatypeRepositoryUrl = isSnapshot ? 'https://oss.sonatype.org/content/repositories/snapshots/' : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
 
 uploadArchives {
@@ -163,7 +163,7 @@ uploadArchives {
 task updateReadme(type: Copy, dependsOn: updateVersion) {
     File readme = file('README.md')
     //replace all occurrences of x.y.z-less-a.b.c with the new release version
-    readme.text = (readme.text =~ /\d\.\d(\.\d)?-less-\d\.\d(\.\d)?/).replaceAll("$version")
+    readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?/).replaceAll("$version")
 }
 
 commitNewVersion.dependsOn updateReadme
