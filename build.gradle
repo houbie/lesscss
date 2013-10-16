@@ -39,7 +39,9 @@ apply plugin: 'propdeps-eclipse'
 apply plugin: 'release'
 
 
-mainClassName = com.github.houbie.lesscss.Lessc
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+mainClassName = 'com.github.houbie.lesscss.Lessc'
 
 repositories {
     mavenCentral()
@@ -163,7 +165,7 @@ uploadArchives {
 }
 
 //********* release plugin *********
-task updateReadme(type: Copy, dependsOn: updateVersion) << {
+task updateReadme << {
     File readme = file('README.md')
     //replace all occurrences of x.y.z-less-a.b.c with the new release version
     readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?/).replaceAll("$version")
