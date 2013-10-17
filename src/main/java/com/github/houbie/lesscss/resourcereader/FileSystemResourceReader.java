@@ -18,11 +18,12 @@ package com.github.houbie.lesscss.resourcereader;
 
 
 import com.github.houbie.lesscss.utils.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 /**
  * ResourceReader implementation that reads files relative to one or more base directories.
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
  * @author Ivo Houbrechts
  */
 public class FileSystemResourceReader implements ResourceReader {
-    private static Logger logger = Logger.getLogger(FileSystemResourceReader.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(FileSystemResourceReader.class);
 
     private File[] baseDirs;
     private String encoding;
@@ -73,6 +74,7 @@ public class FileSystemResourceReader implements ResourceReader {
 
     /**
      * Convert the dirs to absolute paths to prevent that equals returns true for directories with the same name in a different location.
+     *
      * @param baseDirs
      */
     private void copyBaseDirs(File[] baseDirs) {
@@ -80,6 +82,12 @@ public class FileSystemResourceReader implements ResourceReader {
         for (int i = 0; i < baseDirs.length; i++) {
             this.baseDirs[i] = baseDirs[i].getAbsoluteFile();
         }
+    }
+
+    @Override
+    public boolean canRead(String location) {
+        File file = resolve(location);
+        return file != null && file.exists();
     }
 
     @Override
@@ -98,7 +106,7 @@ public class FileSystemResourceReader implements ResourceReader {
 
     private File resolveRelative(String location) {
         for (File dir : baseDirs) {
-            logger.fine("reading " + location + " relative to " + dir.getAbsolutePath());
+            logger.debug("reading {} relative to {}", location, dir.getAbsolutePath());
             File file = new File(dir, location);
             if (file.canRead()) {
                 return file;

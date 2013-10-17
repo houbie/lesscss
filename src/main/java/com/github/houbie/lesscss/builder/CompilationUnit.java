@@ -20,7 +20,7 @@ package com.github.houbie.lesscss.builder;
 import com.github.houbie.lesscss.Options;
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
-import com.github.houbie.lesscss.utils.IOUtils;
+import com.github.houbie.lesscss.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,18 +39,16 @@ import java.util.List;
  * @author Ivo Houbrechts
  */
 public class CompilationUnit implements Serializable {
-    private static final long serialVersionUID = 3784487076551298600L;
-
-    private File source;
+    private String sourceLocation;
     private File destination;
     private Options options;
-    private ResourceReader importReader;
+    private ResourceReader resourceReader;
     private List<String> imports = new ArrayList<>();
     private String encoding;
     private long exceptionTimestamp;
 
     /**
-     * Constructs a new CompilationUnit with default compilation options. Imports are searched in the dir of the source.
+     * Constructs a new CompilationUnit with default compilation options. Imports, if any, are searched in the directory containing the source.
      *
      * @param source      Less source file
      * @param destination CSS destination file
@@ -60,33 +58,33 @@ public class CompilationUnit implements Serializable {
     }
 
     /**
-     * Constructs a new CompilationUnit with the given compilation options. Imports are searched in the dir of the source.
+     * Constructs a new CompilationUnit with the given compilation options. Imports, if any, are searched in the directory containing the source.
      *
      * @param source      Less source file
      * @param destination CSS destination file
      * @param options     compilation options
      */
     public CompilationUnit(File source, File destination, Options options) {
-        this(source, destination, options, new FileSystemResourceReader(source.getParentFile()));
+        this(source.getName(), destination, options, new FileSystemResourceReader(source.getParentFile()));
     }
 
     /**
-     * Constructs a new CompilationUnit with the given compilation options and import reader.
+     * Constructs a new CompilationUnit with the given compilation options.
+     * The source and the imports, if any, are resolved by the given ResourceReader.
      *
-     * @param source       Less source file
-     * @param destination  CSS destination file
-     * @param options      compilation options
-     * @param importReader ResourceReader for resolving imports
+     * @param sourceLocation location of the LESS source in the file system or on the classpath
+     * @param destination    CSS destination file
+     * @param options        compilation options
+     * @param resourceReader ResourceReader for resolving the source and the imports, if any.
      */
-    public CompilationUnit(File source, File destination, Options options, ResourceReader importReader) {
-        if (source == null || destination == null || options == null) {
-            throw new IllegalArgumentException("source, destination and options may not be null");
+    public CompilationUnit(String sourceLocation, File destination, Options options, ResourceReader resourceReader) {
+        if (StringUtils.isEmpty(sourceLocation) || destination == null || options == null) {
+            throw new IllegalArgumentException("source, destination and options must be provided");
         }
-        //Convert the files to absolute paths to prevent that equals returns true for files with the same name in a different location.
-        this.source = source.getAbsoluteFile();
+        this.sourceLocation = sourceLocation;
         this.destination = destination.getAbsoluteFile();
         this.options = options;
-        this.importReader = importReader;
+        this.resourceReader = resourceReader;
     }
 
     public void setExceptionTimestamp(long timestamp) {
@@ -95,19 +93,19 @@ public class CompilationUnit implements Serializable {
 
 
     /**
-     * @return true if this if the source or one or more imported sources are older then the destination
+     * @return true if the source or one or more imported sources are older then the destination
      */
     public boolean isDirty() {
         if (!destination.exists() && exceptionTimestamp == 0) {
             return true;
         }
         long refTimeStamp = destination.exists() ? Math.max(destination.lastModified(), exceptionTimestamp) : exceptionTimestamp;
-        if (source.lastModified() > refTimeStamp) {
+        if (resourceReader.lastModified(sourceLocation) > refTimeStamp) {
             return true;
         }
         if (imports != null) {
             for (String imported : imports) {
-                if (importReader.lastModified(imported) > refTimeStamp) {
+                if (resourceReader.lastModified(imported) > refTimeStamp) {
                     return true;
                 }
             }
@@ -115,8 +113,8 @@ public class CompilationUnit implements Serializable {
         return false;
     }
 
-    public File getSource() {
-        return source;
+    public String getSourceLocation() {
+        return sourceLocation;
     }
 
     public File getDestination() {
@@ -131,12 +129,12 @@ public class CompilationUnit implements Serializable {
         this.options = options;
     }
 
-    public ResourceReader getImportReader() {
-        return importReader;
+    public ResourceReader getResourceReader() {
+        return resourceReader;
     }
 
-    public void setImportReader(ResourceReader importReader) {
-        this.importReader = importReader;
+    public void setResourceReader(ResourceReader resourceReader) {
+        this.resourceReader = resourceReader;
     }
 
     /**
@@ -170,10 +168,7 @@ public class CompilationUnit implements Serializable {
     }
 
     public String getSourceAsString() throws IOException {
-        if (!source.exists()) {
-            throw new RuntimeException("Source does not exists: " + source);
-        }
-        return IOUtils.read(source, encoding);
+        return resourceReader.read(sourceLocation);
     }
 
     /**
@@ -181,14 +176,15 @@ public class CompilationUnit implements Serializable {
      * Only the imports may be different when they have not yet been set.
      *
      * @param other CompilationUnit to compare with
-     * @return true if the source, destination, encoding, options and importReader are the same.
+     * @return true if the source, destination, encoding, options and resourceReader are the same.
      */
     public boolean isEquivalent(CompilationUnit other) {
         if (!destination.equals(other.destination)) return false;
         if (encoding != null ? !encoding.equals(other.encoding) : other.encoding != null) return false;
-        if (importReader != null ? !importReader.equals(other.importReader) : other.importReader != null) return false;
+        if (resourceReader != null ? !resourceReader.equals(other.resourceReader) : other.resourceReader != null)
+            return false;
         if (!options.equals(other.options)) return false;
-        return source.equals(other.source);
+        return sourceLocation.equals(other.sourceLocation);
     }
 
     @Override
@@ -205,10 +201,10 @@ public class CompilationUnit implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = source.hashCode();
+        int result = sourceLocation.hashCode();
         result = 31 * result + destination.hashCode();
         result = 31 * result + options.hashCode();
-        result = 31 * result + (importReader != null ? importReader.hashCode() : 0);
+        result = 31 * result + (resourceReader != null ? resourceReader.hashCode() : 0);
         result = 31 * result + (imports != null ? imports.hashCode() : 0);
         result = 31 * result + (encoding != null ? encoding.hashCode() : 0);
         return result;
@@ -217,7 +213,7 @@ public class CompilationUnit implements Serializable {
     @Override
     public String toString() {
         return "CompilationUnit{" +
-                "source=" + source +
+                "sourceLocation=" + sourceLocation +
                 ", destination=" + destination +
                 '}';
     }

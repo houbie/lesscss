@@ -29,12 +29,12 @@ class CompilationTaskSpec extends Specification {
     File imported0Source = new File(workDir, 'imported0.less')
     File importResult = new File('src/test/resources/less/import.css')
     File importDestination = new File(workDir, 'import.css')
-    CompilationUnit importUnit = new CompilationUnit(importSource, importDestination, new Options(), new FileSystemResourceReader(workDir, new File('src/test/resources/less')))
+    CompilationUnit importUnit = new CompilationUnit(importSource.canonicalPath, importDestination, new Options(), new FileSystemResourceReader(workDir, new File('src/test/resources/less')))
 
     File basicSource = new File(workDir, 'basic.less')
     File basicResult = new File('src/test/resources/less/basic.css')
     File basicDestination = new File(workDir, 'basic.css')
-    CompilationUnit basicUnit = new CompilationUnit(basicSource, basicDestination, new Options(), new FileSystemResourceReader(new File('src/test/resources/less')))
+    CompilationUnit basicUnit = new CompilationUnit(basicSource.canonicalPath, basicDestination, new Options(), new FileSystemResourceReader(new File('src/test/resources/less')))
 
     CompilationTask compilationTask = new CompilationTask(cacheDir: cacheDir, compilationUnits: [importUnit, basicUnit])
 

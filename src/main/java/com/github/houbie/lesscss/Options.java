@@ -23,8 +23,6 @@ import java.io.Serializable;
  * @author Ivo Houbrechts
  */
 public class Options implements Serializable {
-    private static final long serialVersionUID = -4196621429522278886L;
-
     private boolean compress = false;
     private int optimizationLevel = 1;
     private boolean strictImports = false;

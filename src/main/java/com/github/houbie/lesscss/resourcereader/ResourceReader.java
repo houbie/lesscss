@@ -27,17 +27,26 @@ import java.io.Serializable;
  */
 public interface ResourceReader extends Serializable {
     /**
+     * Returns true if the resource at the given location can be read.
+     *
+     * @param location the location of the resource
+     * @return true if the resource can be read
+     * @throws IOException
+     */
+    boolean canRead(String location) throws IOException;
+
+    /**
      * Read a resource into a String
      *
      * @param location the location of the resource
-     * @return the content of the resource
+     * @return the content of the resource, or null if the resource cannot be resolved
      * @throws IOException
      */
     String read(String location) throws IOException;
 
     /**
      * @param location the location of the resource
-     * @return timestamp of last modification of the resource
+     * @return timestamp of last modification of the resource, or Long.MAX_VALUE if the resource cannot be resolved
      */
     long lastModified(String location);
 }

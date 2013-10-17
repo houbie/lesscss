@@ -169,7 +169,7 @@ public class CompilationTask {
             long start = System.currentTimeMillis();
 
             try {
-                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getImportReader(), unit.getOptions(), unit.getSource().getName());
+                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), unit.getOptions(), unit.getSourceLocation());
                 if (unit.getDestination() != null) {
                     IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
                 }
@@ -212,7 +212,7 @@ public class CompilationTask {
     private List<String> resolveImports(CompilationUnit unit) throws IOException {
         Options options = new Options(unit.getOptions());
         options.setDependenciesOnly(true);
-        CompilationDetails compilationDetails = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getImportReader(), options, unit.getSource().getName());
+        CompilationDetails compilationDetails = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), options, unit.getSourceLocation());
         return compilationDetails.getImports();
     }
 

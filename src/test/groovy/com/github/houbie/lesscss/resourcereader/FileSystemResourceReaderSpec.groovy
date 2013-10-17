@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.github.houbie.lesscss
+package com.github.houbie.lesscss.resourcereader
 
-import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 
 class FileSystemResourceReaderSpec extends Specification {
@@ -34,6 +33,7 @@ class FileSystemResourceReaderSpec extends Specification {
     def "read file from specified dir"() {
         when:
         def reader = new FileSystemResourceReader(new File('src/test/resources'))
+
         then:
         reader.read('ioutils/plain.txt') == 'plain text'
         reader.read('../resources/ioutils/plain.txt') == 'plain text'
@@ -42,6 +42,7 @@ class FileSystemResourceReaderSpec extends Specification {
     def "read absolute file"() {
         when:
         def reader = new FileSystemResourceReader(new File('src/test/resources'))
+
         then:
         reader.read(new File('src/test/resources/ioutils/plain.txt').absolutePath) == 'plain text'
     }
@@ -49,9 +50,37 @@ class FileSystemResourceReaderSpec extends Specification {
     def "read file from specified dir with encoding"() {
         when:
         def reader = new FileSystemResourceReader('utf16', new File('src/test/resources'))
+
         then:
         reader.read('ioutils/utf16.txt') == 'utf16 text'
         reader.read('../resources/ioutils/utf16.txt') == 'utf16 text'
     }
 
+    def "test canRead"() {
+        when:
+        def reader = new FileSystemResourceReader(new File('src/test/resources'))
+
+        then:
+        reader.canRead(location) == canRead
+
+        where:
+        location                                                      | canRead
+        'ioutils/plain.txt'                                           | true
+        new File('src/test/resources/ioutils/plain.txt').absolutePath | true
+        '../resources/ioutils/plain.txt'                              | true
+        'cannot read'                                                 | false
+    }
+
+    def "test lastModified"() {
+        when:
+        def reader = new FileSystemResourceReader(new File('src/test/resources/ioutils'))
+
+        then:
+        reader.lastModified(location) == lastModified
+
+        where:
+        location      | lastModified
+        'plain.txt'   | new File('src/test/resources/ioutils/plain.txt').lastModified()
+        'cannot read' | Long.MAX_VALUE
+    }
 }

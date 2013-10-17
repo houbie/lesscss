@@ -68,9 +68,9 @@ public class LesscCommandLineParser {
     private final String version;
 
     private Options options;
-    private File source;
+    private String sourceLocation;
     private File destination;
-    private ResourceReader includePathsReader;
+    private ResourceReader resourceReader;
     private String encoding;
     private Reader customJsReader;
     private boolean verbose;
@@ -148,26 +148,23 @@ public class LesscCommandLineParser {
     }
 
     private void process(CommandLine cmd) throws ParseException, IOException {
-        setSourceFile(cmd);
+        setSourceLocation(cmd);
         setDestinationFile(cmd);
         setVerbosity(cmd);
         setOptions(cmd);
         setEncoding(cmd);
-        setIncludePathsReader(cmd, source);
+        setResourceReader(cmd);
         setCustomJsReader(cmd);
         setCacheDir(cmd);
         setDaemon(cmd);
+        checkSourceLocation();
     }
 
-    private void setSourceFile(CommandLine cmd) throws ParseException {
+    private void setSourceLocation(CommandLine cmd) throws ParseException {
         if (cmd.getArgs().length < 1) {
             throw new ParseException("<source> is not specified");
         }
-        String fileName = cmd.getArgs()[0];
-        source = new File(fileName);
-        if (!source.canRead()) {
-            throw new ParseException(this.source + " can not be read");
-        }
+        sourceLocation = cmd.getArgs()[0];
     }
 
     private void setDestinationFile(CommandLine cmd) {
@@ -206,16 +203,20 @@ public class LesscCommandLineParser {
         encoding = cmd.getOptionValue(ENCODING_OPTION);
     }
 
-    private void setIncludePathsReader(CommandLine cmd, File source) {
+    private void setResourceReader(CommandLine cmd) throws ParseException {
         if (cmd.hasOption(INCLUDE_PATH_OPTION)) {
             String[] paths = cmd.getOptionValue(INCLUDE_PATH_OPTION).split("[,|;]");
             File[] files = new File[paths.length];
             for (int i = 0; i < paths.length; i++) {
                 files[i] = new File(paths[i]);
             }
-            includePathsReader = new FileSystemResourceReader(encoding, files);
+            resourceReader = new FileSystemResourceReader(encoding, files);
         } else {
-            includePathsReader = new FileSystemResourceReader(encoding, source.getAbsoluteFile().getParentFile());
+            File source = new File(sourceLocation);
+            if (!source.exists()) {
+                throw new ParseException(sourceLocation + " can not be found. Check the location or use --" + INCLUDE_PATH_OPTION);
+            }
+            resourceReader = new FileSystemResourceReader(encoding, source.getParentFile());
         }
     }
 
@@ -245,20 +246,27 @@ public class LesscCommandLineParser {
         }
     }
 
+    private void checkSourceLocation() throws ParseException, IOException {
+        if (!resourceReader.canRead(sourceLocation)) {
+            throw new ParseException(this.sourceLocation + " can not be read");
+        }
+
+    }
+
     public Options getOptions() {
         return options;
     }
 
-    public File getSource() {
-        return source;
+    public String getSourceLocation() {
+        return sourceLocation;
     }
 
     public File getDestination() {
         return destination;
     }
 
-    public ResourceReader getIncludePathsReader() {
-        return includePathsReader;
+    public ResourceReader getResourceReader() {
+        return resourceReader;
     }
 
     public String getEncoding() {

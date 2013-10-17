@@ -48,10 +48,10 @@ class CompilationUnitSpec extends Specification {
     }
 
     def 'isDirty when destination is older than import'() {
-        ResourceReader importReader = Mock()
+        ResourceReader resourceReader = Mock()
         File newDestination = createNewFile()
         def unit = new CompilationUnit(source, newDestination)
-        unit.importReader = importReader
+        unit.resourceReader = resourceReader
         unit.imports = ['import1', 'import2']
 
         when:
@@ -59,15 +59,15 @@ class CompilationUnitSpec extends Specification {
 
         then:
         dirty
-        1 * importReader.lastModified('import1') >> 0
-        1 * importReader.lastModified('import2') >> Long.MAX_VALUE
+        1 * resourceReader.lastModified('import1') >> 0
+        1 * resourceReader.lastModified('import2') >> Long.MAX_VALUE
     }
 
     def 'not isDirty when destination is newer than imports and source'() {
-        ResourceReader importReader = Mock()
+        ResourceReader resourceReader = Mock()
         File newDestination = createNewFile()
         def unit = new CompilationUnit(source, newDestination)
-        unit.importReader = importReader
+        unit.resourceReader = resourceReader
         unit.imports = ['import1', 'import2']
 
         when:
@@ -75,7 +75,7 @@ class CompilationUnitSpec extends Specification {
 
         then:
         !dirty
-        2 * importReader.lastModified(_) >>> [0, 0]
+        3 * resourceReader.lastModified(_) >>> [0, 0]
     }
 
     private File createNewFile() {

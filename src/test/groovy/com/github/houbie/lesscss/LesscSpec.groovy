@@ -36,7 +36,7 @@ class LesscSpec extends OutputCapturingSpec {
 
     def 'run daemon'() {
         setup:
-        File source = new File('src/test/resources/less/basic.less')
+        String sourceLocation = 'src/test/resources/less/basic.less'
         File destination = new File('build/tmp/lessc.css')
         int i = 0
         Lessc.systemIn = [read: { ->
@@ -47,20 +47,20 @@ class LesscSpec extends OutputCapturingSpec {
             return 0
         }] as InputStream;
 
-        Lessc.main("--daemon $source $destination".split(' '))
+        Lessc.main("--daemon $sourceLocation $destination".split(' '))
 
         expect:
         destination.text == expectedResult
         sysOutCapture.toString().startsWith(
                 'Compiler daemon running, press q to quit...\n' +
-                        "compilation of less CompilationUnit{source=$source.absolutePath, destination=$destination.absolutePath} finished in ")
+                        "compilation of less CompilationUnit{sourceLocation=$sourceLocation, destination=$destination.absolutePath} finished in ")
     }
 
     def 'run daemon with broken less'() {
         setup:
         String expectedOutput = 'Compiler daemon running, press q to quit...\n' +
                 'less parse exception: missing closing `}`\n' +
-                'in broken.less at line 1\n' +
+                'in src/test/resources/less/broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {\n'
         int i = 0
@@ -118,7 +118,7 @@ class LesscSpec extends OutputCapturingSpec {
         expect:
         sysOutCapture.toString() == ''
         sysErrCapture.toString() == 'less parse exception: missing closing `}`\n' +
-                'in broken.less at line 1\n' +
+                'in src/test/resources/less/broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {\n'
     }

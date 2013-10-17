@@ -142,7 +142,7 @@ public class LessCompilerImpl implements LessCompiler {
             throw new LessParseException(parseException.toString());
         }
         logger.debug("finished less compilation");
-        return new CompilationDetails(result.toString(), trackingResourceReader.getImports());
+        return new CompilationDetails(result.toString(), trackingResourceReader.getReadResources());
     }
 
     private void prepareScriptEngine() throws IOException {

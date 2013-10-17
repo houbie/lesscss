@@ -53,13 +53,13 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
         then:
         !commandLineParser.parse(args)
-        commandLineParser.source == source
+        commandLineParser.sourceLocation == sourceLocation
         commandLineParser.destination == destination
 
         where:
-        commandLine                                          | source                                         | destination
-        'src/test/resources/less/basic.less'                 | new File('src/test/resources/less/basic.less') | null
-        'src/test/resources/less/basic.less destination.css' | new File('src/test/resources/less/basic.less') | new File('destination.css')
+        commandLine                                          | sourceLocation                       | destination
+        'src/test/resources/less/basic.less'                 | 'src/test/resources/less/basic.less' | null
+        'src/test/resources/less/basic.less destination.css' | 'src/test/resources/less/basic.less' | new File('destination.css')
     }
 
     def 'no source throws exception'() {
@@ -77,7 +77,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
         then:
         def e = thrown(ParseException)
-        e.message == 'doesNotExist can not be read'
+        e.message == 'doesNotExist can not be found. Check the location or use --include-path'
     }
 
     def 'daemon option requires destination to be set'() {
@@ -105,8 +105,8 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
 
         then:
         !commandLineParser.parse(args)
-        commandLineParser.includePathsReader.baseDirs == baseDirs*.getAbsoluteFile()
-        commandLineParser.includePathsReader.encoding == encoding
+        commandLineParser.resourceReader.baseDirs == baseDirs*.getAbsoluteFile()
+        commandLineParser.resourceReader.encoding == encoding
 
         where:
         commandLine                                                                      | baseDirs                                                    | encoding

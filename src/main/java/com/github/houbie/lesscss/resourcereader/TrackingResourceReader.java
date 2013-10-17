@@ -16,7 +16,6 @@
 
 package com.github.houbie.lesscss.resourcereader;
 
-import com.github.houbie.lesscss.LessCompilerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +33,7 @@ import java.util.List;
  * @author Ivo Houbrechts
  */
 public class TrackingResourceReader implements ResourceReader {
-    private static final Logger logger = LoggerFactory.getLogger(LessCompilerImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrackingResourceReader.class);
 
     private ResourceReader resourceReader;
 
@@ -45,6 +44,11 @@ public class TrackingResourceReader implements ResourceReader {
      */
     public TrackingResourceReader(ResourceReader resourceReader) {
         this.resourceReader = resourceReader;
+    }
+
+    @Override
+    public boolean canRead(String location) throws IOException {
+        return resourceReader.canRead(location);
     }
 
     @Override
@@ -71,9 +75,9 @@ public class TrackingResourceReader implements ResourceReader {
     }
 
     /**
-     * @return the list of resources that have been read (imported)
+     * @return the list of resources that have been read
      */
-    public List<String> getImports() {
+    public List<String> getReadResources() {
         return imports;
     }
 }

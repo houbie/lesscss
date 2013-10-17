@@ -1,4 +1,4 @@
-//compile = function (source, optionsArg, sourceName, importReaderArg) {
+//compile = function (source, optionsArg, sourceName, importReaderArg)
 
 var test = (function () {
     var options = {
