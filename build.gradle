@@ -38,6 +38,8 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 apply plugin: 'release'
 
+//version -> version.txt
+group = com.github.houbie
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
