@@ -55,6 +55,8 @@ Only copy the ones that you want to customize (typically variables.less), and th
 
     lessc --include-path your/project/less,path/to/bootstrap-3.0.0/less bootstrap.less css/bootstrap.css
 
+This will first look for less files in _your/project/less_, and when not found it will fall back to _path/to/bootstrap-3.0.0/less_
+
 ## Lesscss API
 
 You can create a `CompilationTask` instance to compile one or more LESS files (Groovy example):
