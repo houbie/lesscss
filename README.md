@@ -48,12 +48,12 @@ The complete syntax is `lessc [option option=parameter ...] <source> [destinatio
 
 Type `lessc -h` to see the full list of options.
 
-### Typ for using Twitter Bootstrap
+### Tip for using Twitter Bootstrap
 
 When using Twitter Bootstrap in your projects, it is not necessary to copy all the less files to your project.
 Only copy the ones that you want to customize (typically variables.less), and then compile with:
 
-    lessc --include-path your/project/less,path/to/bootstrap-3.0.0/less bootstrap.less buil/bootstrap.css
+    lessc --include-path your/project/less,path/to/bootstrap-3.0.0/less bootstrap.less css/bootstrap.css
 
 ## Lesscss API
 
