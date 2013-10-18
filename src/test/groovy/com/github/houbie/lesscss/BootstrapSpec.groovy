@@ -21,7 +21,7 @@ import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
-class BootstrapPerformanceSpec extends Specification {
+class BootstrapSpec extends Specification {
     static File source = new File('src/test/resources/less/bootstrap/bootstrap.less')
     static File destination = new File('build/tmp/bootstrap.css')
     static String expected = new File('src/test/resources/less/bootstrap/bootstrap.css').text
@@ -45,5 +45,16 @@ class BootstrapPerformanceSpec extends Specification {
             println("RHINO\t$it\t$time")
         }
         destination.text == expected
+    }
+
+    def "bootstrap with customized variables"() {
+        File destination = new File('build/tmp/custom-bootstrap.css')
+        destination.delete()
+
+        when:
+        Lessc.main('--include-path src/test/resources/less/bootstrap/customized,src/test/resources/less/bootstrap bootstrap.less build/tmp/custom-bootstrap.css'.split(' '))
+
+        then:
+        destination.text == new File('src/test/resources/less/bootstrap/customized/custom-bootstrap.css').text
     }
 }
