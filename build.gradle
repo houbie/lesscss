@@ -38,8 +38,8 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 apply plugin: 'release'
 
-//version -> version.txt
-group = com.github.houbie
+version = (file('version.txt').text=~/=(.+)$/)[0][1]
+group = 'com.github.houbie'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -167,10 +167,19 @@ uploadArchives {
 }
 
 //********* release plugin *********
+release {
+    versionPropertyFile = 'version.txt'
+    versionPatterns = [
+            // increment last digit before '-less-'
+            /(\d+)-less-(.+$)/: { matcher, project -> matcher.replaceAll("${(matcher[0][1] as int) + 1}-less-${matcher[0][2]}") }
+    ]
+}
+
 task updateReadme << {
     File readme = file('README.md')
     //replace all occurrences of x.y.z-less-a.b.c with the new release version
-    readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?/).replaceAll("${ext['release.oldVersion']}")
+    def releaseVersion = "${project['release.oldVersion']}".replaceAll('-SNAPSHOT', '')
+    readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?(-SNAPSHOT)?/).replaceAll("${releaseVersion}")
 }
 
 commitNewVersion.dependsOn updateReadme
