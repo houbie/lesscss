@@ -182,4 +182,5 @@ task updateReadme << {
     readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?(-SNAPSHOT)?/).replaceAll("${releaseVersion}")
 }
 
+createReleaseTag.dependsOn uploadArchives
 commitNewVersion.dependsOn updateReadme
