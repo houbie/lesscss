@@ -111,14 +111,14 @@ artifacts {
 
 //********* artifact signing and publishing *********
 
-ext.sonatypeDeploy = hasProperty('sonatype')
+ext.sonatypeDeploy = gradle.startParameter.taskNames.contains('release')
 if (sonatypeDeploy) {
     signing {
         sign configurations.archives
     }
 }
-ext.isSnapshot = "$version".endsWith('-SNAPSHOT')
-ext.sonatypeRepositoryUrl = isSnapshot ? 'https://oss.sonatype.org/content/repositories/snapshots/' : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+ext.sonatypeSnapshot = hasProperty('sonatypeSnapshot')
+ext.sonatypeRepositoryUrl = sonatypeSnapshot ? 'https://oss.sonatype.org/content/repositories/snapshots/' : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
 
 uploadArchives {
     repositories {
@@ -126,7 +126,7 @@ uploadArchives {
             mavenLocal()
         } else {
             mavenDeployer {
-                if (!isSnapshot) {
+                if (!sonatypeSnapshot) {
                     beforeDeployment { deployment -> signing.signPom(deployment) }
                 }
 
@@ -182,6 +182,6 @@ task updateReadme << {
     readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?(-SNAPSHOT)?/).replaceAll("${releaseVersion}")
 }
 
-release.dependsOn clean,test
+release.dependsOn clean, test
 createReleaseTag.dependsOn uploadArchives
 commitNewVersion.dependsOn updateReadme
