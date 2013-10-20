@@ -24,18 +24,18 @@ Lesscss can be used at the commandline, but it also provides a simple API for em
 
 Lesscss requires Java 1.6 or higher.
 
-You can download Lesscss from the [maven central repository](http://central.maven.org/maven2/com/github/houbie/lesscss/0.9-less-1.4.1/lesscss-0.9-less-1.4.1.zip)
+You can download Lesscss from the [maven central repository](http://central.maven.org/maven2/com/github/houbie/lesscss/0.9.2-less-1.4.1/lesscss-0.9.2-less-1.4.1.zip)
 and un-zip it.
 
 Or you can declare it as dependency in your project:
 
-* Gradle, grab, grails, etc.: `build "com.github.houbie:lesscss:0.9-less-1.4.1"`
+* Gradle, grab, grails, etc.: `build "com.github.houbie:lesscss:0.9.2-less-1.4.1"`
 * Maven:
 
         <dependency>
           <groupId>com.github.houbie</groupId>
           <artifactId>lesscss</artifactId>
-          <version>0.9-less-1.4.1</version>
+          <version>0.9.2-less-1.4.1</version>
         </dependency>
 
 ## Commandline usage
