@@ -111,22 +111,25 @@ artifacts {
 
 //********* artifact signing and publishing *********
 
-ext.sonatypeDeploy = gradle.startParameter.taskNames.contains('release')
-if (sonatypeDeploy) {
+task uploadSnapshot(dependsOn: uploadArchives)
+
+// the release task spawns a new GradleBuild that doesn't contain release itself, but it contains createReleaseTag
+ext.sonatypeRelease = gradle.startParameter.taskNames.contains('createReleaseTag')
+ext.sonatypeSnapshot = gradle.startParameter.taskNames.contains('uploadSnapshot')
+if (sonatypeRelease) {
     signing {
         sign configurations.archives
     }
 }
-ext.sonatypeSnapshot = hasProperty('sonatypeSnapshot')
-ext.sonatypeRepositoryUrl = sonatypeSnapshot ? 'https://oss.sonatype.org/content/repositories/snapshots/' : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+ext.sonatypeRepositoryUrl = sonatypeRelease ? 'https://oss.sonatype.org/service/local/staging/deploy/maven2/' : 'https://oss.sonatype.org/content/repositories/snapshots/'
 
 uploadArchives {
     repositories {
-        if (!sonatypeDeploy) {
+        if (!(sonatypeRelease || sonatypeSnapshot)) {
             mavenLocal()
         } else {
             mavenDeployer {
-                if (!sonatypeSnapshot) {
+                if (sonatypeRelease) {
                     beforeDeployment { deployment -> signing.signPom(deployment) }
                 }
 
@@ -182,6 +185,6 @@ task updateReadme << {
     readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?(-SNAPSHOT)?/).replaceAll("${releaseVersion}")
 }
 
-release.dependsOn clean, test
+release.dependsOn clean
 createReleaseTag.dependsOn uploadArchives
 commitNewVersion.dependsOn updateReadme
