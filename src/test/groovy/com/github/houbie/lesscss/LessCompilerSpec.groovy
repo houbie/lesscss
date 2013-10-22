@@ -105,7 +105,7 @@ class LessCompilerSpec extends Specification {
     }
 
     @Unroll
-    def "less.js compatibility tests for #lessFile"() {
+    def "#lessFile.name compatibility test"() {
         expect:
         compiler.compile(lessFile, new Options(strictMath: true, relativeUrls: true)) == getCss(lessFile).text
 
