@@ -21,6 +21,7 @@ import com.github.houbie.lesscss.LessCompiler;
 import com.github.houbie.lesscss.LessCompilerImpl;
 import com.github.houbie.lesscss.LessParseException;
 import com.github.houbie.lesscss.Options;
+import com.github.houbie.lesscss.engine.LessEngine;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,50 +59,55 @@ public class CompilationTask {
     /**
      * Default constructor, uses ${user.home}\.lesscss as cache directory.
      *
+     * @param engine javascript LessEngine
      * @throws IOException
      */
-    public CompilationTask() throws IOException {
-        this((Reader) null);
+    public CompilationTask(LessEngine engine) throws IOException {
+        this(engine, (Reader) null);
     }
 
 
     /**
+     * @param engine javascript LessEngine
      * @param cacheDir The directory where import information will be cached.
      * @throws IOException
      */
-    public CompilationTask(File cacheDir) throws IOException {
-        this((Reader) null, cacheDir);
+    public CompilationTask(LessEngine engine, File cacheDir) throws IOException {
+        this(engine, (Reader) null, cacheDir);
     }
 
     /**
+     * @param engine javascript LessEngine
      * @param customJavaScript File containing custom JavaScript functions (@see LessCompilerImpl)
      * @param cacheDir         The directory where import information will be cached.
      * @throws IOException
      */
-    public CompilationTask(File customJavaScript, File cacheDir) throws IOException {
-        this(new FileReader(customJavaScript), cacheDir);
+    public CompilationTask(LessEngine engine, File customJavaScript, File cacheDir) throws IOException {
+        this(engine, new FileReader(customJavaScript), cacheDir);
     }
 
     /**
+     * @param engine javascript LessEngine
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
      * @throws IOException
      */
-    public CompilationTask(Reader customJavaScriptReader) throws IOException {
-        this(customJavaScriptReader, null);
+    public CompilationTask(LessEngine engine, Reader customJavaScriptReader) throws IOException {
+        this(engine, customJavaScriptReader, null);
     }
 
     /**
+     * @param engine javascript LessEngine
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
      * @param cacheDir               The directory where import information will be cached.
      * @throws IOException
      */
-    public CompilationTask(Reader customJavaScriptReader, File cacheDir) throws IOException {
+    public CompilationTask(LessEngine engine, Reader customJavaScriptReader, File cacheDir) throws IOException {
         if (customJavaScriptReader != null) {
             String customJavaScript = IOUtils.read(customJavaScriptReader);
-            lessCompiler = new LessCompilerImpl(customJavaScript);
+            lessCompiler = new LessCompilerImpl(engine, customJavaScript);
             customJavaScriptHashCode = customJavaScript.hashCode();
         } else {
-            lessCompiler = new LessCompilerImpl();
+            lessCompiler = new LessCompilerImpl(engine);
         }
 
         this.cacheDir = (cacheDir == null) ? new File(new File(System.getProperty("user.home")), ".lesscss") : cacheDir;

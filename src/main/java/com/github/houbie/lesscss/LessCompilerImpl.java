@@ -16,15 +16,11 @@
 
 package com.github.houbie.lesscss;
 
-import com.github.houbie.lesscss.compiledjs.LessImpl;
+import com.github.houbie.lesscss.engine.LessEngine;
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
 import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
 import com.github.houbie.lesscss.utils.IOUtils;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.tools.shell.Global;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,41 +35,40 @@ import java.io.StringReader;
  * @author Ivo Houbrechts
  */
 public class LessCompilerImpl implements LessCompiler {
-    public static final String RHINO = "rhino";
-
     private static final String UNKNOWN_SOURCE_NAME = "unknown";
 
     private static final Logger logger = LoggerFactory.getLogger(LessCompilerImpl.class);
 
-
     private Reader customJavaScriptReader;
-    private boolean prepared;
-    private Scriptable scope;
-    private Function compileFunction;
-
+    private LessEngine engine;
 
     /**
      * Default constructor
+     *
+     * @param engine javascript LessEngine
      */
-    public LessCompilerImpl() {
-        this((Reader) null);
+    public LessCompilerImpl(LessEngine engine) {
+        this(engine, (Reader) null);
     }
 
     /**
      * Constructor with custom JavaScript functions
      *
+     * @param engine           javascript LessEngine
      * @param customJavaScript JavaScript functions that can be called in LESS sources
      */
-    public LessCompilerImpl(String customJavaScript) {
-        this(new StringReader(customJavaScript));
+    public LessCompilerImpl(LessEngine engine, String customJavaScript) {
+        this(engine, new StringReader(customJavaScript));
     }
 
     /**
      * Constructor with custom JavaScript functions
      *
+     * @param engine                 javascript LessEngine
      * @param customJavaScriptReader Reader for JavaScript functions that can be called in LESS sources
      */
-    public LessCompilerImpl(Reader customJavaScriptReader) {
+    public LessCompilerImpl(LessEngine engine, Reader customJavaScriptReader) {
+        this.engine = engine;
         this.customJavaScriptReader = customJavaScriptReader;
     }
 
@@ -125,43 +120,12 @@ public class LessCompilerImpl implements LessCompiler {
             throw new NullPointerException("less string may not be null");
         }
         logger.debug("start less compilation");
-        Object result;
-        Object parseException;
         TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
-        try {
-            if (!prepared) {
-                prepareScriptEngine();
-            }
-            Object[] args = {less, options, sourceName, trackingResourceReader};
-            result = Context.call(null, compileFunction, scope, scope, args);
-            parseException = scope.get("parseException", scope);
-        } catch (Exception e) {
-            throw new RuntimeException("Exception while compiling less", e);
-        }
-        if (parseException != null) {
-            throw new LessParseException(parseException.toString());
-        }
+        engine.initialize(customJavaScriptReader);
+        String result = engine.execute(less, options, sourceName, trackingResourceReader);
+
         logger.debug("finished less compilation");
-        return new CompilationDetails(result.toString(), trackingResourceReader.getReadResources());
-    }
-
-    private void prepareScriptEngine() throws IOException {
-        logger.info("prepareScriptEngine");
-
-        Context cx = Context.enter();
-        logger.debug("Using implementation version: " + cx.getImplementationVersion());
-        cx.setOptimizationLevel(9);
-        cx.setLanguageVersion(170);
-        Global global = new Global();
-        global.init(cx);
-        scope = cx.initStandardObjects(global);
-        new LessImpl().exec(cx, scope);
-
-        if (customJavaScriptReader != null) {
-            cx.evaluateReader(scope, customJavaScriptReader, "customJavaScript", 1, null);
-        }
-        compileFunction = (Function) scope.get("compile", scope);
-        prepared = true;
+        return new CompilationDetails(result, trackingResourceReader.getReadResources());
     }
 
 }

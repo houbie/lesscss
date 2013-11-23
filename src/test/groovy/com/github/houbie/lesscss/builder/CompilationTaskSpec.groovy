@@ -18,6 +18,7 @@ package com.github.houbie.lesscss.builder
 
 import com.github.houbie.lesscss.LessCompiler
 import com.github.houbie.lesscss.Options
+import com.github.houbie.lesscss.engine.RhinoLessEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 
@@ -36,13 +37,16 @@ class CompilationTaskSpec extends Specification {
     File basicDestination = new File(workDir, 'basic.css')
     CompilationUnit basicUnit = new CompilationUnit(basicSource.canonicalPath, basicDestination, new Options(), new FileSystemResourceReader(new File('src/test/resources/less')))
 
-    CompilationTask compilationTask = new CompilationTask(cacheDir: cacheDir, compilationUnits: [importUnit, basicUnit])
+    CompilationTask compilationTask
 
 
     def setup() {
         cleanDir(cacheDir)
         cleanDir(workDir)
         initSources()
+        compilationTask = new CompilationTask(new RhinoLessEngine())
+        compilationTask.cacheDir = cacheDir
+        compilationTask.compilationUnits = [importUnit, basicUnit]
     }
 
     def 'execute with empty cache and destination'() {
@@ -110,7 +114,7 @@ class CompilationTaskSpec extends Specification {
         basicDestination.delete()
 
         when:
-        compilationTask = new CompilationTask(new File('src/test/resources/less.js-tests/functions.js'), cacheDir)
+        compilationTask = new CompilationTask(new RhinoLessEngine(), new File('src/test/resources/less.js-tests/functions.js'), cacheDir)
         compilationTask.compilationUnits = [basicUnit]
         compilationTask.execute()
 

@@ -17,6 +17,7 @@
 package com.github.houbie.lesscss
 
 import ch.qos.logback.classic.Level
+import com.github.houbie.lesscss.engine.RhinoLessEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import org.slf4j.LoggerFactory
 import spock.lang.Specification
@@ -31,7 +32,7 @@ class BootstrapSpec extends Specification {
         long start = System.currentTimeMillis()
 
         when:
-        LessCompilerImpl compiler = new LessCompilerImpl()
+        LessCompilerImpl compiler = new LessCompilerImpl(new RhinoLessEngine())
         LoggerFactory.getLogger(LessCompilerImpl).level = Level.WARN
 
         then:
