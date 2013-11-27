@@ -18,7 +18,7 @@ package com.github.houbie.lesscss.builder
 
 import com.github.houbie.lesscss.LessCompiler
 import com.github.houbie.lesscss.Options
-import com.github.houbie.lesscss.engine.RhinoLessEngine
+import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 
@@ -44,7 +44,7 @@ class CompilationTaskSpec extends Specification {
         cleanDir(cacheDir)
         cleanDir(workDir)
         initSources()
-        compilationTask = new CompilationTask(new RhinoLessEngine())
+        compilationTask = new CompilationTask(new RhinoLessCompilationEngine())
         compilationTask.cacheDir = cacheDir
         compilationTask.compilationUnits = [importUnit, basicUnit]
     }
@@ -114,7 +114,7 @@ class CompilationTaskSpec extends Specification {
         basicDestination.delete()
 
         when:
-        compilationTask = new CompilationTask(new RhinoLessEngine(), new File('src/test/resources/less.js-tests/functions.js'), cacheDir)
+        compilationTask = new CompilationTask(new RhinoLessCompilationEngine(), new File('src/test/resources/less.js-tests/functions.js'), cacheDir)
         compilationTask.compilationUnits = [basicUnit]
         compilationTask.execute()
 

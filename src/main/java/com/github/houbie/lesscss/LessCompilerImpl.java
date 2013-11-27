@@ -16,7 +16,7 @@
 
 package com.github.houbie.lesscss;
 
-import com.github.houbie.lesscss.engine.LessEngine;
+import com.github.houbie.lesscss.engine.LessCompilationEngine;
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
 import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
@@ -40,14 +40,14 @@ public class LessCompilerImpl implements LessCompiler {
     private static final Logger logger = LoggerFactory.getLogger(LessCompilerImpl.class);
 
     private Reader customJavaScriptReader;
-    private LessEngine engine;
+    private LessCompilationEngine engine;
 
     /**
      * Default constructor
      *
      * @param engine javascript LessEngine
      */
-    public LessCompilerImpl(LessEngine engine) {
+    public LessCompilerImpl(LessCompilationEngine engine) {
         this(engine, (Reader) null);
     }
 
@@ -57,7 +57,7 @@ public class LessCompilerImpl implements LessCompiler {
      * @param engine           javascript LessEngine
      * @param customJavaScript JavaScript functions that can be called in LESS sources
      */
-    public LessCompilerImpl(LessEngine engine, String customJavaScript) {
+    public LessCompilerImpl(LessCompilationEngine engine, String customJavaScript) {
         this(engine, new StringReader(customJavaScript));
     }
 
@@ -67,7 +67,7 @@ public class LessCompilerImpl implements LessCompiler {
      * @param engine                 javascript LessEngine
      * @param customJavaScriptReader Reader for JavaScript functions that can be called in LESS sources
      */
-    public LessCompilerImpl(LessEngine engine, Reader customJavaScriptReader) {
+    public LessCompilerImpl(LessCompilationEngine engine, Reader customJavaScriptReader) {
         this.engine = engine;
         this.customJavaScriptReader = customJavaScriptReader;
     }
@@ -122,7 +122,7 @@ public class LessCompilerImpl implements LessCompiler {
         logger.debug("start less compilation");
         TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
         engine.initialize(customJavaScriptReader);
-        String result = engine.execute(less, options, sourceName, trackingResourceReader);
+        String result = engine.compile(less, options, sourceName, trackingResourceReader);
 
         logger.debug("finished less compilation");
         return new CompilationDetails(result, trackingResourceReader.getReadResources());

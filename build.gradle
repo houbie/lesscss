@@ -38,7 +38,7 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 apply plugin: 'release'
 
-version = (file('version.txt').text=~/=(.+)$/)[0][1]
+version = (file('version.txt').text =~ /=(.+)$/)[0][1]
 group = 'com.github.houbie'
 
 sourceCompatibility = 1.7
@@ -49,35 +49,42 @@ repositories {
     mavenCentral()
 }
 
+ext.generatedDir = new File("$buildDir/generated")
+
+configurations {
+    jsCompilation
+}
+
 dependencies {
     compile 'org.mozilla:rhino:1.7R4'
     compile 'org.slf4j:slf4j-api:1.7.5'
+    compile files('lib/jav8-jsr223-MacOSX-x86_64-0.6.jar')
     optional 'commons-cli:commons-cli:1.2'
     optional 'ch.qos.logback:logback-classic:1.0.13'
+
+    jsCompilation 'org.mozilla:rhino:1.7R4'
+    compile files(generatedDir) { builtBy 'compileJs' }
 
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
 }
 
+
 minifyJs {
     source = files 'src/main/resources/js/environment.js', 'src/main/resources/js/less-1.4.1.js', 'src/main/resources/js/cssmin.js', 'src/main/resources/js/compile.js'
-    dest = file("${buildDir}/resources/main/js/all-min.js")
+    dest = file "$generatedDir/js/all-min.js"
 }
 
 task compileJs(type: JavaExec, dependsOn: minifyJs) {
-    classpath configurations.compile
+    classpath configurations.jsCompilation
     main = 'org.mozilla.javascript.tools.jsc.Main'
-    args = ['-d', "${buildDir}/classes/main", '-o', 'LessImpl.class', '-package', 'com.github.houbie.lesscss.compiledjs', '-opt', '9', '-version', '170', "${buildDir}/resources/main/js/all-min.js"]
-
+    args = ['-d', "$generatedDir", '-o', 'LessImpl.class', '-package', 'com.github.houbie.lesscss.compiledjs', '-opt', '9', '-version', '170', "$generatedDir/js/all-min.js"]
 }
-//add generated class to compile classpath
-sourceSets.main.compileClasspath += files("${buildDir}/classes/main")
-compileJava.dependsOn compileJs
 
 jar {
     manifest {
         attributes 'Implementation-Title': 'Java LESS compiler', 'Implementation-Version': version
     }
-    from 'LICENSE', 'NOTICE'
+    from 'LICENSE', 'NOTICE', generatedDir
 }
 
 applicationDistribution.from(configurations.optional) {
@@ -182,7 +189,7 @@ task updateReadme << {
     File readme = file('README.md')
     //replace all occurrences of x.y.z-less-a.b.c with the new release version
     def releaseVersion = "${project['release.oldVersion']}".replaceAll('-SNAPSHOT', '')
-    readme.text = (readme.text=~/\d\.\d(\.\d)?-less-\d\.\d(\.\d)?(-SNAPSHOT)?/).replaceAll("${releaseVersion}")
+    readme.text = (readme.text =~ /\d\.\d(\.\d)?-less-\d\.\d(\.\d)?(-SNAPSHOT)?/).replaceAll("${releaseVersion}")
 }
 
 release.dependsOn clean

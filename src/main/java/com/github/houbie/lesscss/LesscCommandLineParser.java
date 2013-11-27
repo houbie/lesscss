@@ -49,6 +49,7 @@ public class LesscCommandLineParser {
     static final String DEPENDS_OPTION = "depends";
     static final String CACHE_DIR_OPTION = "cache-dir";
     static final String DAEMON_OPTION = "daemon";
+    static final String ENGINE_OPTION = "engine";
 
     static final String MAIN_COMMAND = "lessc";
     static final String HELP_HEADER = "[option option=parameter ...] <source> [destination]";
@@ -76,6 +77,7 @@ public class LesscCommandLineParser {
     private boolean verbose;
     private File cacheDir;
     private boolean daemon;
+    private String engine;
 
     public LesscCommandLineParser(String version) {
         this.version = version;
@@ -116,6 +118,7 @@ public class LesscCommandLineParser {
         result.addOption("M", DEPENDS_OPTION, false, "Output a makefile import dependency list to stdout.");
         result.addOption(OptionBuilder.withLongOpt(CACHE_DIR_OPTION).withDescription("Cache directory.").create());
         result.addOption(OptionBuilder.withLongOpt(DAEMON_OPTION).withDescription("Start compiler daemon.").create());
+        result.addOption(OptionBuilder.hasArg().withLongOpt(ENGINE_OPTION).withDescription("JavaScript engine, either 'rhino' (default), 'nashorn' (requires JDK8) or 'jav8' (only on supported operating systems).").create());
 
         return result;
     }
@@ -157,6 +160,7 @@ public class LesscCommandLineParser {
         setCustomJsReader(cmd);
         setCacheDir(cmd);
         setDaemon(cmd);
+        setEngine(cmd);
         checkSourceLocation();
     }
 
@@ -246,6 +250,10 @@ public class LesscCommandLineParser {
         }
     }
 
+    private void setEngine(CommandLine cmd) {
+        engine = cmd.getOptionValue(ENGINE_OPTION);
+    }
+
     private void checkSourceLocation() throws ParseException, IOException {
         if (!resourceReader.canRead(sourceLocation)) {
             throw new ParseException(this.sourceLocation + " can not be read");
@@ -287,5 +295,9 @@ public class LesscCommandLineParser {
 
     public boolean isDaemon() {
         return daemon;
+    }
+
+    public String getEngine() {
+        return engine;
     }
 }

@@ -17,10 +17,15 @@
 package com.github.houbie.lesscss
 
 import ch.qos.logback.classic.Level
-import com.github.houbie.lesscss.engine.RhinoLessEngine
+import ch.qos.logback.classic.Logger
+import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
+import com.github.houbie.lesscss.engine.ScriptEngineLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import org.slf4j.LoggerFactory
+import spock.lang.IgnoreIf
 import spock.lang.Specification
+
+import javax.script.ScriptEngineManager
 
 class BootstrapSpec extends Specification {
     static File source = new File('src/test/resources/less/bootstrap/bootstrap.less')
@@ -28,23 +33,31 @@ class BootstrapSpec extends Specification {
     static String expected = new File('src/test/resources/less/bootstrap/bootstrap.css').text
 
     def "compile twitter bootstrap less"() {
+        LessCompilerImpl compiler = new LessCompilerImpl(new RhinoLessCompilationEngine())
+        compiler.compile(source, destination,
+                new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
 
-        long start = System.currentTimeMillis()
+        expect:
+        destination.text == expected
+    }
 
-        when:
-        LessCompilerImpl compiler = new LessCompilerImpl(new RhinoLessEngine())
-        LoggerFactory.getLogger(LessCompilerImpl).level = Level.WARN
+    @IgnoreIf({ !new ScriptEngineManager().getEngineByName('nashorn') })
+    def "compile twitter bootstrap less with nashorn"() {
+        LessCompilerImpl compiler = new LessCompilerImpl(new ScriptEngineLessCompilationEngine('nashorn'))
+        compiler.compile(source, destination,
+                new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
 
-        then:
-        (1..2).each {
-            if (it > 1) {
-                start = System.currentTimeMillis()
-            }
-            compiler.compile(source, destination,
-                    new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
-            long time = System.currentTimeMillis() - start
-            println("RHINO\t$it\t$time")
-        }
+        expect:
+        destination.text == expected
+    }
+
+    @IgnoreIf({ !new ScriptEngineManager().getEngineByName('jav8') })
+    def "compile twitter bootstrap less with jav8"() {
+        LessCompilerImpl compiler = new LessCompilerImpl(new ScriptEngineLessCompilationEngine('jav8'))
+        compiler.compile(source, destination,
+                new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
+
+        expect:
         destination.text == expected
     }
 
@@ -57,5 +70,31 @@ class BootstrapSpec extends Specification {
 
         then:
         destination.text == new File('src/test/resources/less/bootstrap/customized/custom-bootstrap.css').text
+    }
+
+    @IgnoreIf({ !System.getProperty("nashorn") })
+    def "compare performance"() {
+        long start = System.currentTimeMillis()
+
+        when:
+        LessCompilerImpl compiler = new LessCompilerImpl(engine)
+        LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).level = Level.WARN
+        LoggerFactory.getLogger(ScriptEngineLessCompilationEngine).level = Level.WARN
+        LoggerFactory.getLogger(FileSystemResourceReader).level = Level.WARN
+
+        then:
+        (1..15).each {
+            if (it > 1) {
+                start = System.currentTimeMillis()
+            }
+            compiler.compile(source, destination,
+                    new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
+            long time = System.currentTimeMillis() - start
+            println("nashorn\t$it\t$time")
+        }
+        destination.text == expected
+
+        where:
+        engine << [new RhinoLessCompilationEngine(), new ScriptEngineLessCompilationEngine("nashorn")]
     }
 }

@@ -19,7 +19,7 @@ package com.github.houbie.lesscss;
 
 import com.github.houbie.lesscss.builder.CompilationTask;
 import com.github.houbie.lesscss.builder.CompilationUnit;
-import com.github.houbie.lesscss.engine.RhinoLessEngine;
+import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine;
 import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
@@ -82,12 +82,12 @@ public class Lessc {
     }
 
     private static LessCompiler.CompilationDetails compileWithDetails(LesscCommandLineParser cmd) throws IOException {
-        LessCompiler lessCompiler = new LessCompilerImpl(new RhinoLessEngine(), cmd.getCustomJsReader()); //TODO: make engine configurable
+        LessCompiler lessCompiler = new LessCompilerImpl(new RhinoLessCompilationEngine(), cmd.getCustomJsReader()); //TODO: make engine configurable
         return lessCompiler.compileWithDetails(cmd.getResourceReader().read(cmd.getSourceLocation()), cmd.getResourceReader(), cmd.getOptions(), cmd.getSourceLocation());
     }
 
     private static void compileToDestination(LesscCommandLineParser cmd) throws IOException {
-        CompilationTask compilationTask = new CompilationTask(new RhinoLessEngine(), cmd.getCustomJsReader(), cmd.getCacheDir());//TODO: make engine configurable
+        CompilationTask compilationTask = new CompilationTask(new RhinoLessCompilationEngine(), cmd.getCustomJsReader(), cmd.getCacheDir());//TODO: make engine configurable
         CompilationUnit compilationUnit = new CompilationUnit(cmd.getSourceLocation(), cmd.getDestination(), cmd.getOptions(), cmd.getResourceReader());
         compilationTask.getCompilationUnits().add(compilationUnit);
         if (cmd.isDaemon()) {

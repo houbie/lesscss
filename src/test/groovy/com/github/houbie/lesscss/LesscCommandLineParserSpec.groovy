@@ -146,6 +146,9 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
                 '    --cache-dir            Cache directory.\n' +
                 '    --daemon               Start compiler daemon.\n' +
                 ' -e,--encoding <arg>       Character encoding.\n' +
+                '    --engine <arg>         JavaScript engine, either \'rhino\' (default),\n' +
+                '                           \'nashorn\' (requires JDK8) or \'jav8\' (only on\n' +
+                '                           supported operating systems).\n' +
                 ' -h,--help                 Print help (this message) and exit.\n' +
                 '    --include-path <arg>   Set include paths.  (3)\n' +
                 ' -js,--custom-js <arg>     File with custom JavaScript functions.\n' +

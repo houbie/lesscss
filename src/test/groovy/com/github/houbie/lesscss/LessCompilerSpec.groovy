@@ -16,7 +16,7 @@
 
 package com.github.houbie.lesscss
 
-import com.github.houbie.lesscss.engine.RhinoLessEngine
+import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -29,7 +29,7 @@ class LessCompilerSpec extends Specification {
 
     def setupSpec() {
         Reader reader = new File('src/test/resources/less.js-tests/functions.js').newReader()
-        compiler = new LessCompilerImpl(new RhinoLessEngine(), reader)
+        compiler = new LessCompilerImpl(new RhinoLessCompilationEngine(), reader)
     }
 
     def "compile empty less"() {
@@ -45,14 +45,14 @@ class LessCompilerSpec extends Specification {
     }
 
     def "default constructor"() {
-        def compiler = new LessCompilerImpl(new RhinoLessEngine())
+        def compiler = new LessCompilerImpl(new RhinoLessCompilationEngine())
 
         expect:
         compiler.compile(new File('src/test/resources/less/basic.less')) == new File('src/test/resources/less/basic.css').text
     }
 
     def "constructor with custom javascript"() {
-        def compiler = new LessCompilerImpl(new RhinoLessEngine(), new File('src/test/resources/less.js-tests/functions.js').text)
+        def compiler = new LessCompilerImpl(new RhinoLessCompilationEngine(), new File('src/test/resources/less.js-tests/functions.js').text)
 
         expect:
         compiler.compile(new File('src/test/resources/less/basic.less')) == 'p {\n  color: #000000;\n  width: 2;\n}\n'

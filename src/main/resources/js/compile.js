@@ -26,16 +26,16 @@ var less = window.less,
 
         compile = function (source, options, sourceName, importReader) {
             var result,
-                    rootPath = String(options.rootPath),
+                    rootPath = String(options.getRootPath()),
                     lessEnv = {
-                        compress: options.compress,
-                        optimization: options.optimizationLevel,
-                        strictImports: options.strictImports,
-                        strictMath: options.strictMath,
-                        strictUnits: options.strictUnits,
-                        relativeUrls: options.relativeUrls,
+                        compress: options.isCompress(),
+                        optimization: options.getOptimizationLevel(),
+                        strictImports: options.isStrictImports(),
+                        strictMath: options.isStrictMath(),
+                        strictUnits: options.isStrictUnits(),
+                        relativeUrls: options.isRelativeUrls(),
                         filename: sourceName,
-                        dependenciesOnly: options.dependenciesOnly
+                        dependenciesOnly: options.isDependenciesOnly()
                     };
 
             rootFilename = sourceName;
@@ -43,8 +43,8 @@ var less = window.less,
             if (rootPath.length > 0) {
                 lessEnv.rootpath = rootPath;
             }
-            if (options.dumpLineNumbers.getOptionString()) {
-                lessEnv.dumpLineNumbers = String(options.dumpLineNumbers.getOptionString());
+            if (options.getDumpLineNumbers() && options.getDumpLineNumbers().getOptionString()) {
+                lessEnv.dumpLineNumbers = String(options.getDumpLineNumbers().getOptionString());
             }
 
             lessEnv.currentFileInfo = {
