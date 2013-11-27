@@ -57,7 +57,7 @@ public class CompilationTask {
     private boolean stopDaemon;
 
     /**
-     * Default constructor, uses ${user.home}\.lesscss as cache directory.
+     * Default constructor, uses ${user.home}/.lesscss as cache directory.
      *
      * @param engine javascript LessEngine
      * @throws IOException
@@ -68,7 +68,7 @@ public class CompilationTask {
 
 
     /**
-     * @param engine javascript LessEngine
+     * @param engine   javascript LessEngine
      * @param cacheDir The directory where import information will be cached.
      * @throws IOException
      */
@@ -77,7 +77,7 @@ public class CompilationTask {
     }
 
     /**
-     * @param engine javascript LessEngine
+     * @param engine           javascript LessEngine
      * @param customJavaScript File containing custom JavaScript functions (@see LessCompilerImpl)
      * @param cacheDir         The directory where import information will be cached.
      * @throws IOException
@@ -87,7 +87,7 @@ public class CompilationTask {
     }
 
     /**
-     * @param engine javascript LessEngine
+     * @param engine                 javascript LessEngine
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
      * @throws IOException
      */
@@ -96,7 +96,7 @@ public class CompilationTask {
     }
 
     /**
-     * @param engine javascript LessEngine
+     * @param engine                 javascript LessEngine
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
      * @param cacheDir               The directory where import information will be cached.
      * @throws IOException

@@ -44,10 +44,10 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
     private static final boolean MINIFIED = true;
 
 
-    ScriptEngine scriptEngine;
+    private ScriptEngine scriptEngine;
 
     /**
-     * @param scriptEngineName the name of the ScriptEngine (e.g. "nashorn", "rhino", "jav8"...)
+     * @param scriptEngineName the name of the underlying ScriptEngine (e.g. "nashorn", "rhino", "jav8"...)
      */
     public ScriptEngineLessCompilationEngine(String scriptEngineName) {
         logger.info("creating new NashornEngine");
@@ -56,6 +56,14 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
         if (scriptEngine == null) {
             throw new RuntimeException("The ScriptEngine " + scriptEngineName + " could not be loaded");
         }
+    }
+
+    /**
+     * @param scriptEngine the underlying ScriptEngine
+     */
+    public ScriptEngineLessCompilationEngine(ScriptEngine scriptEngine) {
+        logger.info("creating new engine with {}", scriptEngine.getClass());
+        this.scriptEngine = scriptEngine;
     }
 
     @Override
@@ -96,5 +104,9 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
             throw new LessParseException(parseException.toString());
         }
         return result.toString();
+    }
+
+    public ScriptEngine getScriptEngine() {
+        return scriptEngine;
     }
 }
