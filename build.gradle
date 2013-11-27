@@ -49,7 +49,7 @@ repositories {
     mavenCentral()
 }
 
-ext.generatedDir = new File("$buildDir/generated")
+def generatedDir = "$buildDir/generated"
 
 configurations {
     jsCompilation
