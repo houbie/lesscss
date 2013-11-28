@@ -58,13 +58,11 @@ public class LesscCommandLineParser {
                     "\n" +
                     "         comments: output the debug info within comments.\n" +
                     "         mediaquery: outputs the information within a fake media query which is compatible with the SASS format.\n" +
-                    "         all does both\n" +
+                    "         all: does both\n" +
                     "\n" +
                     "     (2) --rootpath: works with or without the relative-urls option.\n" +
                     "\n" +
-                    "     (3) --include-path: separated by : or ;\n" +
-                    "\n" +
-                    "     (4) Optimization levels: The lower the number, the fewer nodes created in the tree. Useful for debugging or if you need to access the individual nodes in the tree.";
+                    "     (3) Optimization levels: The lower the number, the fewer nodes created in the tree. Useful for debugging or if you need to access the individual nodes in the tree.";
 
     private final String version;
 
@@ -105,14 +103,14 @@ public class LesscCommandLineParser {
         result.addOption("s", SILENT_OPTION, false, "Suppress output of error messages.");
         result.addOption(OptionBuilder.withLongOpt(LINE_NUMBERS_OPTION).hasArg().withDescription("--line-numbers=TYPE  Outputs filename and line numbers.  (1)").create());
         result.addOption("rp", ROOT_PATH_OPTION, true, "Set rootpath for URL rewriting in relative imports and URLs.  (2)");
-        result.addOption(OptionBuilder.withLongOpt(INCLUDE_PATH_OPTION).hasArg().withDescription("Set include paths.  (3)").create());
+        result.addOption(OptionBuilder.withLongOpt(INCLUDE_PATH_OPTION).hasArg().withDescription("Set include paths. Separated by ':'. Use ';' on Windows.").create());
         result.addOption("ru", RELATIVE_URLS_OPTION, false, "Re-write relative URLs to the base less file.");
         result.addOption(OptionBuilder.withLongOpt(STRICT_IMPORTS_OPTION).withDescription("Force evaluation of imports.").create());
         result.addOption(OptionBuilder.withLongOpt(STRICT_MATH_OPTION).withDescription("Use strict math.").create());
         result.addOption(OptionBuilder.withLongOpt(STRICT_UNITS_OPTION).withDescription("Use strict units.").create());
         result.addOption("x", COMPRESS_OPTION, false, "Compress output by removing some whitespaces.");
         result.addOption(OptionBuilder.withLongOpt(YUI_COMPRESS_OPTION).withDescription("Compress output using YUI cssmin.").create());
-        result.addOption(OptionBuilder.hasArg().withLongOpt(OPTIMIZATION_LEVEL_OPTION).withType(Number.class).withDescription("-O1, -O2... Set the parser's optimization level.   (4)").create('O'));
+        result.addOption(OptionBuilder.hasArg().withLongOpt(OPTIMIZATION_LEVEL_OPTION).withType(Number.class).withDescription("-O1, -O2... Set the parser's optimization level.   (3)").create('O'));
         result.addOption("js", CUSTOM_JS_OPTION, true, "File with custom JavaScript functions.");
         result.addOption("e", ENCODING_OPTION, true, "Character encoding.");
         result.addOption("M", DEPENDS_OPTION, false, "Output a makefile import dependency list to stdout.");
@@ -209,7 +207,7 @@ public class LesscCommandLineParser {
 
     private void setResourceReader(CommandLine cmd) throws ParseException {
         if (cmd.hasOption(INCLUDE_PATH_OPTION)) {
-            String[] paths = cmd.getOptionValue(INCLUDE_PATH_OPTION).split("[,|;]");
+            String[] paths = cmd.getOptionValue(INCLUDE_PATH_OPTION).split("[:|;]");
             File[] files = new File[paths.length];
             for (int i = 0; i < paths.length; i++) {
                 files[i] = new File(paths[i]);

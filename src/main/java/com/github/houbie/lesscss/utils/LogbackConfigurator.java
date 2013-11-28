@@ -25,6 +25,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.github.houbie.lesscss.LessCompilerImpl;
 import com.github.houbie.lesscss.builder.CompilationTask;
+import com.github.houbie.lesscss.engine.LessCompilationEngine;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -56,6 +57,7 @@ public class LogbackConfigurator {
         lc.getLogger(Logger.ROOT_LOGGER_NAME).detachAndStopAllAppenders();
         configureCompilerLogger(verbose, lc, ca);
         configureCompilationTaskLogger(daemon, lc, ca);
+        configureLessCompilationEngineLogger(verbose, lc, ca);
     }
 
     private static void configureCompilerLogger(boolean verbose, LoggerContext lc, ConsoleAppender<ILoggingEvent> ca) {
@@ -70,5 +72,12 @@ public class LogbackConfigurator {
         compilationTaskLogger.detachAndStopAllAppenders();
         compilationTaskLogger.addAppender(ca);
         compilationTaskLogger.setLevel(daemon ? Level.INFO : Level.OFF);
+    }
+
+    private static void configureLessCompilationEngineLogger(boolean verbose, LoggerContext lc, ConsoleAppender<ILoggingEvent> ca) {
+        Logger engineLogger = lc.getLogger(LessCompilationEngine.class.getPackage().getName());
+        engineLogger.detachAndStopAllAppenders();
+        engineLogger.addAppender(ca);
+        engineLogger.setLevel(verbose ? Level.ALL : Level.OFF);
     }
 }

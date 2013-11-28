@@ -69,7 +69,7 @@ class BootstrapSpec extends Specification {
         destination.delete()
 
         when:
-        Lessc.main('--include-path src/test/resources/less/bootstrap/customized,src/test/resources/less/bootstrap bootstrap.less build/tmp/custom-bootstrap.css'.split(' '))
+        Lessc.main('--include-path src/test/resources/less/bootstrap/customized:src/test/resources/less/bootstrap bootstrap.less build/tmp/custom-bootstrap.css'.split(' '))
 
         then:
         destination.text == new File('src/test/resources/less/bootstrap/customized/custom-bootstrap.css').text

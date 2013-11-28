@@ -111,8 +111,24 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         where:
         commandLine                                                                      | baseDirs                                                    | encoding
         'src/test/resources/less/basic.less'                                             | [new File('src/test/resources/less').absoluteFile]          | null
-        '--include-path path1,path2;/path/3 -e utf16 src/test/resources/less/basic.less' | [new File('path1'), new File('path2'), new File('/path/3')] | 'utf16'
+        '--include-path path1:path2:/path/3 -e utf16 src/test/resources/less/basic.less' | [new File('path1'), new File('path2'), new File('/path/3')] | 'utf16'
+        '--include-path path1;path2;/path/3 -e utf16 src/test/resources/less/basic.less' | [new File('path1'), new File('path2'), new File('/path/3')] | 'utf16'
         '--include-path path1 --encoding utf8 src/test/resources/less/basic.less'        | [new File('path1')]                                         | 'utf8'
+    }
+
+    @Unroll
+    def 'check engine'() {
+        when:
+        def args = commandLine.split(' ')
+
+        then:
+        !commandLineParser.parse(args)
+        commandLineParser.engine == engine
+
+        where:
+        commandLine                                                 | engine
+        'src/test/resources/less/basic.less'                        | null
+        '--engine jav8 -e utf16 src/test/resources/less/basic.less' | 'jav8'
     }
 
     def 'check encoding'() {
@@ -150,14 +166,15 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
                 '                           \'nashorn\' (requires JDK8) or \'jav8\' (only on\n' +
                 '                           supported operating systems).\n' +
                 ' -h,--help                 Print help (this message) and exit.\n' +
-                '    --include-path <arg>   Set include paths.  (3)\n' +
+                '    --include-path <arg>   Set include paths. Separated by \':\'. Use \';\' on\n' +
+                '                           Windows.\n' +
                 ' -js,--custom-js <arg>     File with custom JavaScript functions.\n' +
                 '    --line-numbers <arg>   --line-numbers=TYPE  Outputs filename and line\n' +
                 '                           numbers.  (1)\n' +
                 ' -M,--depends              Output a makefile import dependency list to\n' +
                 '                           stdout.\n' +
                 ' -O,--optimization <arg>   -O1, -O2... Set the parser\'s optimization\n' +
-                '                           level.   (4)\n' +
+                '                           level.   (3)\n' +
                 ' -rp,--rootpath <arg>      Set rootpath for URL rewriting in relative\n' +
                 '                           imports and URLs.  (2)\n' +
                 ' -ru,--relative-urls       Re-write relative URLs to the base less file.\n' +
@@ -174,10 +191,9 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
                 'comments: output the debug info within comments.\n' +
                 'mediaquery: outputs the information within a fake media query which is\n' +
                 'compatible with the SASS format.\n' +
-                'all does both\n' +
+                'all: does both\n' +
                 '(2) --rootpath: works with or without the relative-urls option.\n' +
-                '(3) --include-path: separated by : or ;\n' +
-                '(4) Optimization levels: The lower the number, the fewer nodes created in\n' +
+                '(3) Optimization levels: The lower the number, the fewer nodes created in\n' +
                 'the tree. Useful for debugging or if you need to access the individual\n' +
                 'nodes in the tree.\n'
     }
