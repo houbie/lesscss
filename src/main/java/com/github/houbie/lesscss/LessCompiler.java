@@ -33,7 +33,7 @@ public interface LessCompiler {
      *
      * @param source source file
      * @return the resulting CSS
-     * @throws IOException
+     * @throws IOException When source cannot be read
      */
     String compile(File source) throws IOException;
 
@@ -43,7 +43,7 @@ public interface LessCompiler {
      * @param source  source file
      * @param options compilation options
      * @return the resulting CSS
-     * @throws IOException
+     * @throws IOException When source cannot be read
      */
     String compile(File source, Options options) throws IOException;
 
@@ -52,7 +52,7 @@ public interface LessCompiler {
      *
      * @param source      source file
      * @param destination destination file
-     * @throws IOException
+     * @throws IOException When source cannot be read or destination cannot be written
      */
     void compile(File source, File destination) throws IOException;
 
@@ -64,7 +64,7 @@ public interface LessCompiler {
      * @param options      compilation options
      * @param importReader ResourceReader for resolving imports
      * @param encoding     character encoding
-     * @throws IOException
+     * @throws IOException When source cannot be read or destination cannot be written
      */
     void compile(File source, File destination, Options options, ResourceReader importReader, String encoding) throws IOException;
 

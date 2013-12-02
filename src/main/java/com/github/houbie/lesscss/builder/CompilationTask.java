@@ -35,12 +35,9 @@ import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
 
 /**
  * A CompilationTask can be used to lazy compile one or more LESS files that are set with @see setCompilationUnits
- * <p/>
  * The compilation will only be executed if one of the (imported) sources is newer than the resulting CSS.
  * A CompilationTask caches information about imported files by default in ${user.home}\.lesscss
- * <p/>
  * This class also provides a daemon that periodically checks for changes in the (imported) LESS sources.
- * <p/>
  * This class is typically used in build scripts (ANT, Gradle...).
  *
  * @author Ivo Houbrechts
@@ -60,7 +57,7 @@ public class CompilationTask {
      * Default constructor, uses ${user.home}/.lesscss as cache directory.
      *
      * @param engine javascript LessEngine
-     * @throws IOException
+     * @throws IOException When a resource cannot be read/written
      */
     public CompilationTask(LessCompilationEngine engine) throws IOException {
         this(engine, (Reader) null);
@@ -70,7 +67,7 @@ public class CompilationTask {
     /**
      * @param engine   javascript LessEngine
      * @param cacheDir The directory where import information will be cached.
-     * @throws IOException
+     * @throws IOException When a resource cannot be read/written
      */
     public CompilationTask(LessCompilationEngine engine, File cacheDir) throws IOException {
         this(engine, (Reader) null, cacheDir);
@@ -80,7 +77,7 @@ public class CompilationTask {
      * @param engine           javascript LessEngine
      * @param customJavaScript File containing custom JavaScript functions (@see LessCompilerImpl)
      * @param cacheDir         The directory where import information will be cached.
-     * @throws IOException
+     * @throws IOException When a resource cannot be read/written
      */
     public CompilationTask(LessCompilationEngine engine, File customJavaScript, File cacheDir) throws IOException {
         this(engine, new FileReader(customJavaScript), cacheDir);
@@ -89,7 +86,7 @@ public class CompilationTask {
     /**
      * @param engine                 javascript LessEngine
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
-     * @throws IOException
+     * @throws IOException When a resource cannot be read/written
      */
     public CompilationTask(LessCompilationEngine engine, Reader customJavaScriptReader) throws IOException {
         this(engine, customJavaScriptReader, null);
@@ -99,7 +96,7 @@ public class CompilationTask {
      * @param engine                 javascript LessEngine
      * @param customJavaScriptReader Reader for reading custom JavaScript functions (@see LessCompilerImpl)
      * @param cacheDir               The directory where import information will be cached.
-     * @throws IOException
+     * @throws IOException When a resource cannot be read/written
      */
     public CompilationTask(LessCompilationEngine engine, Reader customJavaScriptReader, File cacheDir) throws IOException {
         if (customJavaScriptReader != null) {
@@ -116,7 +113,7 @@ public class CompilationTask {
     /**
      * Execute the lazy compilation.
      *
-     * @throws IOException
+     * @throws IOException When a resource cannot be read/written
      */
     public void execute() throws IOException {
         logger.debug("CompilationTask: execute");
@@ -241,9 +238,6 @@ public class CompilationTask {
         }
     }
 
-    /**
-     * @return the cache directory
-     */
     public File getCacheDir() {
         return cacheDir;
     }

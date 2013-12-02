@@ -38,7 +38,7 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 apply plugin: 'release'
 
-version = (file('version.txt').text =~ /=(.+)$/)[0][1]
+version = file('version.txt').text.split('=')[1].trim()
 group = 'com.github.houbie'
 
 sourceCompatibility = 1.7
@@ -49,10 +49,16 @@ repositories {
     mavenCentral()
 }
 
-def generatedDir = "$buildDir/generated"
+def generatedResources = "$buildDir/generatedResources"
 
 configurations {
     jsCompilation
+}
+
+sourceSets {
+    main {
+        output.dir(generatedResources)
+    }
 }
 
 dependencies {
@@ -62,28 +68,27 @@ dependencies {
     optional 'ch.qos.logback:logback-classic:1.0.13'
 
     jsCompilation 'org.mozilla:rhino:1.7R4'
-    compile files(generatedDir) { builtBy 'compileJs' }
+    compile files(generatedResources) { builtBy 'compileJs' }
 
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
 }
 
-
 minifyJs {
     source = files 'src/main/resources/js/environment.js', 'src/main/resources/js/less-1.4.1.js', 'src/main/resources/js/cssmin.js', 'src/main/resources/js/compile.js'
-    dest = file "$generatedDir/js/all-min.js"
+    dest = file "$generatedResources/js/all-min.js"
 }
 
 task compileJs(type: JavaExec, dependsOn: minifyJs) {
     classpath configurations.jsCompilation
     main = 'org.mozilla.javascript.tools.jsc.Main'
-    args = ['-d', "$generatedDir", '-o', 'LessImpl.class', '-package', 'com.github.houbie.lesscss.compiledjs', '-opt', '9', '-version', '170', "$generatedDir/js/all-min.js"]
+    args = ['-d', "$generatedResources", '-o', 'LessImpl.class', '-package', 'com.github.houbie.lesscss.compiledjs', '-opt', '9', '-version', '170', "$generatedResources/js/all-min.js"]
 }
 
 jar {
     manifest {
         attributes 'Implementation-Title': 'Java LESS compiler', 'Implementation-Version': version
     }
-    from 'LICENSE', 'NOTICE', generatedDir
+    from 'LICENSE', 'NOTICE'
 }
 
 applicationDistribution.from(configurations.optional) {
@@ -120,14 +125,14 @@ artifacts {
 task uploadSnapshot(dependsOn: uploadArchives)
 
 // the release task spawns a new GradleBuild that doesn't contain release itself, but it contains createReleaseTag
-ext.sonatypeRelease = gradle.startParameter.taskNames.contains('createReleaseTag')
-ext.sonatypeSnapshot = gradle.startParameter.taskNames.contains('uploadSnapshot')
+def sonatypeRelease = gradle.startParameter.taskNames.contains('createReleaseTag')
+def sonatypeSnapshot = gradle.startParameter.taskNames.contains('uploadSnapshot')
 if (sonatypeRelease) {
     signing {
         sign configurations.archives
     }
 }
-ext.sonatypeRepositoryUrl = sonatypeRelease ? 'https://oss.sonatype.org/service/local/staging/deploy/maven2/' : 'https://oss.sonatype.org/content/repositories/snapshots/'
+def sonatypeRepositoryUrl = sonatypeRelease ? 'https://oss.sonatype.org/service/local/staging/deploy/maven2/' : 'https://oss.sonatype.org/content/repositories/snapshots/'
 
 uploadArchives {
     repositories {
