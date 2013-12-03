@@ -3,11 +3,10 @@ Java LESS CSS compiler
 
 Lesscss compiles LESS code into CSS stylesheets (see <http://lesscss.org>)
 
-Lesscss is compatible with LESS version 1.4.1. In fact, Lesscss uses the Rhino JavaScript engine to compile the official
-JavaScript LESS compiler into Java byte code.
+Lesscss is compatible with LESS version 1.4.1. In fact, Lesscss executes the official JavaScript LESS compiler in a JVM.
 
 In daemon mode, Lesscss monitors your LESS files (and all their imports), and automatically compiles them when necessary.
-You can see the results almost immediately in your browser.
+So you only need to refresh your browser.
 
 Lesscss can be used at the commandline, but it also provides a simple API for embedded usage in build tools.
 
@@ -15,8 +14,8 @@ Lesscss can be used at the commandline, but it also provides a simple API for em
 ## Why yet another Java LESS compiler?
 
 * Lesscss can start a daemon that automatically starts a compilation when the source is modified.
-  Lesscss caches information about imported source files so that an initial compilation to gather imports is rarely necessary.
-* Lesscss supports all options, which is not the case for the existing Java implementations.
+* Lesscss caches information about imported source files so that an initial compilation to gather imports is rarely necessary.
+* Lesscss supports all options, which is not the case for the other Java implementations (at the time of writing).
 * Lesscss is up to 5 times faster then existing Java implementations.
 
 
@@ -48,9 +47,9 @@ The complete syntax is `lessc [option option=parameter ...] <source> [destinatio
 
 Type `lessc -h` to see the full list of options.
 
-### Tip for using Twitter Bootstrap
+### Tip for compiling Twitter Bootstrap
 
-When using Twitter Bootstrap in your projects, it is not necessary to copy all the less files to your project.
+When using Twitter Bootstrap in multiple projects, it is not necessary to copy all the LESS files to all the projects.
 Only copy the ones that you want to customize (typically variables.less), and then compile with:
 
     lessc --include-path your/project/less,path/to/bootstrap-3.0.0/less bootstrap.less css/bootstrap.css
@@ -61,7 +60,7 @@ This will first look for less files in _your/project/less_, and when not found i
 
 You can create a `CompilationTask` instance to compile one or more LESS files (Groovy example):
 
-    CompilationUnit bootstrap= newCompilationUnit('less/bootstrap.less', 'css/bootstrap.css', new Options(), new FileSystemResourceReader('less'))
+    CompilationUnit bootstrap= newCompilationUnit('less/bootstrap.less', 'css/bootstrap.css', new Options(), new FileSystemResourceReader(new File('less')))
     CompilationUnit myLess= newCompilationUnit('src/myLess.less', 'css/myLess.css')
     CompilationTask compilationTask = new CompilationTask(cacheDir: new File('/tmp'), compilationUnits: [bootstrap, myLess])
     compilationTask.execute() //only once
@@ -82,13 +81,24 @@ You can also use the LessCompiler directly (again Groovy):
         'source.less')
 
     println details.result //generated CSS
-    println deatils.imports //list of imports encountered during compilation
+    println details.imports //list of imports encountered during compilation
+
+There are 3 _ResourceReader_ implementations available for resolving source and imported LESS files:
+
+* _FileSystemResourceReader_: search resources in one or more directories, ex. `new FileSystemResourceReader(new File('webapp/less'), new File('/bootstrap/less'))`
+* _ClasspathResourceReader_ : search resources in the classpath relative to a base path, ex. `new ClasspathResourceReader('bootstrap/less')`
+* _CombiningResourceReader_ : delegates to the ResourceReader's in an array until the resource is resolved, ex. `new CombiningResourceReader(srcResourceReader, jarResourceReader)`
 
 ## Compatibility
 
 Lesscss passes all the tests of the official JavaScript LESS 1.4.1 compiler, except the test for _data-uri_.
 Lesscss handles _data-uri_ the same way as the official LESS does when used inside a browser: the _data-uri_'s are translated
 into URL's in stead of being embedded in the CSS.
+
+## Turn Lessc into a Porsche (experimental)
+
+When invoking lessc with the  _--engine jav8_ option, it will use a super fast embedded V8 JavaScript engine.
+**It can crash once in a while!**
 
 ## Building from source
 If you use the included gradle wrapper, you don't have to install anything (except a JDK)
@@ -99,7 +109,7 @@ If you use the included gradle wrapper, you don't have to install anything (exce
 
 Or use gradle 1.8 or higher
 
-Usefull gradle tasks:
+Useful gradle tasks:
 
 * _install_ : installs the lesscss jar into the local maven repo
 * _installApp_ : installs lesscss in _build/install/lesscss_
@@ -108,4 +118,5 @@ Usefull gradle tasks:
 
 ## What's up next?
 
-Compile main LESS files and/or imports that reside in jar files. This would make it possible to use a jar'ed version of Twitter Bootstrap, without having to copy all the LESS files to your project source tree. Typically you would only need to have your own version of _variables.less_.
+* A Grails plugin that monitors and automatically compiles the LESS sources in dev mode and packages the generated CSS in the war.
+* A stable embedded V8 engine.
