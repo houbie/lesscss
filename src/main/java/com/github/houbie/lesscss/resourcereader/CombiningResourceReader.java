@@ -27,8 +27,6 @@ import java.io.IOException;
  * @author Ivo Houbrechts
  */
 public class CombiningResourceReader implements ResourceReader {
-    private static final Logger logger = LoggerFactory.getLogger(CombiningResourceReader.class);
-
     private ResourceReader[] resourceReaders;
 
 

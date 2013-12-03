@@ -249,7 +249,7 @@ public class Options implements Serializable {
         result = 31 * result + (strictImports ? 1 : 0);
         result = 31 * result + (rootPath != null ? rootPath.hashCode() : 0);
         result = 31 * result + (relativeUrls ? 1 : 0);
-        result = 31 * result + (dumpLineNumbers != null ? dumpLineNumbers.hashCode() : 0);
+        result = 31 * result + (dumpLineNumbers != null ? dumpLineNumbers.ordinal() : 0);
         result = 31 * result + (minify ? 1 : 0);
         result = 31 * result + (dependenciesOnly ? 1 : 0);
         result = 31 * result + (strictMath ? 1 : 0);

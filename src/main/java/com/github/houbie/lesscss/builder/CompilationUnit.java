@@ -93,7 +93,7 @@ public class CompilationUnit implements Serializable {
 
 
     /**
-     * @return true if the source or one or more imported sources are older then the destination
+     * @return true if the source or one or more imported sources are newer then the destination
      */
     public boolean isDirty() {
         if (!destination.exists() && exceptionTimestamp == 0) {
@@ -201,11 +201,12 @@ public class CompilationUnit implements Serializable {
 
     @Override
     public int hashCode() {
+        //imports are not used in hash code calculation because the hash code determines the cache location
+        // and it should be the same without imports to be able to refresh the compilation unit
         int result = sourceLocation.hashCode();
         result = 31 * result + destination.hashCode();
         result = 31 * result + options.hashCode();
         result = 31 * result + (resourceReader != null ? resourceReader.hashCode() : 0);
-        result = 31 * result + (imports != null ? imports.hashCode() : 0);
         result = 31 * result + (encoding != null ? encoding.hashCode() : 0);
         return result;
     }

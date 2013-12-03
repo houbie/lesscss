@@ -68,10 +68,18 @@ class CompilationTaskSpec extends Specification {
 
     def 'execute with filled cache and destination'() {
         setup:
-        compilationTask.execute() //fill cache
+        //fill cache
+        compilationTask.execute()
+
+        //create new objects to test that the cache file based on the hash code does not change
+        compilationTask = new CompilationTask(new RhinoLessCompilationEngine())
+        compilationTask.cacheDir = cacheDir
+        CompilationUnit importUnit = new CompilationUnit(importSource.canonicalPath, importDestination, new Options(), new FileSystemResourceReader(workDir, new File('src/test/resources/less')))
+        CompilationUnit basicUnit = new CompilationUnit(basicSource.canonicalPath, basicDestination, new Options(), new FileSystemResourceReader(new File('src/test/resources/less')))
+        compilationTask.compilationUnits = [importUnit, basicUnit]
+        compilationTask.lessCompiler = Mock(LessCompiler)
 
         when:
-        compilationTask.lessCompiler = Mock(LessCompiler)
         compilationTask.execute()
 
         then:

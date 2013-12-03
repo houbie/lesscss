@@ -75,7 +75,7 @@ public class FileSystemResourceReader implements ResourceReader {
     /**
      * Convert the dirs to absolute paths to prevent that equals returns true for directories with the same name in a different location.
      *
-     * @param baseDirs
+     * @param baseDirs the directories that are used to resolve resources
      */
     private void copyBaseDirs(File[] baseDirs) {
         this.baseDirs = new File[baseDirs.length];
@@ -93,7 +93,11 @@ public class FileSystemResourceReader implements ResourceReader {
     @Override
     public String read(String location) throws IOException {
         File file = resolve(location);
-        return (file != null) ? IOUtils.read(file, encoding) : null;
+        if (file != null) {
+            logger.debug("reading {}", location);
+            return IOUtils.read(file, encoding);
+        }
+        return null;
     }
 
     private File resolve(String location) {
@@ -106,7 +110,7 @@ public class FileSystemResourceReader implements ResourceReader {
 
     private File resolveRelative(String location) {
         for (File dir : baseDirs) {
-            logger.debug("reading {} relative to {}", location, dir.getAbsolutePath());
+            logger.debug("resolving {} relative to {}", location, dir.getAbsolutePath());
             File file = new File(dir, location);
             if (file.canRead()) {
                 return file;
