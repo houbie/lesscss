@@ -6,7 +6,7 @@ Lesscss compiles LESS code into CSS stylesheets (see <http://lesscss.org>)
 Lesscss is compatible with LESS version 1.4.1. In fact, Lesscss executes the official JavaScript LESS compiler in a JVM.
 
 In daemon mode, Lesscss monitors your LESS files (and all their imports), and automatically compiles them when necessary.
-So you only need to refresh your browser.
+So you only need to save and refresh your browser.
 
 Lesscss can be used at the commandline, but it also provides a simple API for embedded usage in build tools.
 
@@ -52,7 +52,7 @@ Type `lessc -h` to see the full list of options.
 When using Twitter Bootstrap in multiple projects, it is not necessary to copy all the LESS files to all the projects.
 Only copy the ones that you want to customize (typically variables.less), and then compile with:
 
-    lessc --include-path your/project/less,path/to/bootstrap-3.0.0/less bootstrap.less css/bootstrap.css
+    lessc --include-path your/project/less:path/to/bootstrap-3.0.0/less bootstrap.less css/bootstrap.css
 
 This will first look for less files in _your/project/less_, and when not found it will fall back to _path/to/bootstrap-3.0.0/less_
 
@@ -98,6 +98,7 @@ into URL's in stead of being embedded in the CSS.
 ## Turn Lessc into a Porsche (experimental)
 
 When invoking lessc with the  _--engine jav8_ option, it will use a super fast embedded V8 JavaScript engine.
+
 **It can crash once in a while!**
 
 ## Building from source
@@ -118,5 +119,8 @@ Useful gradle tasks:
 
 ## What's up next?
 
-* A Grails plugin that monitors and automatically compiles the LESS sources in dev mode and packages the generated CSS in the war.
-* A stable embedded V8 engine.
+A Grails plugin that monitors and automatically compiles the LESS sources in dev mode and packages the generated CSS in the war.
+
+## Wish list
+
+A stable embedded V8 engine.
