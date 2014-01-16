@@ -27,9 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
 
@@ -48,6 +46,7 @@ public class CompilationTask {
     private File cacheDir;
     private LessCompiler lessCompiler;
     private Set<CompilationUnit> compilationUnits = new HashSet<>();
+    private CompilationListener compilationListener;
     private long customJavaScriptHashCode;
 
     protected Thread daemon;
@@ -113,15 +112,20 @@ public class CompilationTask {
     /**
      * Execute the lazy compilation.
      *
+     * @return the compilation units that were dirty and got compiled
      * @throws IOException When a resource cannot be read/written
      */
-    public void execute() throws IOException {
+    public Collection<CompilationUnit> execute() throws IOException {
+        List<CompilationUnit> compiledUnits = new ArrayList<>();
         logger.debug("CompilationTask: execute");
         long start = System.currentTimeMillis();
         for (CompilationUnit unit : compilationUnits) {
-            compileIfDirty(unit);
+            if (compileIfDirty(unit)) {
+                compiledUnits.add(unit);
+            }
         }
         logger.debug("execute finished in {} millis", System.currentTimeMillis() - start);
+        return compiledUnits;
     }
 
     /**
@@ -140,7 +144,10 @@ public class CompilationTask {
                 try {
                     while (!stopDaemon) {
                         try {
-                            execute();
+                            Collection<CompilationUnit> units = execute();
+                            if (!units.isEmpty() && compilationListener != null) {
+                                compilationListener.notifySuccessfulCompilation(units);
+                            }
                         } catch (LessParseException e) {
                             System.out.println(e.getMessage());
                         }
@@ -163,7 +170,14 @@ public class CompilationTask {
         stopDaemon = true;
     }
 
-    private void compileIfDirty(CompilationUnit unit) throws IOException {
+    /**
+     * Compile a CompilationUnit if dirty.
+     *
+     * @param unit CompilationUnit
+     * @return true if the CompilationUnit was dirty
+     * @throws IOException
+     */
+    private boolean compileIfDirty(CompilationUnit unit) throws IOException {
         //if the unit is dirty, we need to compile anyway, so no need to refresh
         CompilationUnit unitToCompile = (unit.isDirty()) ? unit : refreshCompilationUnit(unit);
 
@@ -178,15 +192,17 @@ public class CompilationTask {
                 }
                 updateImportsAndCache(unitToCompile, compilationResult.getImports());
                 logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);
+                return true;
             } catch (LessParseException e) {
                 unit.setExceptionTimestamp(System.currentTimeMillis());
                 cache(unit);
                 throw e;
             }
         }
+        return false;
     }
 
-    private CompilationUnit refreshCompilationUnit(CompilationUnit unit) throws IOException {
+    public CompilationUnit refreshCompilationUnit(CompilationUnit unit) throws IOException {
         CompilationUnit cachedUnit = readFromCache(unit);
         if (cachedUnit == null || !unit.isEquivalent(cachedUnit)) {
             updateImportsAndCache(unit, resolveImports(unit));
@@ -260,5 +276,13 @@ public class CompilationTask {
 
     public void setCompilationUnits(Set<CompilationUnit> compilationUnits) {
         this.compilationUnits = compilationUnits;
+    }
+
+    public CompilationListener getCompilationListener() {
+        return compilationListener;
+    }
+
+    public void setCompilationListener(CompilationListener compilationListener) {
+        this.compilationListener = compilationListener;
     }
 }

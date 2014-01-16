@@ -51,7 +51,7 @@ class CompilationTaskSpec extends Specification {
 
     def 'execute with empty cache and destination'() {
         when:
-        compilationTask.execute()
+        def compiledUnits = compilationTask.execute()
 
         then:
         basicDestination.text == basicResult.text
@@ -64,6 +64,8 @@ class CompilationTaskSpec extends Specification {
 
         compilationTask.readFromCache(basicUnit) == basicUnit
         compilationTask.readFromCache(importUnit) == importUnit
+
+        compiledUnits*.sourceLocation.sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
     }
 
     def 'execute with filled cache and destination'() {
@@ -80,11 +82,12 @@ class CompilationTaskSpec extends Specification {
         compilationTask.lessCompiler = Mock(LessCompiler)
 
         when:
-        compilationTask.execute()
+        def compiledUnits = compilationTask.execute()
 
         then:
         //everything is up to date -> compiler should not be invoked
         0 * compilationTask.lessCompiler._
+        compiledUnits == []
     }
 
     def 'recompile when source changed'() {
@@ -94,12 +97,13 @@ class CompilationTaskSpec extends Specification {
         when:
         sleep(1000)
         basicSource << 'a{color: @black;}'
-        compilationTask.execute()
+        def compiledUnits = compilationTask.execute()
 
         then:
         basicDestination.text == basicResult.text + 'a {\n  color: #000000;\n}\n'
         basicUnit.imports == []
         !basicUnit.isDirty()
+        compiledUnits*.sourceLocation == [basicUnit.sourceLocation]
     }
 
     def 'recompile when imported source changed'() {
@@ -109,12 +113,13 @@ class CompilationTaskSpec extends Specification {
         when:
         sleep(1000)
         imported0Source << '@import "basic";'
-        compilationTask.execute()
+        def compiledUnits = compilationTask.execute()
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
         importUnit.imports == ['import1/imported1.less', 'import1/import2/imported2.less', 'import1/commonImported.less', 'import1/import2/commonImported.less', 'imported0.less', 'basic.less']
         !importUnit.isDirty()
+        compiledUnits*.sourceLocation == [importUnit.sourceLocation]
     }
 
     def 'compile with custom js'() {
@@ -134,6 +139,10 @@ class CompilationTaskSpec extends Specification {
 
     def 'start daemon'() {
         setup:
+        def compiledUnits = []
+        compilationTask.compilationListener = [notifySuccessfulCompilation: {
+            compiledUnits << it.sourceLocation
+        }] as CompilationListener
         compilationTask.startDaemon(100)
 
         when:
@@ -141,13 +150,16 @@ class CompilationTaskSpec extends Specification {
 
         then:
         importDestination.text == importResult.text
+        compiledUnits[0].sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
 
         when:
         imported0Source << '@import "basic";'
         sleep(1000)
+        println compiledUnits
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
+        compiledUnits[1] == [importUnit.sourceLocation]
     }
 
     def 'fail to start daemon twice'() {
