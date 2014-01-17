@@ -45,7 +45,7 @@ public class CompilationTask {
 
     private File cacheDir;
     private LessCompiler lessCompiler;
-    private Set<CompilationUnit> compilationUnits = new HashSet<>();
+    private Set<CompilationUnit> compilationUnits = new HashSet<CompilationUnit>();
     private CompilationListener compilationListener;
     private long customJavaScriptHashCode;
 
@@ -116,7 +116,7 @@ public class CompilationTask {
      * @throws IOException When a resource cannot be read/written
      */
     public Collection<CompilationUnit> execute() throws IOException {
-        List<CompilationUnit> compiledUnits = new ArrayList<>();
+        List<CompilationUnit> compiledUnits = new ArrayList<CompilationUnit>();
         logger.debug("CompilationTask: execute");
         long start = System.currentTimeMillis();
         for (CompilationUnit unit : compilationUnits) {

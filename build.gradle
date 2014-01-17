@@ -41,8 +41,8 @@ apply plugin: 'release'
 version = file('version.txt').text.split('=')[1].trim()
 group = 'com.github.houbie'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
 mainClassName = 'com.github.houbie.lesscss.Lessc'
 
 repositories {

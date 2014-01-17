@@ -37,7 +37,7 @@ public class TrackingResourceReader implements ResourceReader {
 
     private ResourceReader resourceReader;
 
-    private List<String> imports = new ArrayList<>();
+    private List<String> imports = new ArrayList<String>();
 
     /**
      * @param resourceReader the ResourceReader to delegate to

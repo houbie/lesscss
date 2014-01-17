@@ -42,7 +42,7 @@ public class LogbackConfigurator {
      */
     public static void configure(boolean verbose, boolean daemon) {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        ConsoleAppender<ILoggingEvent> ca = new ConsoleAppender<>();
+        ConsoleAppender<ILoggingEvent> ca = new ConsoleAppender<ILoggingEvent>();
         ca.setContext(lc);
         ca.setName("less console");
         PatternLayoutEncoder pl = new PatternLayoutEncoder();

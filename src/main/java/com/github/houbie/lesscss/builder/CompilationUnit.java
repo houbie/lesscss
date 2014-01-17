@@ -43,7 +43,7 @@ public class CompilationUnit implements Serializable {
     private File destination;
     private Options options;
     private ResourceReader resourceReader;
-    private List<String> imports = new ArrayList<>();
+    private List<String> imports = new ArrayList<String>();
     private String encoding;
     private long exceptionTimestamp;
 
