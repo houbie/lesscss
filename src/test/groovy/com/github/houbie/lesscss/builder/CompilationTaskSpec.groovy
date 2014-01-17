@@ -22,6 +22,8 @@ import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 
+import static com.github.houbie.lesscss.Options.LineNumbersOutput.COMMENTS
+
 class CompilationTaskSpec extends Specification {
     File workDir = new File('build/tmp/compilationTask')
     File cacheDir = new File("build/tmp/testCacheDir")
@@ -51,7 +53,7 @@ class CompilationTaskSpec extends Specification {
 
     def 'execute with empty cache and destination'() {
         when:
-        def compiledUnits = compilationTask.execute()
+        def compiledLocation = compilationTask.execute()*.sourceLocation
 
         then:
         basicDestination.text == basicResult.text
@@ -65,7 +67,7 @@ class CompilationTaskSpec extends Specification {
         compilationTask.readFromCache(basicUnit) == basicUnit
         compilationTask.readFromCache(importUnit) == importUnit
 
-        compiledUnits*.sourceLocation.sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
+        compiledLocation.sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
     }
 
     def 'execute with filled cache and destination'() {
@@ -97,13 +99,13 @@ class CompilationTaskSpec extends Specification {
         when:
         sleep(1000)
         basicSource << 'a{color: @black;}'
-        def compiledUnits = compilationTask.execute()
+        def compiledLocations = compilationTask.execute()*.sourceLocation
 
         then:
         basicDestination.text == basicResult.text + 'a {\n  color: #000000;\n}\n'
         basicUnit.imports == []
         !basicUnit.isDirty()
-        compiledUnits*.sourceLocation == [basicUnit.sourceLocation]
+        compiledLocations == [basicUnit.sourceLocation]
     }
 
     def 'recompile when imported source changed'() {
@@ -113,13 +115,25 @@ class CompilationTaskSpec extends Specification {
         when:
         sleep(1000)
         imported0Source << '@import "basic";'
-        def compiledUnits = compilationTask.execute()
+        def compiledLocations = compilationTask.execute()*.sourceLocation
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
         importUnit.imports == ['import1/imported1.less', 'import1/import2/imported2.less', 'import1/commonImported.less', 'import1/import2/commonImported.less', 'imported0.less', 'basic.less']
         !importUnit.isDirty()
-        compiledUnits*.sourceLocation == [importUnit.sourceLocation]
+        compiledLocations == [importUnit.sourceLocation]
+    }
+
+    def 'recompile when options changed'() {
+        setup:
+        compilationTask.execute() //fill cache
+
+        when:
+        compilationTask.compilationUnits.each { it.options.dumpLineNumbers = COMMENTS }
+        def compiledLocations = compilationTask.execute()*.sourceLocation
+
+        then:
+        compiledLocations.sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
     }
 
     def 'compile with custom js'() {
@@ -139,9 +153,9 @@ class CompilationTaskSpec extends Specification {
 
     def 'start daemon'() {
         setup:
-        def compiledUnits = []
+        def compiledLocations = []
         compilationTask.compilationListener = [notifySuccessfulCompilation: {
-            compiledUnits << it.sourceLocation
+            compiledLocations << it.sourceLocation
         }] as CompilationListener
         compilationTask.startDaemon(100)
 
@@ -150,16 +164,47 @@ class CompilationTaskSpec extends Specification {
 
         then:
         importDestination.text == importResult.text
-        compiledUnits[0].sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
+        compiledLocations[0].sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
 
         when:
         imported0Source << '@import "basic";'
         sleep(1000)
-        println compiledUnits
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
-        compiledUnits[1] == [importUnit.sourceLocation]
+        compiledLocations[1] == [importUnit.sourceLocation]
+    }
+
+    def 'run daemon with error in less'() {
+        setup:
+        def compiledLocations = []
+        compilationTask.compilationListener = [notifySuccessfulCompilation: {
+            compiledLocations << it.sourceLocation
+        }] as CompilationListener
+        compilationTask.startDaemon(100)
+
+        when:
+        sleep(1000)
+
+        then:
+        importDestination.text == importResult.text
+        compiledLocations[0].sort() == [importUnit.sourceLocation, basicUnit.sourceLocation].sort()
+
+        when:
+        imported0Source << '@import "basic'
+        sleep(1000)
+
+        then:
+        importDestination.text == importResult.text
+        compiledLocations.size() == 1
+
+        when:
+        imported0Source << '";'
+        sleep(1000)
+
+        then:
+        importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
+        compiledLocations[1] == [importUnit.sourceLocation]
     }
 
     def 'fail to start daemon twice'() {

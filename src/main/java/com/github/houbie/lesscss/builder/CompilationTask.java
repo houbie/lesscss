@@ -20,7 +20,6 @@ package com.github.houbie.lesscss.builder;
 import com.github.houbie.lesscss.LessCompiler;
 import com.github.houbie.lesscss.LessCompilerImpl;
 import com.github.houbie.lesscss.LessParseException;
-import com.github.houbie.lesscss.Options;
 import com.github.houbie.lesscss.engine.LessCompilationEngine;
 import com.github.houbie.lesscss.utils.IOUtils;
 import org.slf4j.Logger;
@@ -178,10 +177,7 @@ public class CompilationTask {
      * @throws IOException
      */
     private boolean compileIfDirty(CompilationUnit unit) throws IOException {
-        //if the unit is dirty, we need to compile anyway, so no need to refresh
-        CompilationUnit unitToCompile = (unit.isDirty()) ? unit : refreshCompilationUnit(unit);
-
-        if (unitToCompile.isDirty()) {
+        if (isDirty(unit)) {
             logger.debug("compiling less: {}", unit);
             long start = System.currentTimeMillis();
 
@@ -190,7 +186,7 @@ public class CompilationTask {
                 if (unit.getDestination() != null) {
                     IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
                 }
-                updateImportsAndCache(unitToCompile, compilationResult.getImports());
+                updateImportsAndCache(unit, compilationResult.getImports());
                 logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);
                 return true;
             } catch (LessParseException e) {
@@ -202,13 +198,9 @@ public class CompilationTask {
         return false;
     }
 
-    public CompilationUnit refreshCompilationUnit(CompilationUnit unit) throws IOException {
+    private boolean isDirty(CompilationUnit unit) {
         CompilationUnit cachedUnit = readFromCache(unit);
-        if (cachedUnit == null || !unit.isEquivalent(cachedUnit)) {
-            updateImportsAndCache(unit, resolveImports(unit));
-            return unit;
-        }
-        return cachedUnit;
+        return cachedUnit == null || !unit.isEquivalent(cachedUnit) || cachedUnit.isDirty();
     }
 
     protected CompilationUnit readFromCache(CompilationUnit unit) {
@@ -226,13 +218,6 @@ public class CompilationTask {
     private void updateImportsAndCache(CompilationUnit unit, List<String> imports) throws IOException {
         unit.setImports(imports);
         cache(unit);
-    }
-
-    private List<String> resolveImports(CompilationUnit unit) throws IOException {
-        Options options = new Options(unit.getOptions());
-        options.setDependenciesOnly(true);
-        CompilationDetails compilationDetails = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), options, unit.getSourceLocation());
-        return compilationDetails.getImports();
     }
 
     private File getCacheFile(CompilationUnit unit) {

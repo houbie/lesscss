@@ -20,14 +20,17 @@ class LesscSpec extends OutputCapturingSpec {
     static String expectedResult = new File('src/test/resources/less/basic.css').text
 
     File destination = new File('build/tmp/lessc.css')
+    File cacheDir = new File("build/tmp/testCacheDir")
 
     def setup() {
         destination.delete()
+        cacheDir.deleteDir()
+        cacheDir.mkdirs()
     }
 
     def 'compile to destination'() {
         setup:
-        Lessc.main('src/test/resources/less/basic.less build/tmp/lessc.css'.split(' '))
+        Lessc.main("--cache-dir $cacheDir src/test/resources/less/basic.less build/tmp/lessc.css".split(' '))
 
         expect:
         destination.text == expectedResult
@@ -47,7 +50,7 @@ class LesscSpec extends OutputCapturingSpec {
             return 0
         }] as InputStream;
 
-        Lessc.main("--daemon $sourceLocation $destination".split(' '))
+        Lessc.main("--cache-dir $cacheDir --daemon $sourceLocation $destination".split(' '))
 
         expect:
         destination.text == expectedResult
@@ -72,7 +75,7 @@ class LesscSpec extends OutputCapturingSpec {
             return 0
         }] as InputStream;
 
-        Lessc.main('--daemon src/test/resources/less/broken.less build/tmp/lessc.css'.split(' '))
+        Lessc.main("--cache-dir $cacheDir --daemon src/test/resources/less/broken.less build/tmp/lessc.css".split(' '))
 
         expect:
         sysOutCapture.toString() == expectedOutput
@@ -80,7 +83,7 @@ class LesscSpec extends OutputCapturingSpec {
 
     def 'compile to destination with --verbose'() {
         setup:
-        Lessc.main('--verbose src/test/resources/less/basic.less build/tmp/lessc.css'.split(' '))
+        Lessc.main("--cache-dir $cacheDir --verbose src/test/resources/less/basic.less build/tmp/lessc.css".split(' '))
 
         expect:
         destination.text == expectedResult
@@ -92,7 +95,7 @@ class LesscSpec extends OutputCapturingSpec {
 
     def 'compile to stdout with --verbose'() {
         setup:
-        Lessc.main('--verbose src/test/resources/less/basic.less'.split(' '))
+        Lessc.main("--cache-dir $cacheDir --verbose src/test/resources/less/basic.less".split(' '))
 
         expect:
         sysOutCapture.toString() == expectedResult + '\n'
@@ -100,7 +103,7 @@ class LesscSpec extends OutputCapturingSpec {
 
     def 'print dependencies to stdout'() {
         setup:
-        Lessc.main('--depends src/test/resources/less/import.less'.split(' '))
+        Lessc.main("--cache-dir $cacheDir --depends src/test/resources/less/import.less".split(' '))
 
         expect:
         sysOutCapture.toString() == 'Dependencies for src/test/resources/less/import.less:\n' +
@@ -113,7 +116,7 @@ class LesscSpec extends OutputCapturingSpec {
 
     def 'compile with errors'() {
         setup:
-        Lessc.main('src/test/resources/less/broken.less'.split(' '))
+        Lessc.main("--cache-dir $cacheDir src/test/resources/less/broken.less".split(' '))
 
         expect:
         sysOutCapture.toString() == ''

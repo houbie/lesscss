@@ -159,7 +159,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineParser.parse(['--help'] as String[]) //parse should return true to signal there's nothing left to do
         sysOutCapture.toString() == 'usage: lessc\n' +
                 '[option option=parameter ...] <source> [destination]\n' +
-                '    --cache-dir            Cache directory.\n' +
+                '    --cache-dir <arg>      Cache directory.\n' +
                 '    --daemon               Start compiler daemon.\n' +
                 ' -e,--encoding <arg>       Character encoding.\n' +
                 '    --engine <arg>         JavaScript engine, either \'rhino\' (default),\n' +
