@@ -78,7 +78,7 @@ minifyJs {
     dest = file "$generatedResources/js/all-min.js"
 }
 
-task compileJs(type: JavaExec, dependsOn: minifyJs) {
+task compileJs(description: 'Compiles the Lesscss javascript into a class file', type: JavaExec, dependsOn: minifyJs) {
     classpath configurations.jsCompilation
     main = 'org.mozilla.javascript.tools.jsc.Main'
     args = ['-d', "$generatedResources", '-o', 'LessImpl.class', '-package', 'com.github.houbie.lesscss.compiledjs', '-opt', '9', '-version', '170', "$generatedResources/js/all-min.js"]
@@ -122,7 +122,7 @@ artifacts {
 
 //********* artifact signing and publishing *********
 
-task uploadSnapshot(dependsOn: uploadArchives)
+task uploadSnapshot(description: 'Uploads a snapshot to the Sonatype repository', dependsOn: uploadArchives)
 
 // the release task spawns a new GradleBuild that doesn't contain release itself, but it contains createReleaseTag
 def sonatypeRelease = gradle.startParameter.taskNames.contains('createReleaseTag')
@@ -189,7 +189,7 @@ release {
     ]
 }
 
-task updateReadme << {
+task updateReadme(description: 'Updates all the occurrences of the version in README.md') << {
     File readme = file('README.md')
     //replace all occurrences of x.y.z-less-a.b.c with the new release version
     def releaseVersion = "${project['release.oldVersion']}".replaceAll('-SNAPSHOT', '')
