@@ -45,6 +45,15 @@ public interface ResourceReader extends Serializable {
     String read(String location) throws IOException;
 
     /**
+     * Read a resource into a byte array
+     *
+     * @param location the location of the resource
+     * @return the content of the resource, or null if the resource cannot be resolved
+     * @throws IOException
+     */
+    byte[] readBytes(String location) throws IOException;
+
+    /**
      * @param location the location of the resource
      * @return timestamp of last modification of the resource, or Long.MAX_VALUE if the resource cannot be resolved
      */

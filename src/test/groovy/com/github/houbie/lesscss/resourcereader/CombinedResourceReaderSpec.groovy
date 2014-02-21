@@ -28,6 +28,7 @@ class CombinedResourceReaderSpec extends Specification {
         combiningResourceReader.canRead(location) == delegate.canRead(location)
         combiningResourceReader.lastModified(location) == delegate.lastModified(location)
         combiningResourceReader.read(location) == delegate.read(location)
+        combiningResourceReader.readBytes(location) == delegate.readBytes(location)
 
         where:
         location << ['plain.txt', 'does not exist']

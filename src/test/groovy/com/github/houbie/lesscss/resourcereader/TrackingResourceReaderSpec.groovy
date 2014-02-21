@@ -29,6 +29,7 @@ class TrackingResourceReaderSpec extends Specification {
         trackingResourceReader.canRead(location) == delegate.canRead(location)
         trackingResourceReader.lastModified(location) == delegate.lastModified(location)
         trackingResourceReader.read(location) == delegate.read(location)
+        trackingResourceReader.readBytes(location) == delegate.readBytes(location)
 
         where:
         location << ['plain.txt', 'does not exist']

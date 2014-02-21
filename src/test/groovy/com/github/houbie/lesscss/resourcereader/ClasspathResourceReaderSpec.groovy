@@ -67,7 +67,7 @@ class ClasspathResourceReaderSpec extends Specification {
         'cannot read'          | false
     }
 
-    def "test lastModified"() {
+    def "check lastModified"() {
         when:
         def reader = new ClasspathResourceReader('ioutils')
 
@@ -78,5 +78,13 @@ class ClasspathResourceReaderSpec extends Specification {
         location      | lastModified
         'plain.txt'   | Long.MIN_VALUE
         'cannot read' | Long.MAX_VALUE
+    }
+
+    def "read bytes"() {
+        when:
+        def reader = new ClasspathResourceReader('ioutils')
+
+        then:
+        reader.readBytes('/ioutils/plain.txt') == 'plain text'.bytes
     }
 }

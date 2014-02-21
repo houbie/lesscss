@@ -61,6 +61,11 @@ public class TrackingResourceReader implements ResourceReader {
         return resourceReader.read(location);
     }
 
+    @Override
+    public byte[] readBytes(String location) throws IOException {
+        return (resourceReader != null) ? resourceReader.readBytes(location) : null;
+    }
+
     public String normalize(String location) {
         try {
             return new URI(location).normalize().getPath();

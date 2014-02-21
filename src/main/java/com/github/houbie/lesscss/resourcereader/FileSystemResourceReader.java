@@ -21,7 +21,9 @@ import com.github.houbie.lesscss.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -96,6 +98,18 @@ public class FileSystemResourceReader implements ResourceReader {
         if (file != null) {
             logger.debug("reading {}", location);
             return IOUtils.read(file, encoding);
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] readBytes(String location) throws IOException {
+        File file = resolve(location);
+        if (file != null) {
+            logger.debug("reading bytes {}", location);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            IOUtils.copyLarge(new FileInputStream(file), bos);
+            return bos.toByteArray();
         }
         return null;
     }

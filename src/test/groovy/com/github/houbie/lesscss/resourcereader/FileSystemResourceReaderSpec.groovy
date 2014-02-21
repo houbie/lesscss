@@ -25,6 +25,11 @@ class FileSystemResourceReaderSpec extends Specification {
         new FileSystemResourceReader().read('src/test/resources/ioutils/plain.txt') == 'plain text'
     }
 
+    def "read bytes"() {
+        expect:
+        new FileSystemResourceReader().readBytes('src/test/resources/ioutils/plain.txt') == 'plain text'.bytes
+    }
+
     def "read file from work dir with encoding"() {
         expect:
         new FileSystemResourceReader('utf16').read('src/test/resources/ioutils/utf16.txt') == 'utf16 text'

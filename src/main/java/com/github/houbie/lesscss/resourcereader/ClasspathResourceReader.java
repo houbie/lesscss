@@ -22,6 +22,7 @@ import com.github.houbie.lesscss.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
@@ -90,6 +91,21 @@ public class ClasspathResourceReader implements ResourceReader {
         logger.debug("reading {} with basePath {}", location, basePath);
         URL url = getUrl(location);
         return (url != null) ? IOUtils.read(url, encoding) : null;
+    }
+
+    @Override
+    public byte[] readBytes(String location) throws IOException {
+        if (StringUtils.isEmpty(location)) {
+            return null;
+        }
+        logger.debug("reading bytes {} with basePath {}", location, basePath);
+        URL url = getUrl(location);
+        if (url != null) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            IOUtils.copyLarge(url.openStream(), bos);
+            return bos.toByteArray();
+        }
+        return null;
     }
 
     private URL getUrl(String location) {

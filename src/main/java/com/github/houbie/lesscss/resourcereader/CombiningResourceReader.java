@@ -16,9 +16,6 @@
 
 package com.github.houbie.lesscss.resourcereader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 /**
@@ -54,6 +51,17 @@ public class CombiningResourceReader implements ResourceReader {
     public String read(String location) throws IOException {
         for (ResourceReader resourceReader : resourceReaders) {
             String result = resourceReader.read(location);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] readBytes(String location) throws IOException {
+        for (ResourceReader resourceReader : resourceReaders) {
+            byte[] result = resourceReader.readBytes(location);
             if (result != null) {
                 return result;
             }
