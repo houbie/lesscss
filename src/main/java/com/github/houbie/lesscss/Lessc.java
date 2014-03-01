@@ -32,7 +32,7 @@ import java.io.InputStream;
  * @author Ivo Houbrechts
  */
 public class Lessc {
-    public static final String LESS_VERSION = "1.4.1";
+    public static final String LESS_VERSION = "1.7.0";
 
     protected static InputStream systemIn = System.in;
 

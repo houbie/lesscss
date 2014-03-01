@@ -43,6 +43,9 @@
 .ops (@a) when (@a =< 0) {
   height: lt-or-eq;
 }
+.ops (@a) when (@a <= 0) {
+  height: lt-or-eq-alias;
+}
 .ops (@a) when not(@a = 0) {
   height: not-eq;
 }
@@ -135,3 +138,22 @@
 #tryNumberPx {
   .mixin(4px);
 }
+
+.lock-mixin(@a) {
+ .inner-locked-mixin(@x: @a) when (@a = 1) {
+    a: @a;
+    x: @x;
+  }
+}
+.call-lock-mixin {
+  .lock-mixin(1);
+  .call-inner-lock-mixin {
+    .inner-locked-mixin();
+  }
+}
+.bug-100cm-1m(@a) when (@a = 1) {
+  .failed {
+    one-hundred: not-equal-to-1;
+  }
+}
+.bug-100cm-1m(100cm);

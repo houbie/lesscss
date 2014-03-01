@@ -39,7 +39,7 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
 
     private static final String JS_ALL_MIN_JS = "js/all-min.js";
     private static final String ENVIRONMENT_SCRIPT = "js/environment.js";
-    private static final String LESS_SCRIPT = "js/less-1.4.1.js";
+    private static final String LESS_SCRIPT = "js/less-1.7.0.js";
     private static final String COMPILE_SCRIPT = "js/compile.js";
     private static final boolean MINIFIED = true;
 

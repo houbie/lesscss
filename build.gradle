@@ -74,7 +74,7 @@ dependencies {
 }
 
 minifyJs {
-    source = files 'src/main/resources/js/environment.js', 'src/main/resources/js/less-1.4.1.js', 'src/main/resources/js/cssmin.js', 'src/main/resources/js/compile.js'
+    source = files 'src/main/resources/js/environment.js', 'src/main/resources/js/less-1.7.0-mod.js', 'src/main/resources/js/cssmin.js', 'src/main/resources/js/compile.js'
     dest = file "$generatedResources/js/all-min.js"
 }
 

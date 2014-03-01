@@ -21,47 +21,95 @@
 var less = window.less,
         parseException,
         rootFilename,
-        readFile,
+        readFileAsString,
+        readFileAsBytes,
         normalize,
+
+        javaMapToObject = function (map) {
+            var iter = map.keySet().iterator(),
+                    key,
+                    result;
+            if (iter.hasNext()) {
+                result = {};
+                while (iter.hasNext()) {
+                    key = iter.next();
+                    result[String(key)] = String(map.get(key));
+                }
+                return result;
+            }
+            return null;
+        },
 
         compile = function (source, options, sourceName, importReader) {
             var result,
-                    rootPath = String(options.getRootPath()),
-                    lessEnv = {
-                        compress: options.isCompress(),
-                        optimization: options.getOptimizationLevel(),
+                    sourceMapFileInline = options.isSourceMapMapInline(),
+                    lessOptions = {
+                        silent: options.isSilent(),
+                        lint: options.isLint(),
                         strictImports: options.isStrictImports(),
+                        compress: options.isCompress(),
+                        dependenciesOnly: options.isDependenciesOnly(),
+                        minify: options.isMinify(),
+                        ieCompat: options.isIeCompat(),
+                        javascriptEnabled: options.isJavascriptEnabled(),
+                        optimization: options.getOptimizationLevel(),
+//                        sourceMap: options.isSourceMap() ? (toStringOrUndefined(options.getSourceMapFileName()) || true) : false,
+//                        sourceMapRootpath: toStringOrUndefined(options.getSourceMapRootpath()),
+//                        sourceMapBasepath: toStringOrUndefined(options.getSourceMapBasepath()),
+//                        sourceMapURL: toStringOrUndefined(options.getSourceMapUrl()),
+                        relativeUrls: options.isRelativeUrls(),
                         strictMath: options.isStrictMath(),
                         strictUnits: options.isStrictUnits(),
-                        relativeUrls: options.isRelativeUrls(),
-                        filename: sourceName,
-                        dependenciesOnly: options.isDependenciesOnly()
+                        filename: sourceName
+                    },
+                    additionalData = {
+                        globalVars: javaMapToObject(options.getGlobalVars()),
+                        modifyVars: javaMapToObject(options.getModifyVars())
                     };
 
             rootFilename = sourceName;
 
-            if (rootPath.length > 0) {
-                lessEnv.rootpath = rootPath;
+            if (options.getRootpath()) {
+                lessOptions.rootpath = String(options.getRootpath());
             }
             if (options.getDumpLineNumbers() && options.getDumpLineNumbers().getOptionString()) {
-                lessEnv.dumpLineNumbers = String(options.getDumpLineNumbers().getOptionString());
+                lessOptions.dumpLineNumbers = String(options.getDumpLineNumbers().getOptionString());
+            }
+            //TODO
+            if (options.sourceMap === true) {
+                if (!output && !sourceMapFileInline) {
+                    console.log("the sourcemap option only has an optional filename if the css filename is given");
+                    return;
+                }
+                options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
+                options.sourceMap = less.modules.path.basename(options.sourceMapFullFilename);
+            } else if (options.sourceMap) {
+                options.sourceMapOutputFilename = options.sourceMap;
             }
 
-            lessEnv.currentFileInfo = {
-                relativeUrls: lessEnv.relativeUrls,  //option - whether to adjust URL's to be relative
-                filename: sourceName,                //full resolved filename of current file
-                rootpath: rootPath,                  //path to append to normal URLs for this node
-                currentDirectory: '',                //path to the current file, absolute
-                rootFilename: rootFilename,          //filename of the base file
-                entryPath: ''                        //absolute path to the entry file
+            lessOptions.currentFileInfo = {
+                relativeUrls: lessOptions.relativeUrls,  //option - whether to adjust URL's to be relative
+                filename: sourceName,                    //full resolved filename of current file
+                rootpath: lessOptions.rootpath,          //path to append to normal URLs for this node
+                currentDirectory: '',                    //path to the current file, absolute
+                rootFilename: rootFilename,              //filename of the base file
+                entryPath: ''                            //absolute path to the entry file
             };
 
-            readFile = function (file) {
+            readFileAsString = function (file) {
                 var data = importReader.read(file);
                 if (data === null) {
                     throw {type: 'File', message: "'" + file + "' wasn't found"};
                 }
                 return String(data);
+            };
+
+            readFileAsBytes = function (file) {
+                var data = importReader.readBytes(file);
+                if (data === null) {
+                    throw {type: 'File', message: "'" + file + "' wasn't found"};
+                }
+                return data;
             };
 
             normalize = function (path) {
@@ -70,12 +118,12 @@ var less = window.less,
 
             try {
                 parseException = null;
-                new (less.Parser)(lessEnv).parse(String(source), function (e, tree) {
+                new (less.Parser)(lessOptions).parse(String(source), function (e, tree) {
                     if (e) {
                         throw e;
                     }
-                    result = (lessEnv.dependenciesOnly) ? '' : tree.toCSS(lessEnv);
-                });
+                    result = (lessOptions.dependenciesOnly) ? '' : tree.toCSS(lessOptions);
+                }, additionalData);
                 return (options.minify) ? cssmin(result) : result;
             } catch (e) {
                 parseException = 'less parse exception: ' + e.message;
@@ -95,53 +143,51 @@ var less = window.less,
             }
         };
 
-less.Parser.importer = function (file, currentFileInfo, callback, env) {
-    var pathname = normalize(currentFileInfo.currentDirectory + file),
-            data,
-            newFileInfo = {
-                relativeUrls: env.relativeUrls,
-                entryPath: currentFileInfo.entryPath,
-                rootpath: currentFileInfo.rootpath,
-                rootFilename: currentFileInfo.rootFilename
-            },
+less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
 
-            parseFile = function (e) {
-                if (e) {
-                    callback(e);
-                    return;
-                }
+    var href = file;
+    if (currentFileInfo && currentFileInfo.currentDirectory && !/^\//.test(file)) {
+        href = less.modules.path.join(currentFileInfo.currentDirectory, file);
+    }
 
-                env = new less.tree.parseEnv(env);
-                env.processImports = false;
+    var path = less.modules.path.dirname(href);
 
-                var j = file.lastIndexOf('/');
+    var newFileInfo = {
+        currentDirectory: path + '/',
+        filename: href
+    };
 
-                // Pass on an updated rootpath if path of imported file is relative and file
-                // is in a (sub|sup) directory
-                //
-                // Examples:
-                // - If path of imported file is 'module/nav/nav.less' and rootpath is 'less/',
-                //   then rootpath should become 'less/module/nav/'
-                // - If path of imported file is '../mixins.less' and rootpath is 'less/',
-                //   then rootpath should become 'less/../'
-                if (newFileInfo.relativeUrls && !/^(?:[a-z-]+:|\/)/.test(file) && j != -1) {
-                    var relativeSubDirectory = file.slice(0, j + 1);
-                    newFileInfo.rootpath = newFileInfo.rootpath + relativeSubDirectory; // append (sub|sup) directory path of imported file
-                }
-                newFileInfo.currentDirectory = pathname.replace(/[^\\\/]*$/, "");
-                newFileInfo.filename = pathname;
+    if (currentFileInfo) {
+        newFileInfo.entryPath = currentFileInfo.entryPath;
+        newFileInfo.rootpath = currentFileInfo.rootpath;
+        newFileInfo.rootFilename = currentFileInfo.rootFilename;
+        newFileInfo.relativeUrls = currentFileInfo.relativeUrls;
+    } else {
+        newFileInfo.entryPath = path;
+        newFileInfo.rootpath = less.rootpath || path;
+        newFileInfo.rootFilename = href;
+        newFileInfo.relativeUrls = env.relativeUrls;
+    }
 
-                env.contents[pathname] = data;      // Updating top importing parser content cache.
-                env.currentFileInfo = newFileInfo;
-                new (less.Parser)(env).parse(data, function (e, root) {
-                    callback(e, root, pathname);
-                });
-            };
+    var j = file.lastIndexOf('/');
+    if (newFileInfo.relativeUrls && !/^(?:[a-z-]+:|\/)/.test(file) && j != -1) {
+        var relativeSubDirectory = file.slice(0, j + 1);
+        newFileInfo.rootpath = (newFileInfo.rootpath || '') + relativeSubDirectory; // append (sub|sup) directory path of imported file
+    }
+    newFileInfo.currentDirectory = path;
+    newFileInfo.filename = href;
+
+    var data = null;
+    try {
+        data = readFileAsString(href);
+    } catch (e) {
+        callback({ type: 'File', message: "'" + less.modules.path.basename(href) + "' wasn't found" });
+        return;
+    }
 
     try {
-        data = readFile(pathname);
-        parseFile(null);
+        callback(null, data, href, newFileInfo, { lastModified: 0 });
     } catch (e) {
-        parseFile(e);
+        callback(e, null, href);
     }
 };

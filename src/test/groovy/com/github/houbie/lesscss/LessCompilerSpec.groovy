@@ -18,6 +18,7 @@ package com.github.houbie.lesscss
 
 import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
+import groovy.json.JsonSlurper
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -108,10 +109,17 @@ class LessCompilerSpec extends Specification {
     @Unroll
     def "#lessFile.name compatibility test"() {
         expect:
-        compiler.compile(lessFile, new Options(strictMath: true, relativeUrls: true)) == getCss(lessFile).text
+        compiler.compile(lessFile.text, new FileSystemResourceReader(lessFile.parentFile, new File(lessFile.parentFile, 'data')), new Options(strictMath: true, relativeUrls: true), lessFile.name) == getCss(lessFile).text
 
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
+    }
+
+    def "less.js compression compatibility test"() {
+        def lessFile = new File('src/test/resources/less.js-tests/less/compression/compression.less')
+
+        expect:
+        compiler.compile(lessFile, new Options(compress: true)) == getCss(lessFile, 'compression/').text
     }
 
     @Unroll
@@ -127,31 +135,65 @@ class LessCompilerSpec extends Specification {
         dumpLineNumbers << [COMMENTS, MEDIA_QUERY, ALL]
     }
 
-    def "less.js static urls compatibility test"() {
-        def lessFile = new File('src/test/resources/less.js-tests/less/static-urls/urls.less')
-        def compiler = compiler
-
+    def "less.js global vars compatibility test"() {
         expect:
-        compiler.compile(lessFile, new Options(relativeUrls: false, rootPath: 'folder (1)/')) == getCss(lessFile, 'static-urls/').text
-    }
+        compiler.compile(lessFile, new Options(globalVars: getJson(lessFile))) == getCss(lessFile, 'globalVars/').text.replace('/**\n  * Test\n  */\n', '')
 
-    def "less.js compression compatibility test"() {
-        def lessFile = new File('src/test/resources/less.js-tests/less/compression/compression.less')
-        def compiler = compiler
-
-        expect:
-        compiler.compile(lessFile, new Options(compress: true)) == getCss(lessFile, 'compression/').text
+        where:
+        lessFile << new File('src/test/resources/less.js-tests/less/globalVars').listFiles().findAll {
+            it.name.endsWith('.less')
+        }
     }
 
     def "less.js legacy compatibility test"() {
         def lessFile = new File('src/test/resources/less.js-tests/less/legacy/legacy.less')
-        def compiler = compiler
 
         expect:
         compiler.compile(lessFile) == getCss(lessFile, 'legacy/').text
     }
 
+    def "less.js modify vars compatibility test"() {
+        expect:
+        compiler.compile(lessFile, new Options(modifyVars: getJson(lessFile))) == getCss(lessFile, 'modifyVars/').text
+
+        where:
+        lessFile << new File('src/test/resources/less.js-tests/less/modifyVars').listFiles().findAll {
+            it.name.endsWith('.less')
+        }
+    }
+
+//    def "less.js source maps compatibility test"() {
+//        compiler.compile(lessFile, new Options(modifyVars: getJson(lessFile)))
+//
+//        expect:
+//
+//
+//        where:
+//        lessFile << new File('src/test/resources/less.js-tests/less/sourcemaps').listFiles().findAll {
+//            it.name.endsWith('.less')
+//        }
+//    }
+
+    def "less.js static urls compatibility test"() {
+        def lessFile = new File('src/test/resources/less.js-tests/less/static-urls/urls.less')
+
+        expect:
+        compiler.compile(lessFile, new Options(relativeUrls: false, rootpath: 'folder (1)/')) == getCss(lessFile, 'static-urls/').text
+    }
+
     def getCss(File lessFile, prefix = '', suffix = '') {
         return new File(new File('src/test/resources/less.js-tests/css'), prefix + lessFile.getName().replace('.less', suffix + '.css'))
     }
+
+    def getJson(File lessFile) {
+        def file = new File(lessFile.parentFile, lessFile.name.replace('.less', '.json'))
+        return new JsonSlurper().parse(file.newReader())
+    }
+
+//    def "test a single compatibility test"() {
+//        def lessFile = new File('src/test/resources/less.js-tests/less/variables-in-at-rules.less')
+//
+//        expect:
+//        compiler.compile(lessFile.text, new FileSystemResourceReader(lessFile.parentFile, lessFile.parentFile.parentFile), new Options(strictMath: true, relativeUrls: true, silent: true), lessFile.name) == getCss(lessFile).text
+//    }
 }

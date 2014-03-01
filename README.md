@@ -3,7 +3,7 @@ Java LESS CSS compiler
 
 Lesscss compiles LESS code into CSS stylesheets (see <http://lesscss.org>)
 
-Lesscss is compatible with LESS version 1.4.1. In fact, Lesscss executes the official JavaScript LESS compiler in a JVM.
+Lesscss is compatible with LESS version 1.7.0. In fact, Lesscss executes the official JavaScript LESS compiler in a JVM.
 
 In daemon mode, Lesscss monitors your LESS files (and all their imports), and automatically compiles them when necessary.
 So you only need to save and refresh your browser.
@@ -91,7 +91,7 @@ There are 3 _ResourceReader_ implementations available for resolving source and 
 
 ## Compatibility
 
-Lesscss passes all the tests of the official JavaScript LESS 1.4.1 compiler, except the test for _data-uri_.
+Lesscss passes all the tests of the official JavaScript LESS 1.7.0 compiler, except the test for _data-uri_.
 Lesscss handles _data-uri_ the same way as the official LESS does when used inside a browser: the _data-uri_'s are translated
 into URL's in stead of being embedded in the CSS.
 

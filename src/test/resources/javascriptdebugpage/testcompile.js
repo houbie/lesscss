@@ -2,10 +2,38 @@
 
 var test = (function () {
     var options = {
-                rootPath: '',
-                dumpLineNumbers: {getOptionString: function () {
-                    return null;
-                }}},
+                getRootpath: function () {
+                    return '';
+                },
+                isCompress: function () {
+                    return false;
+                },
+                getOptimizationLevel: function () {
+                    return 1;
+                },
+                isStrictMath: function () {
+                    return false;
+                },
+                isStrictUnits: function () {
+                    return false;
+                },
+                isStrictImports: function () {
+                    return false;
+                },
+                isDependenciesOnly: function () {
+                    return false;
+                },
+                isRelativeUrls: function () {
+                    return true;
+                },
+                getDumpLineNumbers: function () {
+                    return {
+                        getOptionString: function () {
+                            return null;
+                        }
+                    }
+                }
+            },
             sourceTestImports = '#import {\n' +
                     '  color: red;\n' +
                     '}\n' +

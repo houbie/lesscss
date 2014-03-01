@@ -23,6 +23,10 @@ import com.github.houbie.lesscss.utils.LogbackConfigurator;
 import org.apache.commons.cli.*;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Commandline parser based on commons cli.
@@ -31,38 +35,46 @@ import java.io.*;
  */
 public class LesscCommandLineParser {
     static final String HELP_OPTION = "help";
-    static final String VERSION_OPTION = "version";
-    static final String VERBOSE_OPTION = "verbose";
-    static final String SILENT_OPTION = "silent";
-    static final String LINE_NUMBERS_OPTION = "line-numbers";
-    static final String ROOT_PATH_OPTION = "rootpath";
     static final String INCLUDE_PATH_OPTION = "include-path";
-    static final String RELATIVE_URLS_OPTION = "relative-urls";
+    static final String DEPENDS_OPTION = "depends";
+    static final String NO_IE_COMPAT_OPTION = "no-ie-compat";
+    static final String NO_JS_OPTION = "no-js";
+    static final String LINT_OPTION = "lint";
+    static final String SILENT_OPTION = "silent";
     static final String STRICT_IMPORTS_OPTION = "strict-imports";
+    static final String VERSION_OPTION = "version";
+    static final String COMPRESS_OPTION = "compress";
+    static final String SOURCE_MAP_OPTION = "source-map";
+    static final String SOURCE_MAP__ROOTPATH_OPTION = "source-map-rootpath";
+    static final String SOURCE_MAP__BASEPATH_OPTION = "source-map-basepath";
+    static final String SOURCE_MAP_LESS_INLINE_OPTION = "source-map-less-inline";
+    static final String SOURCE_MAP_MAP_INLINE_OPTION = "source-map-map-inline";
+    static final String SOURCE_MAP_URL_OPTION = "source-map-url";
+    static final String ROOT_PATH_OPTION = "rootpath";
+    static final String RELATIVE_URLS_OPTION = "relative-urls";
     static final String STRICT_MATH_OPTION = "strict-math";
     static final String STRICT_UNITS_OPTION = "strict-units";
-    static final String COMPRESS_OPTION = "compress";
-    static final String YUI_COMPRESS_OPTION = "yui-compress";
-    static final String OPTIMIZATION_LEVEL_OPTION = "optimization";
+    static final String GLOBAL_VAR_OPTION = "global-var";
+    static final String MODIFY_VAR_OPTION = "modify-var";
+
     static final String CUSTOM_JS_OPTION = "custom-js";
     static final String ENCODING_OPTION = "encoding";
-    static final String DEPENDS_OPTION = "depends";
     static final String CACHE_DIR_OPTION = "cache-dir";
     static final String DAEMON_OPTION = "daemon";
     static final String ENGINE_OPTION = "engine";
+    static final String VERBOSE_OPTION = "verbose";
+    static final String YUI_COMPRESS_OPTION = "yui-compress";
+
+    //deprecated options
+    static final String OPTIMIZATION_LEVEL_OPTION = "optimization";
+    static final String LINE_NUMBERS_OPTION = "line-numbers";
+
 
     static final String MAIN_COMMAND = "lessc";
     static final String HELP_HEADER = "[option option=parameter ...] <source> [destination]";
-    static final String HELP_FOOTER =
-            "\n     (1) --line-numbers TYPE can be:\n" +
-                    "\n" +
-                    "         comments: output the debug info within comments.\n" +
-                    "         mediaquery: outputs the information within a fake media query which is compatible with the SASS format.\n" +
-                    "         all: does both\n" +
-                    "\n" +
-                    "     (2) --rootpath: works with or without the relative-urls option.\n" +
-                    "\n" +
-                    "     (3) Optimization levels: The lower the number, the fewer nodes created in the tree. Useful for debugging or if you need to access the individual nodes in the tree.";
+    static final String HELP_FOOTER = "";
+
+    private final Pattern nameValuePattern = Pattern.compile("(\"|')?(\\w+)=(\\w+)(\"'|')?");
 
     private final String version;
 
@@ -98,22 +110,37 @@ public class LesscCommandLineParser {
         org.apache.commons.cli.Options result = new org.apache.commons.cli.Options();
 
         result.addOption("h", HELP_OPTION, false, "Print help (this message) and exit.");
-        result.addOption("v", VERSION_OPTION, false, "Print version number and exit.");
-        result.addOption(OptionBuilder.withLongOpt(VERBOSE_OPTION).withDescription("Be verbose.").create());
+        result.addOption(OptionBuilder.withLongOpt(INCLUDE_PATH_OPTION).hasArg().withDescription("Set include paths. Separated by `:'. Use `;' on Windows.").create());
+        result.addOption("M", DEPENDS_OPTION, false, "Output a makefile import dependency list to stdout.");
+        result.addOption(OptionBuilder.withLongOpt(NO_IE_COMPAT_OPTION).withDescription("Disable IE compatibility checks.").create());
+        result.addOption(OptionBuilder.withLongOpt(NO_JS_OPTION).withDescription("Disable JavaScript in less files").create());
+        result.addOption("l", LINT_OPTION, false, "Syntax check only (lint).");
         result.addOption("s", SILENT_OPTION, false, "Suppress output of error messages.");
-        result.addOption(OptionBuilder.withLongOpt(LINE_NUMBERS_OPTION).hasArg().withDescription("--line-numbers=TYPE  Outputs filename and line numbers.  (1)").create());
-        result.addOption("rp", ROOT_PATH_OPTION, true, "Set rootpath for URL rewriting in relative imports and URLs.  (2)");
-        result.addOption(OptionBuilder.withLongOpt(INCLUDE_PATH_OPTION).hasArg().withDescription("Set include paths. Separated by ':'. Use ';' on Windows.").create());
-        result.addOption("ru", RELATIVE_URLS_OPTION, false, "Re-write relative URLs to the base less file.");
         result.addOption(OptionBuilder.withLongOpt(STRICT_IMPORTS_OPTION).withDescription("Force evaluation of imports.").create());
-        result.addOption(OptionBuilder.withLongOpt(STRICT_MATH_OPTION).withDescription("Use strict math.").create());
-        result.addOption(OptionBuilder.withLongOpt(STRICT_UNITS_OPTION).withDescription("Use strict units.").create());
+        result.addOption("v", VERSION_OPTION, false, "Print version number and exit.");
         result.addOption("x", COMPRESS_OPTION, false, "Compress output by removing some whitespaces.");
+        result.addOption(OptionBuilder.withLongOpt(SOURCE_MAP_OPTION).hasOptionalArg().withDescription("--source-map[=FILENAME] Outputs a v3 sourcemap to the filename (or output filename.map)").create());
+        result.addOption(OptionBuilder.withLongOpt(SOURCE_MAP__ROOTPATH_OPTION).hasArg().withDescription("adds this path onto the sourcemap filename and less file paths").create());
+        result.addOption(OptionBuilder.withLongOpt(SOURCE_MAP__BASEPATH_OPTION).hasArg().withDescription("Sets sourcemap base path, defaults to current working directory.").create());
+        result.addOption(OptionBuilder.withLongOpt(SOURCE_MAP_LESS_INLINE_OPTION).withDescription("puts the less files into the map instead of referencing them").create());
+        result.addOption(OptionBuilder.withLongOpt(SOURCE_MAP_MAP_INLINE_OPTION).withDescription("puts the map (and any less files) into the output css file").create());
+        result.addOption(OptionBuilder.withLongOpt(SOURCE_MAP_URL_OPTION).hasArg().withDescription("the complete url and filename put in the less file").create());
+        result.addOption("rp", ROOT_PATH_OPTION, true, "Set rootpath for url rewriting in relative imports and urls. Works with or without the relative-urls option.");
+        result.addOption("ru", RELATIVE_URLS_OPTION, false, "re-write relative urls to the base less file.");
+        result.addOption("sm", STRICT_MATH_OPTION, false, "Turn on or off strict math, where in strict mode, math requires brackets. This option may default to on and then be removed in the future.");
+        result.addOption("su", STRICT_UNITS_OPTION, false, "Allow mixed units, e.g. 1px+1em or 1px*1px which have units that cannot be represented.");
+        result.addOption(OptionBuilder.withLongOpt(GLOBAL_VAR_OPTION).hasArg().withDescription("--global-var='VAR=VALUE' Defines a variable that can be referenced by the file.").create());
+        result.addOption(OptionBuilder.withLongOpt(MODIFY_VAR_OPTION).hasArg().withDescription("--modify-var='VAR=VALUE' Modifies a variable already declared in the file.").create());
+        result.addOption(OptionBuilder.withLongOpt(VERBOSE_OPTION).withDescription("Be verbose.").create());
         result.addOption(OptionBuilder.withLongOpt(YUI_COMPRESS_OPTION).withDescription("Compress output using YUI cssmin.").create());
-        result.addOption(OptionBuilder.hasArg().withLongOpt(OPTIMIZATION_LEVEL_OPTION).withType(Number.class).withDescription("-O1, -O2... Set the parser's optimization level.   (3)").create('O'));
+
+        //deprecated options
+        result.addOption(OptionBuilder.hasArg().withLongOpt(OPTIMIZATION_LEVEL_OPTION).withType(Number.class).withDescription("[deprecated] -O0, -O1, -O2; Set the parser's optimization level. The lower the number, the less nodes it will create in the tree. This could matter for debugging, or if you want to access the individual nodes in the tree.").create('O'));
+        result.addOption(OptionBuilder.withLongOpt(LINE_NUMBERS_OPTION).hasArg().withDescription("[deprecated] --line-numbers=TYPE Outputs filename and line numbers. TYPE can be either 'comments', which will output the debug info within comments, 'mediaquery' that will output the information within a fake media query which is compatible with the SASS format, and 'all' which will do both.").create());
+
+        //additional lesscss options
         result.addOption("js", CUSTOM_JS_OPTION, true, "File with custom JavaScript functions.");
         result.addOption("e", ENCODING_OPTION, true, "Character encoding.");
-        result.addOption("M", DEPENDS_OPTION, false, "Output a makefile import dependency list to stdout.");
         result.addOption(OptionBuilder.withLongOpt(CACHE_DIR_OPTION).hasArg().withDescription("Cache directory.").create());
         result.addOption(OptionBuilder.withLongOpt(DAEMON_OPTION).withDescription("Start compiler daemon.").create());
         result.addOption(OptionBuilder.hasArg().withLongOpt(ENGINE_OPTION).withDescription("JavaScript engine, either 'rhino' (default), 'nashorn' (requires JDK8) or 'jav8' (only on supported operating systems).").create());
@@ -183,23 +210,59 @@ public class LesscCommandLineParser {
 
     private void setOptions(CommandLine cmd) throws ParseException {
         options = new Options();
-        if (cmd.hasOption(LINE_NUMBERS_OPTION)) {
-            options.setDumpLineNumbers(Options.LineNumbersOutput.fromOptionString(cmd.getOptionValue(LINE_NUMBERS_OPTION)));
-        }
-        if (cmd.hasOption(ROOT_PATH_OPTION)) {
-            options.setRootPath(cmd.getOptionValue(ROOT_PATH_OPTION));
-        }
-        options.setRelativeUrls(cmd.hasOption(RELATIVE_URLS_OPTION));
+
+        options.setDependenciesOnly(cmd.hasOption(DEPENDS_OPTION));
+        options.setIeCompat(!cmd.hasOption(NO_IE_COMPAT_OPTION));
+        options.setJavascriptEnabled(!cmd.hasOption(NO_JS_OPTION));
+        options.setLint(cmd.hasOption(LINT_OPTION));
+        options.setSilent(cmd.hasOption(SILENT_OPTION));
         options.setStrictImports(cmd.hasOption(STRICT_IMPORTS_OPTION));
+        options.setCompress(cmd.hasOption(COMPRESS_OPTION));
+        options.setSourceMap(cmd.hasOption(SOURCE_MAP_OPTION));
+        options.setSourceMapFileName(cmd.getOptionValue(SOURCE_MAP_OPTION));
+        options.setSourceMapRootpath(cmd.getOptionValue(SOURCE_MAP__ROOTPATH_OPTION));
+        options.setSourceMapBasepath(cmd.getOptionValue(SOURCE_MAP__BASEPATH_OPTION));
+        options.setSourceMapLessInline(cmd.hasOption(SOURCE_MAP_LESS_INLINE_OPTION));
+        options.setSourceMapMapInline(cmd.hasOption(SOURCE_MAP_MAP_INLINE_OPTION));
+        options.setSourceMapUrl(cmd.getOptionValue(SOURCE_MAP_URL_OPTION));
+        if (options.isSourceMap() &&
+                !options.isSourceMapMapInline() &&
+                options.getSourceMapFileName() == null &&
+                destination == null
+                ) {
+            throw new ParseException("The sourcemap option only has an optional filename if the css filename is given");
+        }
+
+        options.setRootpath(cmd.getOptionValue(ROOT_PATH_OPTION));
+        options.setRelativeUrls(cmd.hasOption(RELATIVE_URLS_OPTION));
         options.setStrictMath(cmd.hasOption(STRICT_MATH_OPTION));
         options.setStrictUnits(cmd.hasOption(STRICT_UNITS_OPTION));
-        options.setCompress(cmd.hasOption(COMPRESS_OPTION));
+        options.setGlobalVars(getValuesMap(cmd.getOptionValues(GLOBAL_VAR_OPTION)));
+        options.setModifyVars(getValuesMap(cmd.getOptionValues(MODIFY_VAR_OPTION)));
         options.setMinify(cmd.hasOption(YUI_COMPRESS_OPTION));
+
+        //deprecated options
         if (cmd.hasOption(OPTIMIZATION_LEVEL_OPTION)) {
             options.setOptimizationLevel(((Long) cmd.getParsedOptionValue(OPTIMIZATION_LEVEL_OPTION)).intValue());
         }
-        options.setDependenciesOnly(cmd.hasOption(DEPENDS_OPTION));
+        if (cmd.hasOption(LINE_NUMBERS_OPTION)) {
+            options.setDumpLineNumbers(Options.LineNumbersOutput.fromOptionString(cmd.getOptionValue(LINE_NUMBERS_OPTION)));
+        }
     }
+
+    private Map<String, String> getValuesMap(String[] args) throws ParseException {
+        Map<String, String> values = new HashMap<String, String>();
+        if (args != null) {
+            for (String arg : args) {
+                Matcher matcher = nameValuePattern.matcher(arg);
+                if (matcher.matches()) {
+                    values.put(matcher.group(2), matcher.group(3));
+                }
+            }
+        }
+        return values;
+    }
+
 
     private void setEncoding(CommandLine cmd) {
         encoding = cmd.getOptionValue(ENCODING_OPTION);
