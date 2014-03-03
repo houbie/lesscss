@@ -110,6 +110,7 @@ public interface LessCompiler {
 
     public static class CompilationDetails {
         private String result;
+        private String sourceMap;
         private List<String> imports;
 
         public CompilationDetails(String result, List<String> imports) {
@@ -119,6 +120,10 @@ public interface LessCompiler {
 
         public String getResult() {
             return result;
+        }
+
+        public String getSourceMap() {
+            return sourceMap;
         }
 
         public List<String> getImports() {

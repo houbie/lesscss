@@ -109,7 +109,7 @@ class LessCompilerSpec extends Specification {
     @Unroll
     def "#lessFile.name compatibility test"() {
         expect:
-        compiler.compile(lessFile.text, new FileSystemResourceReader(lessFile.parentFile, new File(lessFile.parentFile, 'data')), new Options(strictMath: true, relativeUrls: true), lessFile.name) == getCss(lessFile).text
+        compiler.compile(lessFile.text, new FileSystemResourceReader(lessFile.parentFile, lessFile.parentFile.parentFile), new Options(strictMath: true, relativeUrls: true), lessFile.name) == getCss(lessFile).text
 
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
@@ -191,9 +191,9 @@ class LessCompilerSpec extends Specification {
     }
 
 //    def "test a single compatibility test"() {
-//        def lessFile = new File('src/test/resources/less.js-tests/less/variables-in-at-rules.less')
+//        def lessFile = new File('src/test/resources/less.js-tests/less/urls.less')
 //
 //        expect:
-//        compiler.compile(lessFile.text, new FileSystemResourceReader(lessFile.parentFile, lessFile.parentFile.parentFile), new Options(strictMath: true, relativeUrls: true, silent: true), lessFile.name) == getCss(lessFile).text
+//        compiler.compile(lessFile.text, new FileSystemResourceReader(lessFile.parentFile, lessFile.parentFile.parentFile), new Options(strictMath: true, relativeUrls: true), lessFile.name) == getCss(lessFile).text
 //    }
 }

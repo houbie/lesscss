@@ -18,8 +18,7 @@
 /**
  * Compile function to be called from Java
  */
-var less = window.less,
-        parseException,
+var     parseException,
         rootFilename,
         readFileAsString,
         readFileAsBytes,
@@ -42,7 +41,6 @@ var less = window.less,
 
         compile = function (source, options, sourceName, importReader) {
             var result,
-                    sourceMapFileInline = options.isSourceMapMapInline(),
                     lessOptions = {
                         silent: options.isSilent(),
                         lint: options.isLint(),
@@ -53,10 +51,6 @@ var less = window.less,
                         ieCompat: options.isIeCompat(),
                         javascriptEnabled: options.isJavascriptEnabled(),
                         optimization: options.getOptimizationLevel(),
-//                        sourceMap: options.isSourceMap() ? (toStringOrUndefined(options.getSourceMapFileName()) || true) : false,
-//                        sourceMapRootpath: toStringOrUndefined(options.getSourceMapRootpath()),
-//                        sourceMapBasepath: toStringOrUndefined(options.getSourceMapBasepath()),
-//                        sourceMapURL: toStringOrUndefined(options.getSourceMapUrl()),
                         relativeUrls: options.isRelativeUrls(),
                         strictMath: options.isStrictMath(),
                         strictUnits: options.isStrictUnits(),
@@ -74,17 +68,6 @@ var less = window.less,
             }
             if (options.getDumpLineNumbers() && options.getDumpLineNumbers().getOptionString()) {
                 lessOptions.dumpLineNumbers = String(options.getDumpLineNumbers().getOptionString());
-            }
-            //TODO
-            if (options.sourceMap === true) {
-                if (!output && !sourceMapFileInline) {
-                    console.log("the sourcemap option only has an optional filename if the css filename is given");
-                    return;
-                }
-                options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
-                options.sourceMap = less.modules.path.basename(options.sourceMapFullFilename);
-            } else if (options.sourceMap) {
-                options.sourceMapOutputFilename = options.sourceMap;
             }
 
             lessOptions.currentFileInfo = {

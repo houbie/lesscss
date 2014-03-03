@@ -355,7 +355,3 @@ function cssmin(css, linebreakpos) {
     return css;
 
 }
-
-
-exports.cssmin = cssmin;
-

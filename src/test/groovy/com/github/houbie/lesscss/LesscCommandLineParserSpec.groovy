@@ -55,7 +55,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         'src/test/resources/less/basic.less --lint'                                                              | new Options(lint: true)
         'src/test/resources/less/basic.less -s'                                                                  | new Options(silent: true)
         'src/test/resources/less/basic.less --silent'                                                            | new Options(silent: true)
-        'src/test/resources/less/basic.less --source-map=sourceMapFileName'                                      | new Options(sourceMap: true, sourceMapFileName: 'sourceMapFileName')
+//TODO        'src/test/resources/less/basic.less --source-map=sourceMapFileName'                                      | new Options(sourceMap: true)
         'src/test/resources/less/basic.less --source-map-rootpath=sourceMapRootpath'                             | new Options(sourceMapRootpath: 'sourceMapRootpath')
         'src/test/resources/less/basic.less --source-map-basepath=sourceMapBasePath'                             | new Options(sourceMapBasepath: 'sourceMapBasePath')
         'src/test/resources/less/basic.less --source-map-less-inline'                                            | new Options(sourceMapLessInline: true)

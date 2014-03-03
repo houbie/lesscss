@@ -40,7 +40,6 @@ public class Options implements Serializable {
     private boolean lint = false;
     private boolean silent = false;
     private boolean sourceMap;
-    private String sourceMapFileName;
     private String sourceMapRootpath;
     private String sourceMapBasepath;
     private boolean sourceMapLessInline;
@@ -68,7 +67,6 @@ public class Options implements Serializable {
         this.lint = other.lint;
         this.silent = other.silent;
         this.sourceMap = other.sourceMap;
-        this.sourceMapFileName = other.sourceMapFileName;
         this.sourceMapRootpath = other.sourceMapRootpath;
         this.sourceMapBasepath = other.sourceMapBasepath;
         this.sourceMapLessInline = other.sourceMapLessInline;
@@ -279,19 +277,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * The filename to output the source map to (default: empty)
-     *
-     * @return the filename
-     */
-    public String getSourceMapFileName() {
-        return sourceMapFileName;
-    }
-
-    public void setSourceMapFileName(String sourceMapFileName) {
-        this.sourceMapFileName = sourceMapFileName;
-    }
-
-    /**
      * The path that is added onto the sourc emap filename and less file paths (default: empty)
      *
      * @return source map root path
@@ -455,8 +440,6 @@ public class Options implements Serializable {
         if (rootpath != null ? !rootpath.equals(options.rootpath) : options.rootpath != null) return false;
         if (sourceMapBasepath != null ? !sourceMapBasepath.equals(options.sourceMapBasepath) : options.sourceMapBasepath != null)
             return false;
-        if (sourceMapFileName != null ? !sourceMapFileName.equals(options.sourceMapFileName) : options.sourceMapFileName != null)
-            return false;
         if (sourceMapRootpath != null ? !sourceMapRootpath.equals(options.sourceMapRootpath) : options.sourceMapRootpath != null)
             return false;
         if (sourceMapUrl != null ? !sourceMapUrl.equals(options.sourceMapUrl) : options.sourceMapUrl != null)
@@ -482,7 +465,6 @@ public class Options implements Serializable {
         result = 31 * result + (lint ? 1 : 0);
         result = 31 * result + (silent ? 1 : 0);
         result = 31 * result + (sourceMap ? 1 : 0);
-        result = 31 * result + (sourceMapFileName != null ? sourceMapFileName.hashCode() : 0);
         result = 31 * result + (sourceMapRootpath != null ? sourceMapRootpath.hashCode() : 0);
         result = 31 * result + (sourceMapBasepath != null ? sourceMapBasepath.hashCode() : 0);
         result = 31 * result + (sourceMapLessInline ? 1 : 0);

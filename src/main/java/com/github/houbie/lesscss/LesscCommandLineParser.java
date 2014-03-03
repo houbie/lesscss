@@ -219,7 +219,6 @@ public class LesscCommandLineParser {
         options.setStrictImports(cmd.hasOption(STRICT_IMPORTS_OPTION));
         options.setCompress(cmd.hasOption(COMPRESS_OPTION));
         options.setSourceMap(cmd.hasOption(SOURCE_MAP_OPTION));
-        options.setSourceMapFileName(cmd.getOptionValue(SOURCE_MAP_OPTION));
         options.setSourceMapRootpath(cmd.getOptionValue(SOURCE_MAP__ROOTPATH_OPTION));
         options.setSourceMapBasepath(cmd.getOptionValue(SOURCE_MAP__BASEPATH_OPTION));
         options.setSourceMapLessInline(cmd.hasOption(SOURCE_MAP_LESS_INLINE_OPTION));
@@ -227,9 +226,7 @@ public class LesscCommandLineParser {
         options.setSourceMapUrl(cmd.getOptionValue(SOURCE_MAP_URL_OPTION));
         if (options.isSourceMap() &&
                 !options.isSourceMapMapInline() &&
-                options.getSourceMapFileName() == null &&
-                destination == null
-                ) {
+                destination == null) {
             throw new ParseException("The sourcemap option only has an optional filename if the css filename is given");
         }
 
