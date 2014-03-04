@@ -39,7 +39,7 @@ public class Options implements Serializable {
     private boolean javascriptEnabled = true;
     private boolean lint = false;
     private boolean silent = false;
-    private boolean sourceMap;
+    private boolean sourceMap = false;
     private String sourceMapRootpath;
     private String sourceMapBasepath;
     private boolean sourceMapLessInline;

@@ -100,21 +100,35 @@ public interface LessCompiler {
     /**
      * Compile a LESS String
      *
-     * @param less         LESS source
-     * @param importReader ResourceReader for resolving imports
-     * @param options      compilation options
-     * @param sourceName   name of the LESS source that can be used for reporting errors
+     * @param less              LESS source
+     * @param importReader      ResourceReader for resolving imports
+     * @param options           compilation options
+     * @param sourceName        name of the LESS source that can be used for reporting errors
+     * @param sourceMapFileName file name of the source map file
+     * @return the resulting CSS
+     */
+    String compile(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName);
+
+    /**
+     * Compile a LESS String
+     *
+     * @param less              LESS source
+     * @param importReader      ResourceReader for resolving imports
+     * @param options           compilation options
+     * @param sourceName        name of the LESS source that can be used for reporting errors
+     * @param sourceMapFileName the name of the source map file
      * @return CompilationDetails that holds both the resulting CSS and the list of (recursive) imports
      */
-    CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName);
+    CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName);
 
     public static class CompilationDetails {
         private String result;
         private String sourceMap;
         private List<String> imports;
 
-        public CompilationDetails(String result, List<String> imports) {
+        public CompilationDetails(String result, String sourceMap, List<String> imports) {
             this.result = result;
+            this.sourceMap = sourceMap;
             this.imports = imports;
         }
 

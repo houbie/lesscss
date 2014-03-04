@@ -42,6 +42,7 @@ public class CompilationUnit implements Serializable {
     private String sourceLocation;
     private File destination;
     private Options options;
+    private File sourceMapFile;
     private ResourceReader resourceReader;
     private List<String> imports = new ArrayList<String>();
     private String encoding;
@@ -78,6 +79,20 @@ public class CompilationUnit implements Serializable {
      * @param resourceReader ResourceReader for resolving the source and the imports, if any.
      */
     public CompilationUnit(String sourceLocation, File destination, Options options, ResourceReader resourceReader) {
+        this(sourceLocation, destination, options, resourceReader, new File(destination.getParentFile(), destination.getName() + ".map"));
+    }
+
+    /**
+     * Constructs a new CompilationUnit with the given compilation options.
+     * The source and the imports, if any, are resolved by the given ResourceReader.
+     *
+     * @param sourceLocation location of the LESS source in the file system or on the classpath
+     * @param destination    CSS destination file
+     * @param options        compilation options
+     * @param resourceReader ResourceReader for resolving the source and the imports, if any.
+     * @param sourceMapFile  the file name of the source map
+     */
+    public CompilationUnit(String sourceLocation, File destination, Options options, ResourceReader resourceReader, File sourceMapFile) {
         if (StringUtils.isEmpty(sourceLocation) || destination == null || options == null) {
             throw new IllegalArgumentException("source, destination and options must be provided");
         }
@@ -85,6 +100,7 @@ public class CompilationUnit implements Serializable {
         this.destination = destination.getAbsoluteFile();
         this.options = options;
         this.resourceReader = resourceReader;
+        this.sourceMapFile = sourceMapFile;
     }
 
     public void setExceptionTimestamp(long timestamp) {
@@ -137,6 +153,10 @@ public class CompilationUnit implements Serializable {
         this.resourceReader = resourceReader;
     }
 
+    public File getSourceMapFile() {
+        return sourceMapFile;
+    }
+
     /**
      * Returns a list with (direct and indirect) imports.
      * The list is only complete after compilation or refresh from cache.
@@ -184,6 +204,8 @@ public class CompilationUnit implements Serializable {
         if (resourceReader != null ? !resourceReader.equals(other.resourceReader) : other.resourceReader != null)
             return false;
         if (!options.equals(other.options)) return false;
+        if (sourceMapFile != null ? !sourceMapFile.equals(other.sourceMapFile) : other.sourceMapFile != null)
+            return false;
         return sourceLocation.equals(other.sourceLocation);
     }
 
@@ -208,6 +230,7 @@ public class CompilationUnit implements Serializable {
         result = 31 * result + options.hashCode();
         result = 31 * result + (resourceReader != null ? resourceReader.hashCode() : 0);
         result = 31 * result + (encoding != null ? encoding.hashCode() : 0);
+        result = 31 * result + (sourceMapFile != null ? sourceMapFile.hashCode() : 0);
         return result;
     }
 

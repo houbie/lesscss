@@ -66,7 +66,7 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
     }
 
     @Override
-    public String compile(String less, Options options, String sourceName, ResourceReader resourceReader) {
+    public String compile(String less, Options options, String sourceName, ResourceReader resourceReader, String sourceMapFileName) {
         if (!initialized) {
             throw new RuntimeException("execute called, but not yet initialized");
         }
@@ -74,7 +74,7 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
         Object result;
         Object parseException;
         try {
-            Object[] args = {less, options, sourceName, resourceReader};
+            Object[] args = {less, options, sourceName, resourceReader, sourceMapFileName};
 
             result = Context.call(null, compileFunction, scope, scope, args);
             parseException = scope.get("parseException", scope);
@@ -85,6 +85,12 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
             throw new LessParseException(parseException.toString());
         }
         return result.toString();
+    }
+
+    @Override
+    public String getSourceMap() {
+        Object sourceMap = scope.get("sourceMapContent", scope);
+        return (sourceMap != null) ? sourceMap.toString() : null;
     }
 
 }

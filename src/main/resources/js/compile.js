@@ -18,7 +18,8 @@
 /**
  * Compile function to be called from Java
  */
-var     parseException,
+var parseException,
+        sourceMapContent,
         rootFilename,
         readFileAsString,
         readFileAsBytes,
@@ -39,7 +40,31 @@ var     parseException,
             return null;
         },
 
-        compile = function (source, options, sourceName, importReader) {
+        setSourceMapOptions = function (options, sourceMapFileName, lessOptions) {
+            if (options.sourceMapMapInline) {
+                lessOptions.sourceMap = true;
+            }
+            if (options.sourceMapRootpath) {
+                lessOptions.sourceMapRootpath = options.sourceMapRootpath;
+            }
+            if (options.sourceMapBasepath) {
+                lessOptions.sourceMapBasepath = options.sourceMapBasepath;
+            }
+            if (options.sourceMapURL) {
+                lessOptions.sourceMapURL = options.sourceMapURL;
+            }
+            if (options.sourceMapLessInline) {
+                lessOptions.outputSourceFiles = true;
+            }
+            if (options.sourceMap) {
+                lessOptions.sourceMapOutputFilename = sourceMapFileName;
+                lessOptions.sourceMapFullFilename = sourceMapFileName;
+                lessOptions.sourceMap = less.modules.path.basename(sourceMapFileName);
+                print('### sourceMap '+ lessOptions.sourceMap);
+            }
+        },
+
+        compile = function (source, options, sourceName, importReader, sourceMapFileName) {
             var result,
                     lessOptions = {
                         silent: options.isSilent(),
@@ -69,6 +94,7 @@ var     parseException,
             if (options.getDumpLineNumbers() && options.getDumpLineNumbers().getOptionString()) {
                 lessOptions.dumpLineNumbers = String(options.getDumpLineNumbers().getOptionString());
             }
+            setSourceMapOptions(options, sourceMapFileName, lessOptions)
 
             lessOptions.currentFileInfo = {
                 relativeUrls: lessOptions.relativeUrls,  //option - whether to adjust URL's to be relative
@@ -101,6 +127,7 @@ var     parseException,
 
             try {
                 parseException = null;
+                sourceMapContent = null;
                 new (less.Parser)(lessOptions).parse(String(source), function (e, tree) {
                     if (e) {
                         throw e;

@@ -42,5 +42,11 @@ public interface LessCompilationEngine {
      * @param resourceReader ResourceReader for resolving imports
      * @return the compiled CSS
      */
-    String compile(String less, Options options, String sourceName, ResourceReader resourceReader);
+    String compile(String less, Options options, String sourceName, ResourceReader resourceReader, String sourceMapFileName);
+
+    /**
+     * Returns the source map after a compilation.
+     * @return the source map or null if it was not generated
+     */
+    String getSourceMap();
 }

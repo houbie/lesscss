@@ -182,9 +182,13 @@ public class CompilationTask {
             long start = System.currentTimeMillis();
 
             try {
-                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), unit.getOptions(), unit.getSourceLocation());
+                String sourceMapFileName = unit.getSourceMapFile() != null ? unit.getSourceMapFile().getName() : null;
+                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), unit.getOptions(), unit.getSourceLocation(), sourceMapFileName);
                 if (unit.getDestination() != null) {
                     IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
+                }
+                if (unit.getSourceMapFile() != null && compilationResult.getSourceMap() != null) {
+                    IOUtils.writeFile(compilationResult.getSourceMap(), unit.getSourceMapFile(), unit.getEncoding());
                 }
                 updateImportsAndCache(unit, compilationResult.getImports());
                 logger.info("compilation of less {} finished in {} millis", unit, System.currentTimeMillis() - start);

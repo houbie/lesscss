@@ -91,11 +91,11 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
 
 
     @Override
-    public String compile(String less, Options options, String sourceName, ResourceReader resourceReader) {
+    public String compile(String less, Options options, String sourceName, ResourceReader resourceReader, String sourceMapFileName) {
         Object result;
         Object parseException;
         try {
-            result = ((Invocable) scriptEngine).invokeFunction("compile", less, options, sourceName, resourceReader);
+            result = ((Invocable) scriptEngine).invokeFunction("compile", less, options, sourceName, resourceReader, sourceMapFileName);
             parseException = scriptEngine.get("parseException");
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);
@@ -104,6 +104,12 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
             throw new LessParseException(parseException.toString());
         }
         return result.toString();
+    }
+
+    @Override
+    public String getSourceMap() {
+        Object sourceMap = scriptEngine.get("sourceMapContent");
+        return (sourceMap != null) ? sourceMap.toString() : null;
     }
 
     public ScriptEngine getScriptEngine() {

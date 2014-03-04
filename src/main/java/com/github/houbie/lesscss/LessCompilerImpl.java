@@ -95,7 +95,7 @@ public class LessCompilerImpl implements LessCompiler {
         if (source == null) {
             throw new NullPointerException("less file may not be null");
         }
-        CompilationDetails details = compileWithDetails(IOUtils.read(source, encoding), importReader, options, source.getName());
+        CompilationDetails details = compileWithDetails(IOUtils.read(source, encoding), importReader, options, source.getName(), getSourceMapFileName(source.getName()));
         IOUtils.writeFile(details.getResult(), destination, encoding);
     }
 
@@ -111,21 +111,30 @@ public class LessCompilerImpl implements LessCompiler {
 
     @Override
     public String compile(String less, ResourceReader importReader, Options options, String sourceName) {
-        return compileWithDetails(less, importReader, options, sourceName).getResult();
+        return compileWithDetails(less, importReader, options, sourceName, getSourceMapFileName(sourceName)).getResult();
     }
 
     @Override
-    public CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName) {
+    public String compile(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName) {
+        return compileWithDetails(less, importReader, options, sourceName, sourceMapFileName).getResult();
+    }
+
+    @Override
+    public CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName) {
         if (less == null) {
             throw new NullPointerException("less string may not be null");
         }
         logger.debug("start less compilation");
         TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
         engine.initialize(customJavaScriptReader);
-        String result = engine.compile(less, options, sourceName, trackingResourceReader);
+        String result = engine.compile(less, options, sourceName, trackingResourceReader, sourceMapFileName);
 
         logger.debug("finished less compilation");
-        return new CompilationDetails(result, trackingResourceReader.getReadResources());
+        return new CompilationDetails(result, engine.getSourceMap(), trackingResourceReader.getReadResources());
+    }
+
+    private String getSourceMapFileName(String sourceName) {
+        return sourceName + ".map";
     }
 
 }

@@ -85,13 +85,13 @@ public class Lessc {
     private static LessCompiler.CompilationDetails compileWithDetails(LesscCommandLineParser cmd) throws IOException {
         LessCompilationEngine engine = LessCompilationEngineFactory.create(cmd.getEngine(), cmd.getCacheDir());
         LessCompiler lessCompiler = new LessCompilerImpl(engine, cmd.getCustomJsReader());
-        return lessCompiler.compileWithDetails(cmd.getResourceReader().read(cmd.getSourceLocation()), cmd.getResourceReader(), cmd.getOptions(), cmd.getSourceLocation());
+        return lessCompiler.compileWithDetails(cmd.getResourceReader().read(cmd.getSourceLocation()), cmd.getResourceReader(), cmd.getOptions(), cmd.getSourceLocation(), null);
     }
 
     private static void compileToDestination(LesscCommandLineParser cmd) throws IOException {
         LessCompilationEngine engine = LessCompilationEngineFactory.create(cmd.getEngine(), cmd.getCacheDir());
         CompilationTask compilationTask = new CompilationTask(engine, cmd.getCustomJsReader(), cmd.getCacheDir());
-        CompilationUnit compilationUnit = new CompilationUnit(cmd.getSourceLocation(), cmd.getDestination(), cmd.getOptions(), cmd.getResourceReader());
+        CompilationUnit compilationUnit = new CompilationUnit(cmd.getSourceLocation(), cmd.getDestination(), cmd.getOptions(), cmd.getResourceReader(), cmd.getSourceMapFile());
         compilationTask.getCompilationUnits().add(compilationUnit);
         if (cmd.isDaemon()) {
             runDaemon(compilationTask);

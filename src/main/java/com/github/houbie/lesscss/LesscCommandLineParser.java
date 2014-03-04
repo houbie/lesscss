@@ -80,6 +80,7 @@ public class LesscCommandLineParser {
 
     private Options options;
     private String sourceLocation;
+    private File sourceMapFile;
     private File destination;
     private ResourceReader resourceReader;
     private String encoding;
@@ -225,9 +226,16 @@ public class LesscCommandLineParser {
         options.setSourceMapMapInline(cmd.hasOption(SOURCE_MAP_MAP_INLINE_OPTION));
         options.setSourceMapUrl(cmd.getOptionValue(SOURCE_MAP_URL_OPTION));
         if (options.isSourceMap() &&
-                !options.isSourceMapMapInline() &&
-                destination == null) {
-            throw new ParseException("The sourcemap option only has an optional filename if the css filename is given");
+                !options.isSourceMapMapInline()) {
+            String sourceMapFileName = cmd.getOptionValue(SOURCE_MAP_OPTION);
+            if (sourceMapFileName == null) {
+                if (destination == null) {
+                    throw new ParseException("The sourcemap option only has an optional filename if the css filename is given");
+                }
+                sourceMapFile = new File(getDestination().getParentFile(), getDestination().getName() + ".map");
+            } else {
+                sourceMapFile = new File(sourceMapFileName);
+            }
         }
 
         options.setRootpath(cmd.getOptionValue(ROOT_PATH_OPTION));
@@ -325,6 +333,10 @@ public class LesscCommandLineParser {
 
     public String getSourceLocation() {
         return sourceLocation;
+    }
+
+    public File getSourceMapFile() {
+        return sourceMapFile;
     }
 
     public File getDestination() {
