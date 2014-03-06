@@ -50,7 +50,7 @@ var parseException,
             if (compilationOptions.options.sourceMapBasepath) {
                 lessOptions.sourceMapBasepath = String(compilationOptions.options.sourceMapBasepath);
             } else {
-                lessOptions.sourceMapBasepath = less.modules.path.dirname(lessOptions.filename);
+                lessOptions.sourceMapBasepath = less.modules.path.dirname(String(compilationOptions.sourceFilename));
             }
             if (compilationOptions.options.sourceMapURL) {
                 lessOptions.sourceMapURL = String(compilationOptions.options.sourceMapURL);
@@ -83,7 +83,7 @@ var parseException,
                         relativeUrls: compilationOptions.options.relativeUrls,
                         strictMath: compilationOptions.options.strictMath,
                         strictUnits: compilationOptions.options.strictUnits,
-                        filename: String(compilationOptions.sourceFilename)
+                        filename: less.modules.path.basename(String(compilationOptions.sourceFilename))
                     },
                     additionalData = {
                         globalVars: javaMapToObject(compilationOptions.options.globalVars),
@@ -100,7 +100,7 @@ var parseException,
 
             lessOptions.currentFileInfo = {
                 relativeUrls: lessOptions.relativeUrls, //option - whether to adjust URL's to be relative
-                filename: less.modules.path.basename(lessOptions.filename), //full resolved filename of current file
+                filename: String(compilationOptions.sourceFilename), //full resolved filename of current file
                 rootpath: lessOptions.rootpath, //path to append to normal URLs for this node
                 currentDirectory: '', //path to the current file, absolute
                 rootFilename: lessOptions.filename, //filename of the base file

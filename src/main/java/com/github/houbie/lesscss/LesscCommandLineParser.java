@@ -224,7 +224,7 @@ public class LesscCommandLineParser {
         options.setSourceMapBasepath(cmd.getOptionValue(SOURCE_MAP__BASEPATH_OPTION));
         options.setSourceMapLessInline(cmd.hasOption(SOURCE_MAP_LESS_INLINE_OPTION));
         options.setSourceMapMapInline(cmd.hasOption(SOURCE_MAP_MAP_INLINE_OPTION));
-        options.setSourceMapUrl(cmd.getOptionValue(SOURCE_MAP_URL_OPTION));
+        options.setSourceMapURL(cmd.getOptionValue(SOURCE_MAP_URL_OPTION));
         if (options.isSourceMap() &&
                 !options.isSourceMapMapInline()) {
             String sourceMapFileName = cmd.getOptionValue(SOURCE_MAP_OPTION);

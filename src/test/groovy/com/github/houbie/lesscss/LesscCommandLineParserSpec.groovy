@@ -32,37 +32,38 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineParser.options == options
 
         where:
-        commandLine                                                                                              | options
-        'src/test/resources/less/basic.less'                                                                     | new Options()
-        'src/test/resources/less/basic.less -x'                                                                  | new Options(compress: true)
-        'src/test/resources/less/basic.less --compress'                                                          | new Options(compress: true)
-        'src/test/resources/less/basic.less -O1'                                                                 | new Options(optimizationLevel: 1)
-        'src/test/resources/less/basic.less --strict-imports '                                                   | new Options(strictImports: true)
-        'src/test/resources/less/basic.less -rp=rootpathUrl'                                                     | new Options(rootpath: 'rootpathUrl')
-        'src/test/resources/less/basic.less --rootpath=rootpathUrl'                                              | new Options(rootpath: 'rootpathUrl')
-        'src/test/resources/less/basic.less -ru'                                                                 | new Options(relativeUrls: true)
-        'src/test/resources/less/basic.less --relative-urls'                                                     | new Options(relativeUrls: true)
-        'src/test/resources/less/basic.less --line-numbers=comments'                                             | new Options(dumpLineNumbers: Options.LineNumbersOutput.COMMENTS)
-        'src/test/resources/less/basic.less --M'                                                                 | new Options(dependenciesOnly: true)
-        'src/test/resources/less/basic.less --depends'                                                           | new Options(dependenciesOnly: true)
-        'src/test/resources/less/basic.less -sm'                                                                 | new Options(strictMath: true)
-        'src/test/resources/less/basic.less --strict-math'                                                       | new Options(strictMath: true)
-        'src/test/resources/less/basic.less -su'                                                                 | new Options(strictUnits: true)
-        'src/test/resources/less/basic.less --strict-units'                                                      | new Options(strictUnits: true)
-        'src/test/resources/less/basic.less --no-ie-compat'                                                      | new Options(ieCompat: false)
-        'src/test/resources/less/basic.less --no-js'                                                             | new Options(javascriptEnabled: false)
-        'src/test/resources/less/basic.less -l'                                                                  | new Options(lint: true)
-        'src/test/resources/less/basic.less --lint'                                                              | new Options(lint: true)
-        'src/test/resources/less/basic.less -s'                                                                  | new Options(silent: true)
-        'src/test/resources/less/basic.less --silent'                                                            | new Options(silent: true)
-//TODO        'src/test/resources/less/basic.less --source-map=sourceMapFilename'                                      | new Options(sourceMap: true)
-        'src/test/resources/less/basic.less --source-map-rootpath=sourceMapRootpath'                             | new Options(sourceMapRootpath: 'sourceMapRootpath')
-        'src/test/resources/less/basic.less --source-map-basepath=sourceMapBasePath'                             | new Options(sourceMapBasepath: 'sourceMapBasePath')
-        'src/test/resources/less/basic.less --source-map-less-inline'                                            | new Options(sourceMapLessInline: true)
-        'src/test/resources/less/basic.less --source-map-map-inline'                                             | new Options(sourceMapMapInline: true)
-        'src/test/resources/less/basic.less --source-map-url=sourceMapUrl'                                       | new Options(sourceMapUrl: 'sourceMapUrl')
-        'src/test/resources/less/basic.less --global-var=\'var1=value1\' --global-var=\'var2=value2\''           | new Options(globalVars: [var1: 'value1', var2: 'value2',])
-        'src/test/resources/less/basic.less --modify-var=\'var1=value1\' --modify-var=\'var2=value2\''           | new Options(modifyVars: [var1: 'value1', var2: 'value2',])
+        commandLine                                                                                    | options
+        'src/test/resources/less/basic.less'                                                           | new Options()
+        'src/test/resources/less/basic.less -x'                                                        | new Options(compress: true)
+        'src/test/resources/less/basic.less --compress'                                                | new Options(compress: true)
+        'src/test/resources/less/basic.less -O1'                                                       | new Options(optimizationLevel: 1)
+        'src/test/resources/less/basic.less --strict-imports '                                         | new Options(strictImports: true)
+        'src/test/resources/less/basic.less -rp=rootpathUrl'                                           | new Options(rootpath: 'rootpathUrl')
+        'src/test/resources/less/basic.less --rootpath=rootpathUrl'                                    | new Options(rootpath: 'rootpathUrl')
+        'src/test/resources/less/basic.less -ru'                                                       | new Options(relativeUrls: true)
+        'src/test/resources/less/basic.less --relative-urls'                                           | new Options(relativeUrls: true)
+        'src/test/resources/less/basic.less --line-numbers=comments'                                   | new Options(dumpLineNumbers: Options.LineNumbersOutput.COMMENTS)
+        'src/test/resources/less/basic.less --M'                                                       | new Options(dependenciesOnly: true)
+        'src/test/resources/less/basic.less --depends'                                                 | new Options(dependenciesOnly: true)
+        'src/test/resources/less/basic.less -sm'                                                       | new Options(strictMath: true)
+        'src/test/resources/less/basic.less --strict-math'                                             | new Options(strictMath: true)
+        'src/test/resources/less/basic.less -su'                                                       | new Options(strictUnits: true)
+        'src/test/resources/less/basic.less --strict-units'                                            | new Options(strictUnits: true)
+        'src/test/resources/less/basic.less --no-ie-compat'                                            | new Options(ieCompat: false)
+        'src/test/resources/less/basic.less --no-js'                                                   | new Options(javascriptEnabled: false)
+        'src/test/resources/less/basic.less -l'                                                        | new Options(lint: true)
+        'src/test/resources/less/basic.less --lint'                                                    | new Options(lint: true)
+        'src/test/resources/less/basic.less -s'                                                        | new Options(silent: true)
+        'src/test/resources/less/basic.less --silent'                                                  | new Options(silent: true)
+        'src/test/resources/less/basic.less out.css --source-map'                                      | new Options(sourceMap: true)
+        'src/test/resources/less/basic.less --source-map=sourceMapFilename'                            | new Options(sourceMap: true)
+        'src/test/resources/less/basic.less --source-map-rootpath=sourceMapRootpath'                   | new Options(sourceMapRootpath: 'sourceMapRootpath')
+        'src/test/resources/less/basic.less --source-map-basepath=sourceMapBasePath'                   | new Options(sourceMapBasepath: 'sourceMapBasePath')
+        'src/test/resources/less/basic.less --source-map-less-inline'                                  | new Options(sourceMapLessInline: true)
+        'src/test/resources/less/basic.less --source-map-map-inline'                                   | new Options(sourceMapMapInline: true)
+        'src/test/resources/less/basic.less --source-map-url=sourceMapUrl'                             | new Options(sourceMapURL: 'sourceMapUrl')
+        'src/test/resources/less/basic.less --global-var=\'var1=value1\' --global-var=\'var2=value2\'' | new Options(globalVars: [var1: 'value1', var2: 'value2',])
+        'src/test/resources/less/basic.less --modify-var=\'var1=value1\' --modify-var=\'var2=value2\'' | new Options(modifyVars: [var1: 'value1', var2: 'value2',])
     }
 
     def 'check source and destination'() {
@@ -78,6 +79,15 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLine                                          | sourceLocation                       | destination
         'src/test/resources/less/basic.less'                 | 'src/test/resources/less/basic.less' | null
         'src/test/resources/less/basic.less destination.css' | 'src/test/resources/less/basic.less' | new File('destination.css')
+    }
+
+    def 'empty source-map without destination throws exception'() {
+        when:
+        commandLineParser.parse('src/test/resources/less/basic.less --source-map'.split(' '))
+
+        then:
+        def e = thrown(ParseException)
+        e.message == 'The sourcemap option only has an optional filename if the css filename is given'
     }
 
     def 'no source throws exception'() {

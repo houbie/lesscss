@@ -82,7 +82,7 @@ class LessCompilerSpec extends Specification {
         then:
         def e = thrown(Exception)
         e.message == 'less parse exception: missing closing `}`\n' +
-                'in broken.less at line 1\n' +
+                'in src/test/resources/less/broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {'
     }
@@ -94,7 +94,7 @@ class LessCompilerSpec extends Specification {
         then:
         def e = thrown(Exception)
         e.message == 'less parse exception: \'doesNotExist.less\' wasn\'t found\n' +
-                'in brokenImport.less at line 5\n' +
+                'in src/test/resources/less/brokenImport.less at line 5\n' +
                 'extract\n' +
                 '@import "doesNotExist";'
     }
@@ -128,7 +128,7 @@ class LessCompilerSpec extends Specification {
 
         expect:
         compiler.compile(lessFile, new Options(dumpLineNumbers: dumpLineNumbers)) == getCss(lessFile, 'debug/', '-' + dumpLineNumbers.optionString).text
-                .replace('{pathimport}', 'import/').replace('{path}', '')
+                .replace('{pathimport}', 'import/').replace('{path}', 'src/test/resources/less.js-tests/less/debug/')
                 .replace('{pathimportesc}', 'import\\/').replace('{pathesc}', '')
 
         where:

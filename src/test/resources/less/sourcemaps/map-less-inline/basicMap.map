@@ -1,0 +1,1 @@
+{"version":3,"file":"build/tmp/map-less-inline/basic.css","sources":["basic.less"],"names":[],"mappings":"AACC;EACA,cAAA;EACA,OAAO,SAAP","sourcesContent":["@black:#000;\n p {\n color: @black;\n width: add(1,1);\n}\n"]}

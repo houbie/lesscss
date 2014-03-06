@@ -22,7 +22,7 @@ class OptionsSpec extends Specification {
             sourceMapBasepath: 'sourceMapBasepath',
             sourceMapLessInline: 'sourceMapLessInline',
             sourceMapMapInline: 'sourceMapMapInline',
-            sourceMapUrl: 'sourceMapUrl',
+            sourceMapURL: 'sourceMapUrl',
             globalVars: [globalVars: 'globalVarValue'],
             modifyVars: [modifyVars: 'modifyVarValue'],
             minify: true

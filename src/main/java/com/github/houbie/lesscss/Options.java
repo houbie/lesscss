@@ -44,7 +44,7 @@ public class Options implements Serializable {
     private String sourceMapBasepath;
     private boolean sourceMapLessInline;
     private boolean sourceMapMapInline;
-    private String sourceMapUrl;
+    private String sourceMapURL;
     private Map<String, String> globalVars = new HashMap<String, String>();
     private Map<String, String> modifyVars = new HashMap<String, String>();
 
@@ -71,7 +71,7 @@ public class Options implements Serializable {
         this.sourceMapBasepath = other.sourceMapBasepath;
         this.sourceMapLessInline = other.sourceMapLessInline;
         this.sourceMapMapInline = other.sourceMapMapInline;
-        this.sourceMapUrl = other.sourceMapUrl;
+        this.sourceMapURL = other.sourceMapURL;
         this.globalVars = other.globalVars;
         this.modifyVars = other.modifyVars;
     }
@@ -333,12 +333,12 @@ public class Options implements Serializable {
      *
      * @return the source map url
      */
-    public String getSourceMapUrl() {
-        return sourceMapUrl;
+    public String getSourceMapURL() {
+        return sourceMapURL;
     }
 
-    public void setSourceMapUrl(String sourceMapUrl) {
-        this.sourceMapUrl = sourceMapUrl;
+    public void setSourceMapURL(String sourceMapURL) {
+        this.sourceMapURL = sourceMapURL;
     }
 
     /**
@@ -442,7 +442,7 @@ public class Options implements Serializable {
             return false;
         if (sourceMapRootpath != null ? !sourceMapRootpath.equals(options.sourceMapRootpath) : options.sourceMapRootpath != null)
             return false;
-        if (sourceMapUrl != null ? !sourceMapUrl.equals(options.sourceMapUrl) : options.sourceMapUrl != null)
+        if (sourceMapURL != null ? !sourceMapURL.equals(options.sourceMapURL) : options.sourceMapURL != null)
             return false;
 
         return true;
@@ -469,7 +469,7 @@ public class Options implements Serializable {
         result = 31 * result + (sourceMapBasepath != null ? sourceMapBasepath.hashCode() : 0);
         result = 31 * result + (sourceMapLessInline ? 1 : 0);
         result = 31 * result + (sourceMapMapInline ? 1 : 0);
-        result = 31 * result + (sourceMapUrl != null ? sourceMapUrl.hashCode() : 0);
+        result = 31 * result + (sourceMapURL != null ? sourceMapURL.hashCode() : 0);
         result = 31 * result + globalVars.hashCode();
         result = 31 * result + modifyVars.hashCode();
         return result;

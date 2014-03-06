@@ -63,7 +63,7 @@ class LesscSpec extends OutputCapturingSpec {
         setup:
         String expectedOutput = 'Compiler daemon running, press q to quit...\n' +
                 'less parse exception: missing closing `}`\n' +
-                'in broken.less at line 1\n' +
+                'in src/test/resources/less/broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {\n'
         int i = 0
@@ -121,7 +121,7 @@ class LesscSpec extends OutputCapturingSpec {
         expect:
         sysOutCapture.toString() == ''
         sysErrCapture.toString() == 'less parse exception: missing closing `}`\n' +
-                'in broken.less at line 1\n' +
+                'in src/test/resources/less/broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {\n'
     }
@@ -136,7 +136,12 @@ class LesscSpec extends OutputCapturingSpec {
         new File("build/tmp/$destinationDir/$mapFile").text == new File("src/test/resources/less/sourcemaps/$destinationDir/$mapFile").text
 
         where:
-        args                                             | mapFile        | destinationDir
-        '--source-map build/tmp/source-map/basicMap.map' | 'basicMap.map' | 'source-map'
+        args                                                                              | mapFile         | destinationDir
+        '--source-map'                                                                    | 'basic.css.map' | 'defaults'
+        '--source-map=build/tmp/source-map/basicMap.map'                                  | 'basicMap.map'  | 'source-map'
+        '--source-map-map-inline'                                                         | 'basic.css'     | 'map-map-inline'
+        '--source-map=build/tmp/map-less-inline/basicMap.map --source-map-less-inline'    | 'basicMap.map'  | 'map-less-inline'
+        '--source-map=build/tmp/paths-and-url/basicMap.map --source-map-rootpath=sourceMapRootpath' +
+                ' --source-map-basepath=src/test/resources --source-map-url=sourceMapUrl' | 'basicMap.map'  | 'paths-and-url'
     }
 }
