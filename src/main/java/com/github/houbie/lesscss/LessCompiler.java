@@ -79,47 +79,60 @@ public interface LessCompiler {
     /**
      * Compile a LESS String
      *
-     * @param less         LESS source
-     * @param importReader ResourceReader for resolving imports
-     * @param sourceName   name of the LESS source that can be used for reporting errors
-     * @return the resulting CSS
-     */
-    String compile(String less, ResourceReader importReader, String sourceName);
-
-    /**
-     * Compile a LESS String
-     *
-     * @param less         LESS source
-     * @param importReader ResourceReader for resolving imports
-     * @param options      compilation options
-     * @param sourceName   name of the LESS source that can be used for reporting errors
-     * @return the resulting CSS
-     */
-    String compile(String less, ResourceReader importReader, Options options, String sourceName);
-
-    /**
-     * Compile a LESS String
-     *
      * @param less              LESS source
      * @param importReader      ResourceReader for resolving imports
-     * @param options           compilation options
-     * @param sourceName        name of the LESS source that can be used for reporting errors
-     * @param sourceMapFileName file name of the source map file
+     * @param sourceFilename name of the LESS source that can be used for reporting errors
      * @return the resulting CSS
      */
-    String compile(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName);
+    String compile(String less, ResourceReader importReader, String sourceFilename);
 
     /**
      * Compile a LESS String
      *
-     * @param less              LESS source
-     * @param importReader      ResourceReader for resolving imports
-     * @param options           compilation options
-     * @param sourceName        name of the LESS source that can be used for reporting errors
-     * @param sourceMapFileName the name of the source map file
+     * @param less           LESS source
+     * @param importReader   ResourceReader for resolving imports
+     * @param options        compilation options
+     * @param sourceFilename name of the LESS source that can be used for reporting errors
+     * @return the resulting CSS
+     */
+    String compile(String less, ResourceReader importReader, Options options, String sourceFilename);
+
+    /**
+     * Compile a LESS String
+     *
+     * @param less                LESS source
+     * @param importReader        ResourceReader for resolving imports
+     * @param options             compilation options
+     * @param sourceFilename      name of the LESS source that can be used for reporting errors and source map generation
+     * @param destinationFilename name of the output that can be used for source map generation
+     * @param sourceMapFilename   the source map file name
+     * @return the resulting CSS
+     */
+    String compile(String less, ResourceReader importReader, Options options, String sourceFilename, String destinationFilename, String sourceMapFilename);
+
+    /**
+     * Compile a LESS String
+     *
+     * @param less           LESS source
+     * @param importReader   ResourceReader for resolving imports
+     * @param options        compilation options
+     * @param sourceFilename name of the LESS source that can be used for reporting errors and source map generation
      * @return CompilationDetails that holds both the resulting CSS and the list of (recursive) imports
      */
-    CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName);
+    CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceFilename);
+
+    /**
+     * Compile a LESS String
+     *
+     * @param less                LESS source
+     * @param importReader        ResourceReader for resolving imports
+     * @param options             compilation options
+     * @param sourceFilename      name of the LESS source that can be used for reporting errors and source map generation
+     * @param destinationFilename name of the output that can be used for source map generation
+     * @param sourceMapFilename   the source map file name
+     * @return CompilationDetails that holds both the resulting CSS and the list of (recursive) imports
+     */
+    CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceFilename, String destinationFilename, String sourceMapFilename);
 
     public static class CompilationDetails {
         private String result;

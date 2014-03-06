@@ -1,4 +1,4 @@
-//compile = function (source, optionsArg, sourceName, importReaderArg)
+//compile = function (source, optionsArg, sourceMapFilename, importReaderArg)
 
 var test = (function () {
     var options = {
@@ -40,11 +40,11 @@ var test = (function () {
                     '\n' +
                     '@import "import1/imported1";\n' +
                     '@import "imported0";',
-            sourceNameTestImports = 'import.less',
+            sourceMapFilenameTestImports = 'import.less',
             sourceTestUrls = '#data-uri {\n' +
                     '  uri: data-uri(\'image/jpeg;base64\', \'../less.js-tests/data/image.jpg\');\n' +
                     '}\n',
-            sourceNameTestUrls = 'import.less',
+            sourceMapFilenameTestUrls = 'import.less',
             imports = {
                 'import1/import2/../commonImported.less': '#commonImported1 {\n' +
                         '  color: green;\n' +
@@ -93,13 +93,13 @@ var test = (function () {
             },
 
             testImports = function () {
-                var result = compile(sourceTestImports, options, sourceNameTestImports, test);
+                var result = compile(sourceTestImports, options, sourceMapFilenameTestImports, test);
                 console.error('error', parseException);
                 console.log('result', result);
             },
 
             testUrls = function () {
-                var result = compile(sourceTestUrls, options, sourceNameTestUrls, test);
+                var result = compile(sourceTestUrls, options, sourceMapFilenameTestUrls, test);
                 console.error('error', parseException);
                 console.log('result', result);
             };

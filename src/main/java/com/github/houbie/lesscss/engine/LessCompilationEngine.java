@@ -16,7 +16,6 @@
 
 package com.github.houbie.lesscss.engine;
 
-import com.github.houbie.lesscss.Options;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
 
 import java.io.Reader;
@@ -36,16 +35,16 @@ public interface LessCompilationEngine {
     /**
      * Compile a LESS String
      *
-     * @param less           LESS source
-     * @param options        compilation options
-     * @param sourceName     name of the LESS source that can be used for reporting errors
-     * @param resourceReader ResourceReader for resolving imports
+     * @param less               LESS source
+     * @param compilationOptions compilation options
+     * @param resourceReader     ResourceReader for resolving imports
      * @return the compiled CSS
      */
-    String compile(String less, Options options, String sourceName, ResourceReader resourceReader, String sourceMapFileName);
+    String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader);
 
     /**
      * Returns the source map after a compilation.
+     *
      * @return the source map or null if it was not generated
      */
     String getSourceMap();

@@ -182,12 +182,14 @@ public class CompilationTask {
             long start = System.currentTimeMillis();
 
             try {
-                String sourceMapFileName = unit.getSourceMapFile() != null ? unit.getSourceMapFile().getName() : null;
-                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), unit.getOptions(), unit.getSourceLocation(), sourceMapFileName);
+                String sourceMapFileName = unit.getSourceMapFile() != null ? unit.getSourceMapFile().getPath() : null;
+                CompilationDetails compilationResult = lessCompiler.compileWithDetails(unit.getSourceAsString(), unit.getResourceReader(), unit.getOptions(), unit.getSourceLocation(), unit.getDestination().getPath(), sourceMapFileName);
                 if (unit.getDestination() != null) {
+                    unit.getDestination().getParentFile().mkdirs();
                     IOUtils.writeFile(compilationResult.getResult(), unit.getDestination(), unit.getEncoding());
                 }
                 if (unit.getSourceMapFile() != null && compilationResult.getSourceMap() != null) {
+                    unit.getSourceMapFile().getParentFile().mkdirs();
                     IOUtils.writeFile(compilationResult.getSourceMap(), unit.getSourceMapFile(), unit.getEncoding());
                 }
                 updateImportsAndCache(unit, compilationResult.getImports());

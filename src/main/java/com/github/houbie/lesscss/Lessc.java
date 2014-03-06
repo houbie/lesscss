@@ -85,7 +85,7 @@ public class Lessc {
     private static LessCompiler.CompilationDetails compileWithDetails(LesscCommandLineParser cmd) throws IOException {
         LessCompilationEngine engine = LessCompilationEngineFactory.create(cmd.getEngine(), cmd.getCacheDir());
         LessCompiler lessCompiler = new LessCompilerImpl(engine, cmd.getCustomJsReader());
-        return lessCompiler.compileWithDetails(cmd.getResourceReader().read(cmd.getSourceLocation()), cmd.getResourceReader(), cmd.getOptions(), cmd.getSourceLocation(), null);
+        return lessCompiler.compileWithDetails(cmd.getResourceReader().read(cmd.getSourceLocation()), cmd.getResourceReader(), cmd.getOptions(), cmd.getSourceLocation());
     }
 
     private static void compileToDestination(LesscCommandLineParser cmd) throws IOException {

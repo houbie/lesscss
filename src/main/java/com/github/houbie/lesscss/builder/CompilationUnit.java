@@ -66,7 +66,7 @@ public class CompilationUnit implements Serializable {
      * @param options     compilation options
      */
     public CompilationUnit(File source, File destination, Options options) {
-        this(source.getName(), destination, options, new FileSystemResourceReader(source.getParentFile()));
+        this(source.getPath(), destination, options, new FileSystemResourceReader(source.getParentFile()));
     }
 
     /**
@@ -79,7 +79,7 @@ public class CompilationUnit implements Serializable {
      * @param resourceReader ResourceReader for resolving the source and the imports, if any.
      */
     public CompilationUnit(String sourceLocation, File destination, Options options, ResourceReader resourceReader) {
-        this(sourceLocation, destination, options, resourceReader, new File(destination.getParentFile(), destination.getName() + ".map"));
+        this(sourceLocation, destination, options, resourceReader, new File(destination.getParentFile(), destination.getPath() + ".map"));
     }
 
     /**
@@ -97,7 +97,7 @@ public class CompilationUnit implements Serializable {
             throw new IllegalArgumentException("source, destination and options must be provided");
         }
         this.sourceLocation = sourceLocation;
-        this.destination = destination.getAbsoluteFile();
+        this.destination = destination;
         this.options = options;
         this.resourceReader = resourceReader;
         this.sourceMapFile = sourceMapFile;
@@ -199,7 +199,7 @@ public class CompilationUnit implements Serializable {
      * @return true if the source, destination, encoding, options and resourceReader are the same.
      */
     public boolean isEquivalent(CompilationUnit other) {
-        if (!destination.equals(other.destination)) return false;
+        if (!destination.getAbsoluteFile().equals(other.destination.getAbsoluteFile())) return false;
         if (encoding != null ? !encoding.equals(other.encoding) : other.encoding != null) return false;
         if (resourceReader != null ? !resourceReader.equals(other.resourceReader) : other.resourceReader != null)
             return false;
@@ -226,7 +226,7 @@ public class CompilationUnit implements Serializable {
         //imports are not used in hash code calculation because the hash code determines the cache location
         // and it should be the same without imports to be able to refresh the compilation unit
         int result = sourceLocation.hashCode();
-        result = 31 * result + destination.hashCode();
+        result = 31 * result + destination.getAbsoluteFile().hashCode();
         result = 31 * result + options.hashCode();
         result = 31 * result + (resourceReader != null ? resourceReader.hashCode() : 0);
         result = 31 * result + (encoding != null ? encoding.hashCode() : 0);

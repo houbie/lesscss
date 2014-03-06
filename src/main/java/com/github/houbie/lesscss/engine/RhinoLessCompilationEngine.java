@@ -18,7 +18,6 @@ package com.github.houbie.lesscss.engine;
 
 
 import com.github.houbie.lesscss.LessParseException;
-import com.github.houbie.lesscss.Options;
 import com.github.houbie.lesscss.compiledjs.LessImpl;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
 import org.mozilla.javascript.Context;
@@ -66,7 +65,7 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
     }
 
     @Override
-    public String compile(String less, Options options, String sourceName, ResourceReader resourceReader, String sourceMapFileName) {
+    public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
         if (!initialized) {
             throw new RuntimeException("execute called, but not yet initialized");
         }
@@ -74,7 +73,7 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
         Object result;
         Object parseException;
         try {
-            Object[] args = {less, options, sourceName, resourceReader, sourceMapFileName};
+            Object[] args = {less, compilationOptions, resourceReader};
 
             result = Context.call(null, compileFunction, scope, scope, args);
             parseException = scope.get("parseException", scope);

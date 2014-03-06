@@ -16,6 +16,7 @@
 
 package com.github.houbie.lesscss;
 
+import com.github.houbie.lesscss.engine.CompilationOptions;
 import com.github.houbie.lesscss.engine.LessCompilationEngine;
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
@@ -82,7 +83,7 @@ public class LessCompilerImpl implements LessCompiler {
         if (source == null) {
             throw new NullPointerException("less file may not be null");
         }
-        return compile(IOUtils.read(source), new FileSystemResourceReader(source.getParentFile()), options, source.getName());
+        return compile(IOUtils.read(source), new FileSystemResourceReader(source.getParentFile()), options, source.getPath());
     }
 
     @Override
@@ -95,7 +96,7 @@ public class LessCompilerImpl implements LessCompiler {
         if (source == null) {
             throw new NullPointerException("less file may not be null");
         }
-        CompilationDetails details = compileWithDetails(IOUtils.read(source, encoding), importReader, options, source.getName(), getSourceMapFileName(source.getName()));
+        CompilationDetails details = compileWithDetails(IOUtils.read(source, encoding), importReader, options, source.getPath(), destination.getPath(), getSourceMapFileName(source.getPath()));
         IOUtils.writeFile(details.getResult(), destination, encoding);
     }
 
@@ -105,36 +106,47 @@ public class LessCompilerImpl implements LessCompiler {
     }
 
     @Override
-    public String compile(String less, ResourceReader importReader, String sourceName) {
-        return compile(less, importReader, new Options(), sourceName);
+    public String compile(String less, ResourceReader importReader, String sourceFilename) {
+        return compile(less, importReader, new Options(), sourceFilename);
     }
 
     @Override
-    public String compile(String less, ResourceReader importReader, Options options, String sourceName) {
-        return compileWithDetails(less, importReader, options, sourceName, getSourceMapFileName(sourceName)).getResult();
+    public String compile(String less, ResourceReader importReader, Options options, String sourceFilename) {
+        return compileWithDetails(less, importReader, options, sourceFilename, getDestinationFileName(sourceFilename), getSourceMapFileName(sourceFilename)).getResult();
     }
 
     @Override
-    public String compile(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName) {
-        return compileWithDetails(less, importReader, options, sourceName, sourceMapFileName).getResult();
+    public String compile(String less, ResourceReader importReader, Options options, String sourceFilename, String destinationFilename, String sourceMapFilename) {
+        return compileWithDetails(less, importReader, options, sourceFilename, destinationFilename, sourceMapFilename).getResult();
     }
 
     @Override
-    public CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceName, String sourceMapFileName) {
+    public CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceFilename) {
+        return compileWithDetails(less, importReader, options, sourceFilename, getDestinationFileName(sourceFilename), getSourceMapFileName(sourceFilename));
+    }
+
+    @Override
+    public CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceFilename, String destinationFilename, String sourceMapFilename) {
         if (less == null) {
             throw new NullPointerException("less string may not be null");
         }
         logger.debug("start less compilation");
         TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
         engine.initialize(customJavaScriptReader);
-        String result = engine.compile(less, options, sourceName, trackingResourceReader, sourceMapFileName);
+        CompilationOptions compilationOptions = new CompilationOptions(options, sourceFilename, destinationFilename, sourceMapFilename);
+        String result = engine.compile(less, compilationOptions, trackingResourceReader);
 
         logger.debug("finished less compilation");
         return new CompilationDetails(result, engine.getSourceMap(), trackingResourceReader.getReadResources());
     }
 
-    private String getSourceMapFileName(String sourceName) {
-        return sourceName + ".map";
+    private String getSourceMapFileName(String sourceFilename) {
+        return sourceFilename + ".map";
+    }
+
+    private String getDestinationFileName(String sourceFilename) {
+        String destinationFilename = sourceFilename != null ? sourceFilename : UNKNOWN_SOURCE_NAME;
+        return destinationFilename.replace(".less", ".css");
     }
 
 }

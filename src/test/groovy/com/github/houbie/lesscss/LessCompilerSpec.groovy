@@ -68,7 +68,7 @@ class LessCompilerSpec extends Specification {
 
     def "compile file with imports"() {
         def file = new File('src/test/resources/less/import.less')
-        def result = compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name, null)
+        def result = compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name)
 
         expect:
         result.result == new File('src/test/resources/less/import.css').text
@@ -163,18 +163,11 @@ class LessCompilerSpec extends Specification {
     }
 
     def "less.js source maps compatibility test"() {
-        when:
-        println lessFile
-        println(compiler.compile(lessFile, new Options(modifyVars: getJson(lessFile), sourceMap: true)))
-        println '***'
-
-        then:
-        true
-
-        where:
-        lessFile << new File('src/test/resources/less.js-tests/less/sourcemaps').listFiles().findAll {
-            it.name.endsWith('.less')
-        }
+        def lessFile = new File('src/test/resources/less.js-tests/less/sourcemaps/basic.less')
+        expect:
+        compiler.compileWithDetails(lessFile.text, new FileSystemResourceReader(lessFile.parentFile),
+                new Options(modifyVars: getJson(lessFile), sourceMap: true, sourceMapRootpath: 'testweb/sourcemaps/'),
+                lessFile.name, 'sourcemaps/basic.css', 'sourcemaps/basic.map').sourceMap == new File('src/test/resources/less.js-tests/sourcemaps/basic.json').text
     }
 
     def "less.js static urls compatibility test"() {

@@ -56,14 +56,14 @@ class LesscSpec extends OutputCapturingSpec {
         destination.text == expectedResult
         sysOutCapture.toString().startsWith(
                 'Compiler daemon running, press q to quit...\n' +
-                        "compilation of less CompilationUnit{sourceLocation=$sourceLocation, destination=$destination.absolutePath} finished in ")
+                        "compilation of less CompilationUnit{sourceLocation=$sourceLocation, destination=$destination.path} finished in ")
     }
 
     def 'run daemon with broken less'() {
         setup:
         String expectedOutput = 'Compiler daemon running, press q to quit...\n' +
                 'less parse exception: missing closing `}`\n' +
-                'in src/test/resources/less/broken.less at line 1\n' +
+                'in broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {\n'
         int i = 0
@@ -121,8 +121,22 @@ class LesscSpec extends OutputCapturingSpec {
         expect:
         sysOutCapture.toString() == ''
         sysErrCapture.toString() == 'less parse exception: missing closing `}`\n' +
-                'in src/test/resources/less/broken.less at line 1\n' +
+                'in broken.less at line 1\n' +
                 'extract\n' +
                 '#broken less {\n'
+    }
+
+    def 'generate source maps'() {
+        when:
+        new File("build/tmp/$destinationDir").deleteDir()
+        Lessc.main("$args --cache-dir $cacheDir src/test/resources/less/basic.less build/tmp/$destinationDir/basic.css".split(' '))
+
+        then:
+        new File("build/tmp/$destinationDir/basic.css").text == new File("src/test/resources/less/sourcemaps/$destinationDir/basic.css").text
+        new File("build/tmp/$destinationDir/$mapFile").text == new File("src/test/resources/less/sourcemaps/$destinationDir/$mapFile").text
+
+        where:
+        args                                             | mapFile        | destinationDir
+        '--source-map build/tmp/source-map/basicMap.map' | 'basicMap.map' | 'source-map'
     }
 }

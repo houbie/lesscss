@@ -91,11 +91,11 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
 
 
     @Override
-    public String compile(String less, Options options, String sourceName, ResourceReader resourceReader, String sourceMapFileName) {
+    public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
         Object result;
         Object parseException;
         try {
-            result = ((Invocable) scriptEngine).invokeFunction("compile", less, options, sourceName, resourceReader, sourceMapFileName);
+            result = ((Invocable) scriptEngine).invokeFunction("compile", less, compilationOptions, resourceReader);
             parseException = scriptEngine.get("parseException");
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);

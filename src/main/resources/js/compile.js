@@ -20,7 +20,6 @@
  */
 var parseException,
         sourceMapContent,
-        rootFilename,
         readFileAsString,
         readFileAsBytes,
         normalize,
@@ -40,69 +39,72 @@ var parseException,
             return null;
         },
 
-        setSourceMapOptions = function (options, sourceMapFileName, lessOptions) {
-            if (options.sourceMapMapInline) {
+        setSourceMapOptions = function (lessOptions, compilationOptions) {
+            lessOptions.sourceMapOutputFilename = String(compilationOptions.destinationFilename);
+            if (compilationOptions.options.sourceMapMapInline) {
                 lessOptions.sourceMap = true;
             }
-            if (options.sourceMapRootpath) {
-                lessOptions.sourceMapRootpath = options.sourceMapRootpath;
+            if (compilationOptions.options.sourceMapRootpath) {
+                lessOptions.sourceMapRootpath = String(compilationOptions.options.sourceMapRootpath);
             }
-            if (options.sourceMapBasepath) {
-                lessOptions.sourceMapBasepath = options.sourceMapBasepath;
+            if (compilationOptions.options.sourceMapBasepath) {
+                lessOptions.sourceMapBasepath = String(compilationOptions.options.sourceMapBasepath);
+            } else {
+                lessOptions.sourceMapBasepath = less.modules.path.dirname(lessOptions.filename);
             }
-            if (options.sourceMapURL) {
-                lessOptions.sourceMapURL = options.sourceMapURL;
+            if (compilationOptions.options.sourceMapURL) {
+                lessOptions.sourceMapURL = String(compilationOptions.options.sourceMapURL);
             }
-            if (options.sourceMapLessInline) {
+            if (compilationOptions.options.sourceMapLessInline) {
                 lessOptions.outputSourceFiles = true;
             }
-            if (options.sourceMap) {
-                lessOptions.sourceMapOutputFilename = sourceMapFileName;
-                lessOptions.sourceMapFullFilename = sourceMapFileName;
-                lessOptions.sourceMap = less.modules.path.basename(sourceMapFileName);
-                print('### sourceMap '+ lessOptions.sourceMap);
+            if (compilationOptions.options.sourceMap) {
+                lessOptions.sourceMapFullFilename = String(compilationOptions.sourceMapFilename);
+                lessOptions.sourceMapFilename = lessOptions.sourceMapFullFilename;
+                lessOptions.sourceMap = less.modules.path.basename(lessOptions.sourceMapFullFilename);
+                lessOptions.writeSourceMap = function (content) {
+                    sourceMapContent = content;
+                };
             }
         },
 
-        compile = function (source, options, sourceName, importReader, sourceMapFileName) {
+        compile = function (source, compilationOptions, importReader) {
             var result,
                     lessOptions = {
-                        silent: options.isSilent(),
-                        lint: options.isLint(),
-                        strictImports: options.isStrictImports(),
-                        compress: options.isCompress(),
-                        dependenciesOnly: options.isDependenciesOnly(),
-                        minify: options.isMinify(),
-                        ieCompat: options.isIeCompat(),
-                        javascriptEnabled: options.isJavascriptEnabled(),
-                        optimization: options.getOptimizationLevel(),
-                        relativeUrls: options.isRelativeUrls(),
-                        strictMath: options.isStrictMath(),
-                        strictUnits: options.isStrictUnits(),
-                        filename: sourceName
+                        silent: compilationOptions.options.silent,
+                        lint: compilationOptions.options.lint,
+                        strictImports: compilationOptions.options.strictImports,
+                        compress: compilationOptions.options.compress,
+                        dependenciesOnly: compilationOptions.options.dependenciesOnly,
+                        minify: compilationOptions.options.minify,
+                        ieCompat: compilationOptions.options.ieCompat,
+                        javascriptEnabled: compilationOptions.options.javascriptEnabled,
+                        optimization: compilationOptions.options.optimizationLevel,
+                        relativeUrls: compilationOptions.options.relativeUrls,
+                        strictMath: compilationOptions.options.strictMath,
+                        strictUnits: compilationOptions.options.strictUnits,
+                        filename: String(compilationOptions.sourceFilename)
                     },
                     additionalData = {
-                        globalVars: javaMapToObject(options.getGlobalVars()),
-                        modifyVars: javaMapToObject(options.getModifyVars())
+                        globalVars: javaMapToObject(compilationOptions.options.globalVars),
+                        modifyVars: javaMapToObject(compilationOptions.options.modifyVars)
                     };
 
-            rootFilename = sourceName;
-
-            if (options.getRootpath()) {
-                lessOptions.rootpath = String(options.getRootpath());
+            if (compilationOptions.options.rootpath) {
+                lessOptions.rootpath = String(compilationOptions.options.rootpath);
             }
-            if (options.getDumpLineNumbers() && options.getDumpLineNumbers().getOptionString()) {
-                lessOptions.dumpLineNumbers = String(options.getDumpLineNumbers().getOptionString());
+            if (compilationOptions.options.dumpLineNumbers && compilationOptions.options.dumpLineNumbers.optionString) {
+                lessOptions.dumpLineNumbers = String(compilationOptions.options.dumpLineNumbers.optionString);
             }
-            setSourceMapOptions(options, sourceMapFileName, lessOptions)
+            setSourceMapOptions(lessOptions, compilationOptions);
 
             lessOptions.currentFileInfo = {
-                relativeUrls: lessOptions.relativeUrls,  //option - whether to adjust URL's to be relative
-                filename: sourceName,                    //full resolved filename of current file
-                rootpath: lessOptions.rootpath,          //path to append to normal URLs for this node
-                currentDirectory: '',                    //path to the current file, absolute
-                rootFilename: rootFilename,              //filename of the base file
-                entryPath: ''                            //absolute path to the entry file
+                relativeUrls: lessOptions.relativeUrls, //option - whether to adjust URL's to be relative
+                filename: less.modules.path.basename(lessOptions.filename), //full resolved filename of current file
+                rootpath: lessOptions.rootpath, //path to append to normal URLs for this node
+                currentDirectory: '', //path to the current file, absolute
+                rootFilename: lessOptions.filename, //filename of the base file
+                entryPath: '' //absolute path to the entry file
             };
 
             readFileAsString = function (file) {
@@ -134,7 +136,7 @@ var parseException,
                     }
                     result = (lessOptions.dependenciesOnly) ? '' : tree.toCSS(lessOptions);
                 }, additionalData);
-                return (options.minify) ? cssmin(result) : result;
+                return (lessOptions.minify) ? cssmin(result) : result;
             } catch (e) {
                 parseException = 'less parse exception: ' + e.message;
                 if (e.filename) {
