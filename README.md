@@ -107,11 +107,8 @@ when `lessc` is available on your system.
 This makes sense when using lesscss in your java based build process: not all the developers and build machines require the native lessc,
 but if available it can be used transparently.
 
-Be aware that there are a few semantic differences:
-
-* Source maps: file names and locations can differ. This can be mitigated by explicitly specifying the source map rootpath,
-basepath and url and/or the `source-map-less-inline` option.
-* The native lessc always tries to resolve imports first in the same directory as the importing less.
+Be aware that there are a few semantic differences when generating source maps: file names and locations can differ.
+This can be mitigated by explicitly specifying the source map rootpath, basepath and url and/or the `source-map-less-inline` option.
 
 ## Building from source
 If you use the included gradle wrapper, you don't have to install anything (except a JDK)

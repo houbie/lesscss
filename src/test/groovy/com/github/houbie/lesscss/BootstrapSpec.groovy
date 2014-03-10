@@ -74,6 +74,19 @@ class BootstrapSpec extends Specification {
         destination.text == new File('src/test/resources/less/bootstrap/customized/custom-bootstrap.css').text
     }
 
+    def "use commandline engine for bootstrap with customized variables"() {
+        File destination = new File('build/tmp/custom-bootstrap.css')
+        destination.delete()
+
+        when:
+        LessCompilationEngine engine = create(COMMAND_LINE, System.getProperty('lesscExecutable'))
+        def compiler = new LessCompilerImpl(engine)
+        compiler.compile(source, new File('build/tmp/custom-bootstrap.css'), new Options(), new FileSystemResourceReader(new File('src/test/resources/less/bootstrap/customized'), source.getParentFile()), 'UTF-8')
+
+        then:
+        destination.text == new File('src/test/resources/less/bootstrap/customized/custom-bootstrap.css').text
+    }
+
     @IgnoreIf({ System.getProperty("perfTest") == null })
     def "compare performance"() {
         long start = System.currentTimeMillis()
