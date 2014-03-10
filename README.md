@@ -91,13 +91,27 @@ There are 3 _ResourceReader_ implementations available for resolving source and 
 
 ## Compatibility
 
-Lesscss passes all the tests of the official JavaScript LESS 1.7.0 compiler, except the test for _data-uri_.
-Lesscss handles _data-uri_ the same way as the official LESS does when used inside a browser: the _data-uri_'s are translated
-into URL's in stead of being embedded in the CSS.
+Lesscss passes all the tests of the official JavaScript LESS 1.7.0 compiler.
 
-## Turn Lessc into a Porsche (experimental)
+There is however one minor incompatibiliy: lesscss still uses the YUI minifier, while less.js 1.5+ switched to cleancss.
+Unfortunately cleancss depends on node.js and is not usable on the JVM.
 
-TODO
+## Fast compilation in dev mode
+
+Native less compilation (typically lessc via node.js) is still a lot faster than all the java less compilers.
+When compiling large less files like Twitter Bootstrap f.i., the differences are significant.
+
+Lesscss can now achieve the same speed by using the new `CommandLineLesscCompilationEngine` (which replaced the unstable jav8 engine),
+when `lessc` is available on your system.
+
+This makes sense when using lesscss in your java based build process: not all the developers and build machines require the native lessc,
+but if available it can be used transparently.
+
+Be aware that there are a few semantic differences:
+
+* Source maps: file names and locations can differ. This can be mitigated by explicitly specifying the source map rootpath,
+basepath and url and/or the `source-map-less-inline` option.
+* The native lessc always tries to resolve imports first in the same directory as the importing less.
 
 ## Building from source
 If you use the included gradle wrapper, you don't have to install anything (except a JDK)
@@ -117,8 +131,6 @@ Useful gradle tasks:
 
 ## What's up next?
 
-A Grails plugin that monitors and automatically compiles the LESS sources in dev mode and packages the generated CSS in the war.
-
-## Wish list
-
-A stable embedded V8 engine.
+* A Grails plugin that monitors and automatically compiles the LESS sources in dev mode and packages the generated CSS in the war.
+  (see https://github.com/houbie/lessc/)
+* Switch the less engine of the LESS Asset-Pipeline Grails Plugin to lesscss
