@@ -85,4 +85,8 @@ public class TrackingResourceReader implements ResourceReader {
     public List<String> getReadResources() {
         return imports;
     }
+
+    public ResourceReader getDelegate(){
+        return resourceReader;
+    }
 }

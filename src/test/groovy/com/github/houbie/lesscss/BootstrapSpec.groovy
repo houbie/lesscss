@@ -54,16 +54,6 @@ class BootstrapSpec extends Specification {
         destination.text == expected
     }
 
-    @IgnoreIf({ System.getProperty("jav8Test") == null })
-    def "compile twitter bootstrap less with jav8"() {
-        LessCompilerImpl compiler = new LessCompilerImpl(create('jav8', new File('build/tmp')))
-        compiler.compile(source, destination,
-                new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
-
-        expect:
-        destination.text == expected
-    }
-
     def "bootstrap with customized variables"() {
         File destination = new File('build/tmp/custom-bootstrap.css')
         destination.delete()
@@ -99,6 +89,6 @@ class BootstrapSpec extends Specification {
         destination.text == expected
 
         where:
-        engineName << [RHINO, JAV8, NASHORN]
+        engineName << [RHINO, COMMAND_LINE, NASHORN]
     }
 }

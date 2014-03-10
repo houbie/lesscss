@@ -64,6 +64,12 @@ public class IOUtils {
         }
     }
 
+    public static String read(InputStream inputStream) throws IOException {
+        StringBuilderWriter writer = new StringBuilderWriter();
+        copyLarge(new InputStreamReader(inputStream), writer);
+        return writer.toString();
+    }
+
     public static String read(Reader reader) throws IOException {
         StringBuilderWriter writer = new StringBuilderWriter();
         copyLarge(reader, writer);

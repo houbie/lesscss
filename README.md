@@ -97,9 +97,7 @@ into URL's in stead of being embedded in the CSS.
 
 ## Turn Lessc into a Porsche (experimental)
 
-When invoking lessc with the  _--engine jav8_ option, it will use a super fast embedded V8 JavaScript engine.
-
-**It can crash once in a while!**
+TODO
 
 ## Building from source
 If you use the included gradle wrapper, you don't have to install anything (except a JDK)

@@ -40,6 +40,13 @@ class IOUtilsSpec extends Specification {
         IOUtils.read(IOUtils.classLoader.getResource('ioutils/utf16.txt'), 'utf16') == 'utf16 text'
     }
 
+    def "read from inputStream"() {
+        def s = 'read from inputStream'
+
+        expect:
+        IOUtils.read(new ByteArrayInputStream(s.bytes)) == s
+    }
+
     def "read from reader"() {
         def s = 'read from reader'
 

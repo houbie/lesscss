@@ -154,9 +154,9 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineParser.engine == engine
 
         where:
-        commandLine                                                 | engine
-        'src/test/resources/less/basic.less'                        | null
-        '--engine jav8 -e utf16 src/test/resources/less/basic.less' | 'jav8'
+        commandLine                                                        | engine
+        'src/test/resources/less/basic.less'                               | null
+        '--engine commandLine -e utf16 src/test/resources/less/basic.less' | 'commandLine'
     }
 
     def 'check encoding'() {
@@ -192,8 +192,7 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
                 ' -e,--encoding <arg>              Character encoding.\n' +
                 '    --engine <arg>                JavaScript engine, either \'rhino\'\n' +
                 '                                  (default), \'nashorn\' (requires JDK8) or\n' +
-                '                                  \'jav8\' (only on supported operating\n' +
-                '                                  systems).\n' +
+                '                                  \'commandline\'.\n' +
                 '    --global-var <arg>            --global-var=\'VAR=VALUE\' Defines a\n' +
                 '                                  variable that can be referenced by the\n' +
                 '                                  file.\n' +

@@ -144,7 +144,7 @@ public class LesscCommandLineParser {
         result.addOption("e", ENCODING_OPTION, true, "Character encoding.");
         result.addOption(OptionBuilder.withLongOpt(CACHE_DIR_OPTION).hasArg().withDescription("Cache directory.").create());
         result.addOption(OptionBuilder.withLongOpt(DAEMON_OPTION).withDescription("Start compiler daemon.").create());
-        result.addOption(OptionBuilder.hasArg().withLongOpt(ENGINE_OPTION).withDescription("JavaScript engine, either 'rhino' (default), 'nashorn' (requires JDK8) or 'jav8' (only on supported operating systems).").create());
+        result.addOption(OptionBuilder.hasArg().withLongOpt(ENGINE_OPTION).withDescription("JavaScript engine, either 'rhino' (default), 'nashorn' (requires JDK8) or 'commandline'.").create());
 
         return result;
     }

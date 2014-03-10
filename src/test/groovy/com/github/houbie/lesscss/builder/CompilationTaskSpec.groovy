@@ -97,7 +97,7 @@ class CompilationTaskSpec extends Specification {
         compilationTask.execute() //fill cache
 
         when:
-        sleep(1000)
+        sleep(1200)
         basicSource << 'a{color: @black;}'
         def compiledLocations = compilationTask.execute()*.sourceLocation
 
@@ -113,7 +113,7 @@ class CompilationTaskSpec extends Specification {
         compilationTask.execute() //fill cache
 
         when:
-        sleep(1000)
+        sleep(1200)
         imported0Source << '@import "basic";'
         def compiledLocations = compilationTask.execute()*.sourceLocation
 
@@ -160,7 +160,7 @@ class CompilationTaskSpec extends Specification {
         compilationTask.startDaemon(100)
 
         when:
-        sleep(1000)
+        sleep(1200)
 
         then:
         importDestination.text == importResult.text
@@ -168,7 +168,7 @@ class CompilationTaskSpec extends Specification {
 
         when:
         imported0Source << '@import "basic";'
-        sleep(1000)
+        sleep(1200)
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
@@ -192,7 +192,7 @@ class CompilationTaskSpec extends Specification {
 
         when:
         imported0Source << '@import "basic'
-        sleep(1000)
+        sleep(1200)
 
         then:
         importDestination.text == importResult.text
@@ -200,7 +200,7 @@ class CompilationTaskSpec extends Specification {
 
         when:
         imported0Source << '";'
-        sleep(1000)
+        sleep(1200)
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'

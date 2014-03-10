@@ -47,7 +47,7 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
     private ScriptEngine scriptEngine;
 
     /**
-     * @param scriptEngineName the name of the underlying ScriptEngine (e.g. "nashorn", "rhino", "jav8"...)
+     * @param scriptEngineName the name of the underlying ScriptEngine (e.g. "nashorn", "rhino", ...)
      */
     public ScriptEngineLessCompilationEngine(String scriptEngineName) {
         logger.info("creating new NashornEngine");
