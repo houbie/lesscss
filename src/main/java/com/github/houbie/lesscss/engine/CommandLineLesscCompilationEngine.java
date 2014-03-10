@@ -54,14 +54,18 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
 
         String[] command = buildCommand(compilationOptions, resourceReader);
         logger.info("Executing commandline {}", Arrays.deepToString(command));
+
+        String result, errors;
         try {
             Process process = Runtime.getRuntime().exec(command);
             pipe(less, process);
+            result = IOUtils.read(process.getInputStream());
+            errors = IOUtils.read(process.getErrorStream());
             process.waitFor();
             if (process.exitValue() == 0) {
-                return IOUtils.read(process.getInputStream());
+                return result;
             }
-            throw new LessParseException(IOUtils.read(process.getErrorStream()));
+            throw new LessParseException(errors);
         } catch (LessParseException e) {
             throw e;
         } catch (Exception e) {

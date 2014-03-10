@@ -49,6 +49,6 @@ public class LessCompilationEngineFactory {
         if (COMMAND_LINE.equals(type)) {
             return new CommandLineLesscCompilationEngine(executable);
         }
-        return create(type);
+        return new ScriptEngineLessCompilationEngine(type);
     }
 }

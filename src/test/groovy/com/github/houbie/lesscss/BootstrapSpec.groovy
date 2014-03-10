@@ -54,6 +54,15 @@ class BootstrapSpec extends Specification {
         destination.text == expected
     }
 
+    def "compile twitter bootstrap less with commandline lessc"() {
+        LessCompilerImpl compiler = new LessCompilerImpl(create('commandline'))
+        compiler.compile(source, destination,
+                new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
+
+        expect:
+        destination.text == expected
+    }
+
     def "bootstrap with customized variables"() {
         File destination = new File('build/tmp/custom-bootstrap.css')
         destination.delete()
