@@ -20,10 +20,10 @@ package com.github.houbie.lesscss.engine;
 import com.github.houbie.lesscss.LessParseException;
 import com.github.houbie.lesscss.compiledjs.LessImpl;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.tools.shell.Global;
+import com.github.houbie.mozilla.javascript.Context;
+import com.github.houbie.mozilla.javascript.Function;
+import com.github.houbie.mozilla.javascript.Scriptable;
+import com.github.houbie.mozilla.javascript.tools.shell.Global;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

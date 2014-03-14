@@ -62,12 +62,12 @@ sourceSets {
 }
 
 dependencies {
-    compile 'org.mozilla:rhino:1.7R4'
+    compile 'com.github.houbie:rhino-mod:1.7R4'
     compile 'org.slf4j:slf4j-api:1.7.5'
     optional 'commons-cli:commons-cli:1.2'
     optional 'ch.qos.logback:logback-classic:1.0.13'
 
-    jsCompilation 'org.mozilla:rhino:1.7R4'
+    jsCompilation 'com.github.houbie:rhino-mod:1.7R4'
     compile files(generatedResources) { builtBy 'compileJs' }
 
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
@@ -80,7 +80,7 @@ minifyJs {
 
 task compileJs(description: 'Compiles the Lesscss javascript into a class file', type: JavaExec, dependsOn: minifyJs) {
     classpath configurations.jsCompilation
-    main = 'org.mozilla.javascript.tools.jsc.Main'
+    main = 'com.github.houbie.mozilla.javascript.tools.jsc.Main'
     args = ['-d', "$generatedResources", '-o', 'LessImpl.class', '-package', 'com.github.houbie.lesscss.compiledjs', '-opt', '9', '-version', '170', "$generatedResources/js/all-min.js"]
 }
 
