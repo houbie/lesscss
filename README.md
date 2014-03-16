@@ -128,6 +128,6 @@ Useful gradle tasks:
 
 ## What's up next?
 
+* A gradle plugin (see https://github.com/houbie/lesscss-gradle-plugin)
 * A Grails plugin that monitors and automatically compiles the LESS sources in dev mode and packages the generated CSS in the war.
   (see https://github.com/houbie/lessc/)
-* Switch the less engine of the LESS Asset-Pipeline Grails Plugin to lesscss
