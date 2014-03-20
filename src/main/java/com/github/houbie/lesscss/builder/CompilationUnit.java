@@ -133,8 +133,16 @@ public class CompilationUnit implements Serializable {
         return sourceLocation;
     }
 
+    public void setSourceLocation(String sourceLocation) {
+        this.sourceLocation = sourceLocation;
+    }
+
     public File getDestination() {
         return destination;
+    }
+
+    public void setDestination(File destination) {
+        this.destination = destination;
     }
 
     public Options getOptions() {
@@ -155,6 +163,10 @@ public class CompilationUnit implements Serializable {
 
     public File getSourceMapFile() {
         return sourceMapFile;
+    }
+
+    public void setSourceMapFile(File sourceMapFile) {
+        this.sourceMapFile = sourceMapFile;
     }
 
     /**
