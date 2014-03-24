@@ -1,14 +1,6 @@
 package com.github.houbie.lesscss.engine;
 
-import com.github.houbie.lesscss.LessParseException;
-import com.github.houbie.lesscss.Options;
-import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
-import com.github.houbie.lesscss.resourcereader.ResourceReader;
-import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
-import com.github.houbie.lesscss.utils.IOUtils;
-import com.github.houbie.lesscss.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.github.houbie.lesscss.utils.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,10 +10,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.houbie.lesscss.utils.StringUtils.isEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.houbie.lesscss.LessParseException;
+import com.github.houbie.lesscss.Options;
+import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
+import com.github.houbie.lesscss.resourcereader.ResourceReader;
+import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
+import com.github.houbie.lesscss.utils.IOUtils;
+import com.github.houbie.lesscss.utils.StringUtils;
 
 /**
- * LessCompilationEngine that calls a localy installed lessc via the command line
+ * LessCompilationEngine that calls a locally installed lessc via the command line
  */
 public class CommandLineLesscCompilationEngine implements LessCompilationEngine {
 
@@ -52,20 +53,13 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
     public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
         sourceMapFilename = compilationOptions.getSourceMapFilename();
 
-        String[] command = buildCommand(compilationOptions, resourceReader);
-        logger.info("Executing commandline {}", Arrays.deepToString(command));
-
-        String result, errors;
         try {
-            Process process = Runtime.getRuntime().exec(command);
-            pipe(less, process);
-            result = IOUtils.read(process.getInputStream());
-            errors = IOUtils.read(process.getErrorStream());
-            process.waitFor();
-            if (process.exitValue() == 0) {
-                return result;
+            if (!compilationOptions.getOptions().isDependenciesOnly()) {
+                //hack to force reading of imported less files to make sure they can be cached
+                forceReadImports(less, compilationOptions, resourceReader);
             }
-            throw new LessParseException(errors);
+            String[] command = buildCommand(compilationOptions, resourceReader, compilationOptions.getOptions().isDependenciesOnly());
+            return executeCommandline(less, command);
         } catch (LessParseException e) {
             throw e;
         } catch (Exception e) {
@@ -73,11 +67,35 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
         }
     }
 
+    private void forceReadImports(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) throws IOException, InterruptedException {
+        String[] command = buildCommand(compilationOptions, resourceReader, true);
+        String imports = executeCommandline(less, command);
+        if (!StringUtils.isEmpty(imports)) {
+            for (String imported : imports.split("\\r?\\n")) {
+                resourceReader.read(imported);
+            }
+        }
+    }
+
+    private String executeCommandline(String less, String[] command) throws IOException, InterruptedException {
+        String result, errors;
+        logger.info("Executing commandline {}", Arrays.deepToString(command));
+        Process process = Runtime.getRuntime().exec(command);
+        pipe(less, process);
+        result = IOUtils.read(process.getInputStream());
+        errors = IOUtils.read(process.getErrorStream());
+        process.waitFor();
+        if (process.exitValue() == 0) {
+            return result;
+        }
+        throw new LessParseException(errors);
+    }
+
     private void pipe(String source, Process process) throws IOException {
         IOUtils.write(source, process.getOutputStream(), "UTF-8");
     }
 
-    protected String[] buildCommand(CompilationOptions compilationOptions, ResourceReader resourceReader) {
+    protected String[] buildCommand(CompilationOptions compilationOptions, ResourceReader resourceReader, boolean dependeciesOnly) {
         Options options = compilationOptions.getOptions();
         List<String> cmd = new ArrayList<String>();
         cmd.add(executable);
@@ -85,7 +103,7 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
         cmd.add("--no-color");
 
         addIncludePaths(cmd, resourceReader);
-        if (options.isDependenciesOnly()) cmd.add("-M");
+        if (dependeciesOnly) cmd.add("-M");
         if (!options.isIeCompat()) cmd.add("--no-ie-compat");
         if (!options.isJavascriptEnabled()) cmd.add("--no-js");
         if (options.isLint()) cmd.add("-l");
