@@ -120,6 +120,10 @@ artifacts {
     archives distZip
 }
 
+test {
+    systemProperty 'lesscExecutable', lesscExecutable
+}
+
 //********* artifact signing and publishing *********
 
 task uploadSnapshot(description: 'Uploads a snapshot to the Sonatype repository', dependsOn: uploadArchives)

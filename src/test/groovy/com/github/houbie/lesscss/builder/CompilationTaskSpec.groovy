@@ -127,7 +127,7 @@ class CompilationTaskSpec extends Specification {
 
     def 'recompile when imported source changed with commandline engine'() {
         setup:
-        compilationTask = new CompilationTask(new CommandLineLesscCompilationEngine())
+        compilationTask = new CompilationTask(new CommandLineLesscCompilationEngine(System.getProperty('lesscExecutable', 'lessc')))
         compilationTask.cacheDir = cacheDir
         compilationTask.compilationUnits = [importUnit, basicUnit]
         compilationTask.execute() //fill cache
@@ -139,7 +139,7 @@ class CompilationTaskSpec extends Specification {
 
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
-        importUnit.imports.sort() == ['basic.less', 'import1/commonImported.less', 'import1/import2/commonImported.less', 'import1/import2/imported2.less', 'import1/imported1.less', 'imported0.less']
+        importUnit.imports*.replace('\\', '/').sort() == ['basic.less', 'import1/commonImported.less', 'import1/import2/commonImported.less', 'import1/import2/imported2.less', 'import1/imported1.less', 'imported0.less']
         !importUnit.isDirty()
         compiledLocations == [importUnit.sourceLocation]
     }
@@ -204,7 +204,7 @@ class CompilationTaskSpec extends Specification {
         compilationTask.startDaemon(100)
 
         when:
-        sleep(1000)
+        sleep(1200)
 
         then:
         importDestination.text == importResult.text

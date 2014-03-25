@@ -23,8 +23,7 @@ import spock.lang.Unroll
 class CommandlineLesscLessCompilerSpec extends AbstractLessCompilerSpec {
 
     def setupSpec() {
-        String lesscExecutable = System.getProperty('lesscExecutable')
-        compiler = new LessCompilerImpl(new CommandLineLesscCompilationEngine(lesscExecutable ?: 'lessc'))
+        compiler = new LessCompilerImpl(new CommandLineLesscCompilationEngine(System.getProperty('lesscExecutable', 'lessc')))
     }
 
     def "compile file with imports"() {

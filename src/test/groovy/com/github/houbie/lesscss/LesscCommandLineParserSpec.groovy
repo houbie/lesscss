@@ -179,13 +179,13 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         expect:
         commandLineParser.parse(['--version'] as String[])
         //parse should return true to signal there's nothing left to do
-        sysOutCapture.toString() == 'versionInfo\n'
+        sysOutCapture.toString().replaceAll(/\r\n/, '\n') == 'versionInfo\n'
     }
 
     def 'check help output'() {
         expect:
         commandLineParser.parse(['--help'] as String[]) //parse should return true to signal there's nothing left to do
-        sysOutCapture.toString() == 'usage: lessc\n' +
+        sysOutCapture.toString().replaceAll(/\r\n/, '\n') == 'usage: lessc\n' +
                 '[option option=parameter ...] <source> [destination]\n' +
                 '    --cache-dir <arg>             Cache directory.\n' +
                 '    --daemon                      Start compiler daemon.\n' +

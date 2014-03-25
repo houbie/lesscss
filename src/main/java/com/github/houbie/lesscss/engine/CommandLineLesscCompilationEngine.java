@@ -94,7 +94,7 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
     private String getRelativePath(String path, FileSystemResourceReader fileSystemResourceReader) {
         String result = new File(path).getAbsolutePath();
         for (File basePath : fileSystemResourceReader.getBaseDirs()) {
-            String base = basePath.getAbsolutePath() + '/';
+            String base = basePath.getAbsolutePath() + File.separatorChar;
             if (result.startsWith(base)) {
                 return path.substring(base.length());
             }

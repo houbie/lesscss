@@ -25,7 +25,7 @@ import static com.github.houbie.lesscss.engine.LessCompilationEngineFactory.COMM
 
 class CommandLineLesscCompilationEngineSpec extends Specification {
     def 'build command'() {
-        def engine = new CommandLineLesscCompilationEngine('lessc');
+        def engine = new CommandLineLesscCompilationEngine(System.getProperty('lesscExecutable', 'lessc'))
         def resourceReader = new FileSystemResourceReader(new File('include1'), new File('../include2'))
 
         expect:
@@ -62,13 +62,13 @@ class CommandLineLesscCompilationEngineSpec extends Specification {
     }
 
     def 'compile basic less'() {
-        def engine = LessCompilationEngineFactory.create(COMMAND_LINE);
+        def engine = new CommandLineLesscCompilationEngine(System.getProperty('lesscExecutable', 'lessc'))
         def compiler = new LessCompilerImpl(engine)
         def lessFile = new File('src/test/resources/less/import.less')
         def compilationDetails = compiler.compileWithDetails(lessFile.text, new FileSystemResourceReader(lessFile.parentFile), new Options(), lessFile.name)
 
         expect:
         compilationDetails.result == new File('src/test/resources/less/import.css').text
-        compilationDetails.imports.sort() == ['import1/commonImported.less', 'import1/import2/commonImported.less', 'import1/import2/imported2.less', 'import1/imported1.less', 'imported0.less']
+        compilationDetails.imports*.replace('\\', '/').sort() == ['import1/commonImported.less', 'import1/import2/commonImported.less', 'import1/import2/imported2.less', 'import1/imported1.less', 'imported0.less']
     }
 }
