@@ -21,11 +21,11 @@ import com.github.houbie.lesscss.Options
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
 
-import static com.github.houbie.lesscss.engine.LessCompilationEngineFactory.COMMAND_LINE
-
 class CommandLineLesscCompilationEngineSpec extends Specification {
+    static def executable = System.getProperty('lesscExecutable', 'lessc')
+
     def 'build command'() {
-        def engine = new CommandLineLesscCompilationEngine(System.getProperty('lesscExecutable', 'lessc'))
+        def engine = new CommandLineLesscCompilationEngine(executable)
         def resourceReader = new FileSystemResourceReader(new File('include1'), new File('../include2'))
 
         expect:
@@ -33,7 +33,7 @@ class CommandLineLesscCompilationEngineSpec extends Specification {
 
         where:
         compilationOptions                                                            | commandLine
-        new CompilationOptions(new Options(), 'source.less', 'destination.css', null) | 'lessc - --no-color --include-path=/Users/ivo/java/lesscss/include1:/Users/ivo/java/lesscss/../include2 -sm=off -su=off -O1'
+        new CompilationOptions(new Options(), 'source.less', 'destination.css', null) | "$executable - --no-color --include-path=/Users/ivo/java/lesscss/include1:/Users/ivo/java/lesscss/../include2 -sm=off -su=off -O1"
         new CompilationOptions(new Options(
                 compress: true,
                 optimizationLevel: 2,
@@ -57,7 +57,7 @@ class CommandLineLesscCompilationEngineSpec extends Specification {
                 globalVars: [globalVars: 'globalVarValue'],
                 modifyVars: [modifyVars: 'modifyVarValue'],
                 minify: true
-        ), 'source.less', 'destination.css', 'sourceMap.map')                         | 'lessc - --no-color --include-path=/Users/ivo/java/lesscss/include1:/Users/ivo/java/lesscss/../include2 --no-ie-compat --no-js -l -s --strict-imports -x --clean-css --source-map=sourceMap.map --source-map-rootpath=sourceMapRootpath --source-map-basepath=sourceMapBasepath --source-map-less-inline --source-map-map-inline --source-map-url=sourceMapUrl --rootpath=rootpath -ru -sm=on -su=on --global-var=globalVars=globalVarValue --modify-var=_dummy_var_=0 --modify-var=modifyVars=modifyVarValue -O2 --line-numbers=all'
+        ), 'source.less', 'destination.css', 'sourceMap.map')                         | "$executable - --no-color --include-path=/Users/ivo/java/lesscss/include1:/Users/ivo/java/lesscss/../include2 --no-ie-compat --no-js -l -s --strict-imports -x --clean-css --source-map=sourceMap.map --source-map-rootpath=sourceMapRootpath --source-map-basepath=sourceMapBasepath --source-map-less-inline --source-map-map-inline --source-map-url=sourceMapUrl --rootpath=rootpath -ru -sm=on -su=on --global-var=globalVars=globalVarValue --modify-var=_dummy_var_=0 --modify-var=modifyVars=modifyVarValue -O2 --line-numbers=all"
 
     }
 

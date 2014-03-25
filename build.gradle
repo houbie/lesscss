@@ -121,7 +121,9 @@ artifacts {
 }
 
 test {
-    systemProperty 'lesscExecutable', lesscExecutable
+    if (project.ext.has('lesscExecutable')) {
+        systemProperty 'lesscExecutable', lesscExecutable
+    }
 }
 
 //********* artifact signing and publishing *********
