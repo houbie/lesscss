@@ -23,13 +23,13 @@ import spock.lang.Specification
 
 import static com.github.houbie.lesscss.engine.LessCompilationEngineFactory.COMMAND_LINE
 
-class CommandLineLesscCompilationEngineTest extends Specification {
+class CommandLineLesscCompilationEngineSpec extends Specification {
     def 'build command'() {
         def engine = new CommandLineLesscCompilationEngine('lessc');
         def resourceReader = new FileSystemResourceReader(new File('include1'), new File('../include2'))
 
         expect:
-        engine.buildCommand(compilationOptions, resourceReader).join(' ') == commandLine
+        engine.buildCommand(compilationOptions, resourceReader, false).join(' ') == commandLine
 
         where:
         compilationOptions                                                            | commandLine
@@ -57,16 +57,18 @@ class CommandLineLesscCompilationEngineTest extends Specification {
                 globalVars: [globalVars: 'globalVarValue'],
                 modifyVars: [modifyVars: 'modifyVarValue'],
                 minify: true
-        ), 'source.less', 'destination.css', 'sourceMap.map')                         | 'lessc - --no-color --include-path=/Users/ivo/java/lesscss/include1:/Users/ivo/java/lesscss/../include2 -M --no-ie-compat --no-js -l -s --strict-imports -x --clean-css --source-map=sourceMap.map --source-map-rootpath=sourceMapRootpath --source-map-basepath=sourceMapBasepath --source-map-less-inline --source-map-map-inline --source-map-url=sourceMapUrl --rootpath=rootpath -ru -sm=on -su=on --global-var=globalVars=globalVarValue --modify-var=_dummy_var_=0 --modify-var=modifyVars=modifyVarValue -O2 --line-numbers=all'
+        ), 'source.less', 'destination.css', 'sourceMap.map')                         | 'lessc - --no-color --include-path=/Users/ivo/java/lesscss/include1:/Users/ivo/java/lesscss/../include2 --no-ie-compat --no-js -l -s --strict-imports -x --clean-css --source-map=sourceMap.map --source-map-rootpath=sourceMapRootpath --source-map-basepath=sourceMapBasepath --source-map-less-inline --source-map-map-inline --source-map-url=sourceMapUrl --rootpath=rootpath -ru -sm=on -su=on --global-var=globalVars=globalVarValue --modify-var=_dummy_var_=0 --modify-var=modifyVars=modifyVarValue -O2 --line-numbers=all'
 
     }
 
     def 'compile basic less'() {
         def engine = LessCompilationEngineFactory.create(COMMAND_LINE);
         def compiler = new LessCompilerImpl(engine)
-        compiler.compile(new File('src/test/resources/less/import.less'), new File('build/tmp/commandline-import.css'))
+        def lessFile = new File('src/test/resources/less/import.less')
+        def compilationDetails = compiler.compileWithDetails(lessFile.text, new FileSystemResourceReader(lessFile.parentFile), new Options(), lessFile.name)
 
         expect:
-        new File('build/tmp/commandline-import.css').text == new File('src/test/resources/less/import.css').text
+        compilationDetails.result == new File('src/test/resources/less/import.css').text
+        compilationDetails.imports.sort() == ['import1/commonImported.less', 'import1/import2/commonImported.less', 'import1/import2/imported2.less', 'import1/imported1.less', 'imported0.less']
     }
 }

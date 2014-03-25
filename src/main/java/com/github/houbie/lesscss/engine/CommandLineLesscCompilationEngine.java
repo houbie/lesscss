@@ -1,6 +1,14 @@
 package com.github.houbie.lesscss.engine;
 
-import static com.github.houbie.lesscss.utils.StringUtils.isEmpty;
+import com.github.houbie.lesscss.LessParseException;
+import com.github.houbie.lesscss.Options;
+import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
+import com.github.houbie.lesscss.resourcereader.ResourceReader;
+import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
+import com.github.houbie.lesscss.utils.IOUtils;
+import com.github.houbie.lesscss.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,16 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.houbie.lesscss.LessParseException;
-import com.github.houbie.lesscss.Options;
-import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader;
-import com.github.houbie.lesscss.resourcereader.ResourceReader;
-import com.github.houbie.lesscss.resourcereader.TrackingResourceReader;
-import com.github.houbie.lesscss.utils.IOUtils;
-import com.github.houbie.lesscss.utils.StringUtils;
+import static com.github.houbie.lesscss.utils.StringUtils.isEmpty;
 
 /**
  * LessCompilationEngine that calls a locally installed lessc via the command line
@@ -51,14 +50,15 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
 
     @Override
     public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
+        FileSystemResourceReader fileSystemResourceReader = getFileSystemResourceReader(resourceReader);
         sourceMapFilename = compilationOptions.getSourceMapFilename();
 
         try {
-            if (!compilationOptions.getOptions().isDependenciesOnly()) {
+            if (!compilationOptions.getOptions().isDependenciesOnly() && resourceReader != null) {
                 //hack to force reading of imported less files to make sure they can be cached
-                forceReadImports(less, compilationOptions, resourceReader);
+                forceReadImports(less, compilationOptions, fileSystemResourceReader, resourceReader);
             }
-            String[] command = buildCommand(compilationOptions, resourceReader, compilationOptions.getOptions().isDependenciesOnly());
+            String[] command = buildCommand(compilationOptions, fileSystemResourceReader, compilationOptions.getOptions().isDependenciesOnly());
             return executeCommandline(less, command);
         } catch (LessParseException e) {
             throw e;
@@ -67,14 +67,39 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
         }
     }
 
-    private void forceReadImports(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) throws IOException, InterruptedException {
-        String[] command = buildCommand(compilationOptions, resourceReader, true);
-        String imports = executeCommandline(less, command);
-        if (!StringUtils.isEmpty(imports)) {
-            for (String imported : imports.split("\\r?\\n")) {
-                resourceReader.read(imported);
+    FileSystemResourceReader getFileSystemResourceReader(ResourceReader resourceReader) {
+        if (resourceReader != null) {
+            if (resourceReader instanceof TrackingResourceReader) {
+                resourceReader = ((TrackingResourceReader) resourceReader).getDelegate();
+            }
+
+            if (resourceReader != null) {
+                if (!(resourceReader instanceof FileSystemResourceReader)) {
+                    throw new UnsupportedOperationException("The command line lessc only accepts a com.github.houbie.lesscss.resourcereader.FileSystemResourceReader");
+                }
+                return (FileSystemResourceReader) resourceReader;
             }
         }
+        return null;
+    }
+
+    private void forceReadImports(String less, CompilationOptions compilationOptions, FileSystemResourceReader resourceReader, ResourceReader originalResourceReader) throws IOException, InterruptedException {
+        String[] command = buildCommand(compilationOptions, resourceReader, true);
+        String[] imports = executeCommandline(less, command).split("\\s+");
+        for (int i = 1; i < imports.length; i++) {//first line contains source filename
+            originalResourceReader.read(getRelativePath(imports[i], resourceReader));
+        }
+    }
+
+    private String getRelativePath(String path, FileSystemResourceReader fileSystemResourceReader) {
+        String result = new File(path).getAbsolutePath();
+        for (File basePath : fileSystemResourceReader.getBaseDirs()) {
+            String base = basePath.getAbsolutePath() + '/';
+            if (result.startsWith(base)) {
+                return path.substring(base.length());
+            }
+        }
+        return result;
     }
 
     private String executeCommandline(String less, String[] command) throws IOException, InterruptedException {
@@ -95,15 +120,20 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
         IOUtils.write(source, process.getOutputStream(), "UTF-8");
     }
 
-    protected String[] buildCommand(CompilationOptions compilationOptions, ResourceReader resourceReader, boolean dependeciesOnly) {
+    protected String[] buildCommand(CompilationOptions compilationOptions, FileSystemResourceReader resourceReader, boolean dependeciesOnly) {
         Options options = compilationOptions.getOptions();
         List<String> cmd = new ArrayList<String>();
         cmd.add(executable);
         cmd.add("-"); // read less from stdin
+        if (dependeciesOnly) {
+            cmd.add("-M");
+            cmd.add("dummy.css"); //destination is required by lessc -M option
+        }
         cmd.add("--no-color");
 
-        addIncludePaths(cmd, resourceReader);
-        if (dependeciesOnly) cmd.add("-M");
+        if (resourceReader != null) {
+            addIncludePaths(cmd, resourceReader);
+        }
         if (!options.isIeCompat()) cmd.add("--no-ie-compat");
         if (!options.isJavascriptEnabled()) cmd.add("--no-js");
         if (options.isLint()) cmd.add("-l");
@@ -146,29 +176,18 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
         return cmd.toArray(new String[cmd.size()]);
     }
 
-    private void addIncludePaths(List<String> cmd, ResourceReader resourceReader) {
-        if (resourceReader != null) {
-            if (resourceReader instanceof TrackingResourceReader) {
-                resourceReader = ((TrackingResourceReader) resourceReader).getDelegate();
-            }
-
-            if (resourceReader != null) {
-                if (!(resourceReader instanceof FileSystemResourceReader)) {
-                    throw new UnsupportedOperationException("The command line lessc only accepts a com.github.houbie.lesscss.resourcereader.FileSystemResourceReader");
-                }
-                File[] baseDirs = ((FileSystemResourceReader) resourceReader).getBaseDirs();
-                if (baseDirs.length > 0) {
-                    String includePath = "--include-path=";
-                    int index = 0;
-                    for (File dir : baseDirs) {
-                        includePath += dir.getAbsolutePath();
-                        if (++index < baseDirs.length) {
-                            includePath += File.pathSeparator;
-                        }
-                    }
-                    cmd.add(includePath);
+    private void addIncludePaths(List<String> cmd, FileSystemResourceReader resourceReader) {
+        File[] baseDirs = resourceReader.getBaseDirs();
+        if (baseDirs.length > 0) {
+            String includePath = "--include-path=";
+            int index = 0;
+            for (File dir : baseDirs) {
+                includePath += dir.getAbsolutePath();
+                if (++index < baseDirs.length) {
+                    includePath += File.pathSeparator;
                 }
             }
+            cmd.add(includePath);
         }
     }
 

@@ -18,6 +18,7 @@ package com.github.houbie.lesscss.builder
 
 import com.github.houbie.lesscss.LessCompiler
 import com.github.houbie.lesscss.Options
+import com.github.houbie.lesscss.engine.CommandLineLesscCompilationEngine
 import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Specification
@@ -120,6 +121,25 @@ class CompilationTaskSpec extends Specification {
         then:
         importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
         importUnit.imports == ['import1/imported1.less', 'import1/import2/imported2.less', 'import1/commonImported.less', 'import1/import2/commonImported.less', 'imported0.less', 'basic.less']
+        !importUnit.isDirty()
+        compiledLocations == [importUnit.sourceLocation]
+    }
+
+    def 'recompile when imported source changed with commandline engine'() {
+        setup:
+        compilationTask = new CompilationTask(new CommandLineLesscCompilationEngine())
+        compilationTask.cacheDir = cacheDir
+        compilationTask.compilationUnits = [importUnit, basicUnit]
+        compilationTask.execute() //fill cache
+
+        when:
+        sleep(1200)
+        imported0Source << '@import "basic";'
+        def compiledLocations = compilationTask.execute()*.sourceLocation
+
+        then:
+        importDestination.text == importResult.text + 'p {\n  color: #000000;\n  width: add(1, 1);\n}\n'
+        importUnit.imports.sort() == ['basic.less', 'import1/commonImported.less', 'import1/import2/commonImported.less', 'import1/import2/imported2.less', 'import1/imported1.less', 'imported0.less']
         !importUnit.isDirty()
         compiledLocations == [importUnit.sourceLocation]
     }

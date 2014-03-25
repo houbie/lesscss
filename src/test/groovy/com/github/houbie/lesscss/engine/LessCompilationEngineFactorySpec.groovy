@@ -18,7 +18,7 @@ package com.github.houbie.lesscss.engine
 
 import spock.lang.Specification
 
-class LessCompilationEngineFactoryTest extends Specification {
+class LessCompilationEngineFactorySpec extends Specification {
     def "test create default engine"() {
         expect:
         LessCompilationEngineFactory.create() instanceof RhinoLessCompilationEngine
