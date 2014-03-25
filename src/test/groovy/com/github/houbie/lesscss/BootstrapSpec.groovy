@@ -55,7 +55,7 @@ class BootstrapSpec extends Specification {
     }
 
     def "compile twitter bootstrap less with commandline lessc"() {
-        LessCompilerImpl compiler = new LessCompilerImpl(create('commandline'))
+        LessCompilerImpl compiler = new LessCompilerImpl(create('commandline', System.getProperty('lesscExecutable')))
         compiler.compile(source, destination,
                 new Options(relativeUrls: false), new FileSystemResourceReader(source.getParentFile()), null)
 

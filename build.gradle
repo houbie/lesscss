@@ -124,6 +124,8 @@ test {
     if (project.ext.has('lesscExecutable')) {
         systemProperty 'lesscExecutable', lesscExecutable
     }
+    minHeapSize = "512m"
+    maxHeapSize = "1500m"
 }
 
 //********* artifact signing and publishing *********
