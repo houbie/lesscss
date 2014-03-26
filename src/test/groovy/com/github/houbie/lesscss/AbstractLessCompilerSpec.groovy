@@ -18,10 +18,9 @@ package com.github.houbie.lesscss
 
 import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import groovy.json.JsonSlurper
-import spock.lang.Specification
 import spock.lang.Unroll
 
-abstract class AbstractLessCompilerSpec extends Specification {
+abstract class AbstractLessCompilerSpec extends AbstractLineFeedFixingSpecification {
 
     static LessCompilerImpl compiler
 

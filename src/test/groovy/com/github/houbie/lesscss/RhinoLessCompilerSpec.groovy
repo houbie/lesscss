@@ -23,6 +23,20 @@ import static com.github.houbie.lesscss.Options.LineNumbersOutput.*
 
 class RhinoLessCompilerSpec extends AbstractLessCompilerSpec {
 
+    def "compile files without specifying paths should not throw NPE"() {
+        when:
+        compiler.compile(new File('build.gradle'), new Options())
+
+        then:
+        thrown(LessParseException)
+
+        when:
+        compiler.compile(new File('build.gradle'), new File('import.css'))
+
+        then:
+        thrown(LessParseException)
+    }
+
     def "compile file with imports"() {
         def file = new File('src/test/resources/less/import.less')
         def result = compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name)

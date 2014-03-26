@@ -16,12 +16,12 @@
 
 package com.github.houbie.lesscss.engine
 
+import com.github.houbie.lesscss.AbstractLineFeedFixingSpecification
 import com.github.houbie.lesscss.LessCompilerImpl
 import com.github.houbie.lesscss.Options
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
-import spock.lang.Specification
 
-class CommandLineLesscCompilationEngineSpec extends Specification {
+class CommandLineLesscCompilationEngineSpec extends AbstractLineFeedFixingSpecification {
     static def executable = System.getProperty('lesscExecutable', 'lessc')
 
     def 'build command'() {

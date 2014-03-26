@@ -78,7 +78,7 @@ class CommandlineLesscLessCompilerSpec extends AbstractLessCompilerSpec {
     @Unroll
     def "#lessFile.name compatibility test"() {
         expect:
-        compiler.compile(lessFile.text, new FileSystemResourceReader('UTF-8', lessFile.parentFile, lessFile.parentFile.parentFile), new Options(strictMath: true, relativeUrls: true), lessFile.name) == getCss(lessFile).getText('UTF-8')
+        compiler.compile(lessFile.text, new FileSystemResourceReader('UTF-8', lessFile.parentFile, lessFile.parentFile.parentFile), new Options(strictMath: true, relativeUrls: true), lessFile.name) == getCss(lessFile).text
 
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll {

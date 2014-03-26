@@ -83,12 +83,12 @@ public class LessCompilerImpl implements LessCompiler {
         if (source == null) {
             throw new NullPointerException("less file may not be null");
         }
-        return compile(IOUtils.read(source), new FileSystemResourceReader(source.getParentFile()), options, source.getPath());
+        return compile(IOUtils.read(source), new FileSystemResourceReader(source.getAbsoluteFile().getParentFile()), options, source.getPath());
     }
 
     @Override
     public void compile(File source, File destination) throws IOException {
-        compile(source, destination, new Options(), new FileSystemResourceReader(source.getParentFile()), null);
+        compile(source, destination, new Options(), new FileSystemResourceReader(source.getAbsoluteFile().getParentFile()), null);
     }
 
     @Override

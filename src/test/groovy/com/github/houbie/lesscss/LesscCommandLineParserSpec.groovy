@@ -76,8 +76,10 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         commandLineParser.destination == destination
 
         where:
-        commandLine                                          | sourceLocation                       | destination
-        'src/test/resources/less/basic.less'                 | 'src/test/resources/less/basic.less' | null
+        commandLine | sourceLocation | destination
+        //reproduce NPE when files have no path
+        'build.gradle version.txt' | 'build.gradle' | new File('version.txt')
+        'src/test/resources/less/basic.less' | 'src/test/resources/less/basic.less' | null
         'src/test/resources/less/basic.less destination.css' | 'src/test/resources/less/basic.less' | new File('destination.css')
     }
 
@@ -179,13 +181,13 @@ class LesscCommandLineParserSpec extends OutputCapturingSpec {
         expect:
         commandLineParser.parse(['--version'] as String[])
         //parse should return true to signal there's nothing left to do
-        sysOutCapture.toString().replaceAll(/\r\n/, '\n') == 'versionInfo\n'
+        sysOutCapture.toString() == 'versionInfo\n'
     }
 
     def 'check help output'() {
         expect:
         commandLineParser.parse(['--help'] as String[]) //parse should return true to signal there's nothing left to do
-        sysOutCapture.toString().replaceAll(/\r\n/, '\n') == 'usage: lessc\n' +
+        sysOutCapture.toString() == 'usage: lessc\n' +
                 '[option option=parameter ...] <source> [destination]\n' +
                 '    --cache-dir <arg>             Cache directory.\n' +
                 '    --daemon                      Start compiler daemon.\n' +

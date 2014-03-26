@@ -16,15 +16,15 @@
 
 package com.github.houbie.lesscss
 
-import spock.lang.Specification
-
-abstract class OutputCapturingSpec extends Specification {
+abstract class OutputCapturingSpec extends AbstractLineFeedFixingSpecification {
     PrintStream originalSystemOut
-    ByteArrayOutputStream sysOutCapture = new ByteArrayOutputStream()
+    ByteArrayOutputStream sysOutCapture = new LineFeedFixingByteArrayOutputStream()
     PrintStream originalSystemErr
-    ByteArrayOutputStream sysErrCapture = new ByteArrayOutputStream()
+    ByteArrayOutputStream sysErrCapture = new LineFeedFixingByteArrayOutputStream()
 
     def setup() {
+        sysOutCapture = new LineFeedFixingByteArrayOutputStream()
+        sysErrCapture = new LineFeedFixingByteArrayOutputStream()
         originalSystemOut = System.out
         System.out = new PrintStream(sysOutCapture)
         originalSystemErr = System.err
@@ -34,5 +34,11 @@ abstract class OutputCapturingSpec extends Specification {
     def cleanup() {
         System.out = originalSystemOut
         System.err = originalSystemErr
+    }
+
+    class LineFeedFixingByteArrayOutputStream extends ByteArrayOutputStream {
+        synchronized String toString() {
+            return super.toString().replace('\r\n', '\n')
+        }
     }
 }

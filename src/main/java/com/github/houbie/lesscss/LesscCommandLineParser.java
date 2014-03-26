@@ -232,7 +232,7 @@ public class LesscCommandLineParser {
                 if (destination == null) {
                     throw new ParseException("The sourcemap option only has an optional filename if the css filename is given");
                 }
-                sourceMapFile = new File(getDestination().getParentFile(), getDestination().getName() + ".map");
+                sourceMapFile = new File(getDestination().getAbsoluteFile().getParentFile(), getDestination().getName() + ".map");
             } else {
                 sourceMapFile = new File(sourceMapFileName);
             }
@@ -286,7 +286,7 @@ public class LesscCommandLineParser {
             if (!source.exists()) {
                 throw new ParseException(sourceLocation + " can not be found. Check the location or use --" + INCLUDE_PATH_OPTION);
             }
-            resourceReader = new FileSystemResourceReader(encoding, source.getParentFile());
+            resourceReader = new FileSystemResourceReader(encoding, source.getAbsoluteFile().getParentFile());
         }
     }
 

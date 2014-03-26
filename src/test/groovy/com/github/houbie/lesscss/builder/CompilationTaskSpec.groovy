@@ -16,16 +16,17 @@
 
 package com.github.houbie.lesscss.builder
 
+import com.github.houbie.lesscss.AbstractLineFeedFixingSpecification
 import com.github.houbie.lesscss.LessCompiler
+import com.github.houbie.lesscss.LessParseException
 import com.github.houbie.lesscss.Options
 import com.github.houbie.lesscss.engine.CommandLineLesscCompilationEngine
 import com.github.houbie.lesscss.engine.RhinoLessCompilationEngine
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
-import spock.lang.Specification
 
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.COMMENTS
 
-class CompilationTaskSpec extends Specification {
+class CompilationTaskSpec extends AbstractLineFeedFixingSpecification {
     File workDir = new File('build/tmp/compilationTask')
     File cacheDir = new File("build/tmp/testCacheDir")
 
@@ -254,6 +255,17 @@ class CompilationTaskSpec extends Specification {
 
         then:
         compilationTask.daemon == null
+    }
+
+    def 'files without path should not throw NPE'() {
+        when:
+        def compilationUnit = new CompilationUnit(new File('build.gradle'), new File('out.css'))
+        compilationUnit.sourceMapFile = new File('out.map')
+        compilationTask.compilationUnits = [compilationUnit]
+        compilationTask.execute()
+
+        then:
+        thrown(LessParseException)
     }
 
     private void cleanDir(File dir) {
