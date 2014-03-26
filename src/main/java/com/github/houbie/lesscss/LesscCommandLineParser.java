@@ -232,7 +232,7 @@ public class LesscCommandLineParser {
                 if (destination == null) {
                     throw new ParseException("The sourcemap option only has an optional filename if the css filename is given");
                 }
-                sourceMapFile = new File(getDestination().getAbsoluteFile().getParentFile(), getDestination().getName() + ".map");
+                sourceMapFile = new File(getDestination().getParentFile(), getDestination().getName() + ".map");
             } else {
                 sourceMapFile = new File(sourceMapFileName);
             }

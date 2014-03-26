@@ -132,7 +132,7 @@ class LesscSpec extends OutputCapturingSpec {
         Lessc.main("$args --cache-dir $cacheDir src/test/resources/less/basic.less build/tmp/$destinationDir/basic.css".split(' '))
 
         then:
-        new File("build/tmp/$destinationDir/basic.css").text.replace(new File('.').canonicalPath + '/', '') == new File("src/test/resources/less/sourcemaps/$destinationDir/basic.css").text
+        new File("build/tmp/$destinationDir/basic.css").text == new File("src/test/resources/less/sourcemaps/$destinationDir/basic.css").text
         new File("build/tmp/$destinationDir/$mapFile").text == new File("src/test/resources/less/sourcemaps/$destinationDir/$mapFile").text
 
         where:

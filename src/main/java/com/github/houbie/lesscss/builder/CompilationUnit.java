@@ -79,7 +79,7 @@ public class CompilationUnit implements Serializable {
      * @param resourceReader ResourceReader for resolving the source and the imports, if any.
      */
     public CompilationUnit(String sourceLocation, File destination, Options options, ResourceReader resourceReader) {
-        this(sourceLocation, destination, options, resourceReader, new File(destination.getAbsoluteFile().getParentFile(), destination.getPath() + ".map"));
+        this(sourceLocation, destination, options, resourceReader, new File(destination.getParentFile(), destination.getPath() + ".map"));
     }
 
     /**
