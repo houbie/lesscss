@@ -38,8 +38,8 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
     private static Logger logger = LoggerFactory.getLogger(ScriptEngineLessCompilationEngine.class);
 
     private static final String JS_ALL_MIN_JS = "js/all-min.js";
-    private static final String ENVIRONMENT_SCRIPT = "js/environment.js";
-    private static final String LESS_SCRIPT = "js/less-1.7.0.js";
+    private static final String LESS_SCRIPT = "js/less-rhino-1.7.0-mod.js";
+    private static final String MINIFY_SCRIPT = "js/cssmin.js";
     private static final String COMPILE_SCRIPT = "js/compile.js";
     private static final boolean MINIFIED = true;
 
@@ -84,7 +84,7 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
         if (MINIFIED) {
             concatenatedScripts = cl.getResourceAsStream(JS_ALL_MIN_JS);
         } else {
-            concatenatedScripts = new SequenceInputStream(cl.getResourceAsStream(ENVIRONMENT_SCRIPT), new SequenceInputStream(cl.getResourceAsStream(LESS_SCRIPT), cl.getResourceAsStream(COMPILE_SCRIPT)));
+            concatenatedScripts = new SequenceInputStream(cl.getResourceAsStream(LESS_SCRIPT), new SequenceInputStream(cl.getResourceAsStream(MINIFY_SCRIPT), cl.getResourceAsStream(COMPILE_SCRIPT)));
         }
         return new InputStreamReader(concatenatedScripts);
     }
