@@ -105,8 +105,8 @@ less.mode = 'rhino';
     };
 
     less.modules.fs = {
-        readFileSync: function(name) {
-            var buffer = readFileAsBytes(name);
+        readFileSync: function(name, readFileAsBytesFn) {
+            var buffer = readFileAsBytesFn(name);
             return {
                 length: buffer.length,
                 toString: function(enc) {
@@ -2663,7 +2663,7 @@ tree.functions = {
             useBase64 = /;base64$/.test(mimetype);
         }
 
-        var buf = fs.readFileSync(filePath);
+        var buf = fs.readFileSync(filePath, this.currentFileInfo.readFileAsBytes);
 
         // IE8 cannot handle a data-uri larger than 32KB. If this is exceeded
         // and the --ieCompat flag is enabled, return a normal url() instead.

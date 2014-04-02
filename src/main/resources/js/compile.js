@@ -18,13 +18,7 @@
 /**
  * Compile function to be called from Java
  */
-var parseException,
-        sourceMapContent,
-        readFileAsString,
-        readFileAsBytes,
-        normalize,
-
-        javaMapToObject = function (map) {
+var javaMapToObject = function (map) {
             var iter = map.keySet().iterator(),
                     key,
                     result;
@@ -39,7 +33,7 @@ var parseException,
             return null;
         },
 
-        setSourceMapOptions = function (lessOptions, compilationOptions) {
+        setSourceMapOptions = function (lessOptions, compilationOptions, result) {
             lessOptions.sourceMapOutputFilename = String(compilationOptions.destinationFilename);
             if (compilationOptions.options.sourceMapMapInline) {
                 lessOptions.sourceMap = true;
@@ -63,13 +57,18 @@ var parseException,
                 lessOptions.sourceMapFilename = lessOptions.sourceMapFullFilename;
                 lessOptions.sourceMap = less.modules.path.basename(lessOptions.sourceMapFullFilename);
                 lessOptions.writeSourceMap = function (content) {
-                    sourceMapContent = content;
+                    result.sourceMapContent = content;
                 };
             }
         },
 
         compile = function (source, compilationOptions, importReader) {
-            var result,
+            var result = {
+                        css: null,
+                        sourceMapContent: null,
+                        parseException: null
+                    },
+
                     lessOptions = {
                         silent: compilationOptions.options.silent,
                         lint: compilationOptions.options.lint,
@@ -96,7 +95,7 @@ var parseException,
             if (compilationOptions.options.dumpLineNumbers && compilationOptions.options.dumpLineNumbers.optionString) {
                 lessOptions.dumpLineNumbers = String(compilationOptions.options.dumpLineNumbers.optionString);
             }
-            setSourceMapOptions(lessOptions, compilationOptions);
+            setSourceMapOptions(lessOptions, compilationOptions, result);
 
             lessOptions.currentFileInfo = {
                 relativeUrls: lessOptions.relativeUrls, //option - whether to adjust URL's to be relative
@@ -104,55 +103,51 @@ var parseException,
                 rootpath: lessOptions.rootpath, //path to append to normal URLs for this node
                 currentDirectory: '', //path to the current file, absolute
                 rootFilename: lessOptions.filename, //filename of the base file
-                entryPath: '' //absolute path to the entry file
-            };
+                entryPath: '', //absolute path to the entry file
 
-            readFileAsString = function (file) {
-                var data = importReader.read(file);
-                if (data === null) {
-                    throw {type: 'File', message: "'" + file + "' wasn't found"};
+                readFileAsString: function (file) {
+                    var data = importReader.read(file);
+                    if (data === null) {
+                        throw {type: 'File', message: "'" + file + "' wasn't found"};
+                    }
+                    return String(data);
+                },
+
+                readFileAsBytes: function (file) {
+                    var data = importReader.readBytes(file);
+                    if (data === null) {
+                        throw {type: 'File', message: "'" + file + "' wasn't found"};
+                    }
+                    return data;
                 }
-                return String(data);
-            };
-
-            readFileAsBytes = function (file) {
-                var data = importReader.readBytes(file);
-                if (data === null) {
-                    throw {type: 'File', message: "'" + file + "' wasn't found"};
-                }
-                return data;
-            };
-
-            normalize = function (path) {
-                return String(importReader.normalize(path));
             };
 
             try {
-                parseException = null;
-                sourceMapContent = null;
                 new (less.Parser)(lessOptions).parse(String(source), function (e, tree) {
                     if (e) {
                         throw e;
                     }
-                    result = (lessOptions.dependenciesOnly) ? '' : tree.toCSS(lessOptions);
+                    result.css = (lessOptions.dependenciesOnly) ? '' : tree.toCSS(lessOptions);
                 }, additionalData);
-                return (lessOptions.minify) ? cssmin(result) : result;
+                if (lessOptions.minify) {
+                    result.css = cssmin(result.css);
+                }
             } catch (e) {
-                parseException = 'less parse exception: ' + e.message;
+                result.parseException = 'less parse exception: ' + e.message;
                 if (e.filename) {
-                    parseException += '\nin ' + e.filename + ' at line ' + e.line;
+                    result.parseException += '\nin ' + e.filename + ' at line ' + e.line;
                 }
                 if (e.extract) {
                     var extract = e.extract;
-                    parseException += '\nextract';
+                    result.parseException += '\nextract';
                     for (var line in extract) {
                         if (extract.hasOwnProperty(line) && extract[line]) {
-                            parseException += '\n' + e.extract[line];
+                            result.parseException += '\n' + e.extract[line];
                         }
                     }
                 }
-                return null;
             }
+            return result;
         };
 
 less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
@@ -174,6 +169,8 @@ less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
         newFileInfo.rootpath = currentFileInfo.rootpath;
         newFileInfo.rootFilename = currentFileInfo.rootFilename;
         newFileInfo.relativeUrls = currentFileInfo.relativeUrls;
+        newFileInfo.readFileAsString = currentFileInfo.readFileAsString;
+        newFileInfo.readFileAsBytes = currentFileInfo.readFileAsBytes;
     } else {
         newFileInfo.entryPath = path;
         newFileInfo.rootpath = less.rootpath || path;
@@ -191,7 +188,7 @@ less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
 
     var data = null;
     try {
-        data = readFileAsString(href);
+        data = currentFileInfo.readFileAsString(href);
     } catch (e) {
         callback({ type: 'File', message: "'" + less.modules.path.basename(href) + "' wasn't found" });
         return;

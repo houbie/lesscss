@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Map;
 
 /**
  * LessCompilationEngine implementation that uses the Mozilla Rhino JavaScript engine to execute pre-compiled JavaScript.
@@ -39,6 +40,7 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
     private boolean initialized;
     private Scriptable scope;
     private Function compileFunction;
+    private String sourceMap;//TODO put in result
 
     @Override
     public void initialize(Reader customJavaScriptReader) {
@@ -70,26 +72,27 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
             throw new RuntimeException("execute called, but not yet initialized");
         }
 
-        Object result;
+        Map result;
         Object parseException;
         try {
             Object[] args = {less, compilationOptions, resourceReader};
 
-            result = Context.call(null, compileFunction, scope, scope, args);
-            parseException = scope.get("parseException", scope);
+            result = (Map) Context.call(null, compileFunction, scope, scope, args);
+            if (result.get("sourceMapContent") != null) {
+                sourceMap = result.get("sourceMapContent").toString();
+            }
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);
         }
-        if (parseException != null) {
-            throw new LessParseException(parseException.toString());
+        if (result.get("parseException") != null) {
+            throw new LessParseException(result.get("parseException").toString());
         }
-        return result.toString();
+        return result.get("css").toString();
     }
 
     @Override
     public String getSourceMap() {
-        Object sourceMap = scope.get("sourceMapContent", scope);
-        return (sourceMap != null) ? sourceMap.toString() : null;
+        return sourceMap;
     }
 
 }
