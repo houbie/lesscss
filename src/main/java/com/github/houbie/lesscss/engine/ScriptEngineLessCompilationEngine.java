@@ -101,13 +101,9 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
             throw new RuntimeException("Exception while compiling less", e);
         }
         if (result.get("parseException") != null) {
-            throw new LessParseException(result.get("parseException").toString());
+            throw new LessParseException((String) result.get("parseException"));
         }
-        String sourceMap = null;
-        if (result.get("sourceMapContent") != null) {
-            sourceMap = result.get("sourceMapContent").toString();
-        }
-        return new CompilationDetails(result.get("css").toString(), sourceMap);
+        return new CompilationDetails((String) result.get("css"), (String) result.get("sourceMapContent"));
     }
 
     public ScriptEngine getScriptEngine() {
