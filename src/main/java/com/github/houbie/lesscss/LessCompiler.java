@@ -130,7 +130,7 @@ public interface LessCompiler {
      * @param sourceFilename      name of the LESS source that can be used for reporting errors and source map generation
      * @param destinationFilename name of the output that can be used for source map generation
      * @param sourceMapFilename   the source map file name
-     * @return CompilationDetails that holds both the resulting CSS and the list of (recursive) imports
+     * @return CompilationDetails that holds both the resulting CSS, the source map and the list of (recursive) imports
      */
     CompilationDetails compileWithDetails(String less, ResourceReader importReader, Options options, String sourceFilename, String destinationFilename, String sourceMapFilename);
 
@@ -139,10 +139,9 @@ public interface LessCompiler {
         private String sourceMap;
         private List<String> imports;
 
-        public CompilationDetails(String result, String sourceMap, List<String> imports) {
+        public CompilationDetails(String result, String sourceMap) {
             this.result = result;
             this.sourceMap = sourceMap;
-            this.imports = imports;
         }
 
         public String getResult() {
@@ -155,6 +154,10 @@ public interface LessCompiler {
 
         public List<String> getImports() {
             return imports;
+        }
+
+        public void setImports(List<String> imports) {
+            this.imports = imports;
         }
     }
 }

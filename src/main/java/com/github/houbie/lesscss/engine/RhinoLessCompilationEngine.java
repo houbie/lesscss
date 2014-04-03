@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map;
 
+import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
+
 /**
  * LessCompilationEngine implementation that uses the Mozilla Rhino JavaScript engine to execute pre-compiled JavaScript.
  */
@@ -40,7 +42,6 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
     private boolean initialized;
     private Scriptable scope;
     private Function compileFunction;
-    private String sourceMap;//TODO put in result
 
     @Override
     public void initialize(Reader customJavaScriptReader) {
@@ -67,32 +68,27 @@ public class RhinoLessCompilationEngine implements LessCompilationEngine {
     }
 
     @Override
-    public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
+    public CompilationDetails compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
         if (!initialized) {
             throw new RuntimeException("execute called, but not yet initialized");
         }
 
         Map result;
-        Object parseException;
         try {
             Object[] args = {less, compilationOptions, resourceReader};
 
             result = (Map) Context.call(null, compileFunction, scope, scope, args);
-            if (result.get("sourceMapContent") != null) {
-                sourceMap = result.get("sourceMapContent").toString();
-            }
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);
         }
         if (result.get("parseException") != null) {
             throw new LessParseException(result.get("parseException").toString());
         }
-        return result.get("css").toString();
-    }
-
-    @Override
-    public String getSourceMap() {
-        return sourceMap;
+        String sourceMap = null;
+        if (result.get("sourceMapContent") != null) {
+            sourceMap = result.get("sourceMapContent").toString();
+        }
+        return new CompilationDetails(result.get("css").toString(), sourceMap);
     }
 
 }

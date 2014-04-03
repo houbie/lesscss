@@ -20,6 +20,8 @@ import com.github.houbie.lesscss.resourcereader.ResourceReader;
 
 import java.io.Reader;
 
+import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
+
 /**
  * A JavaScript engine that compiles LESS to CSS
  */
@@ -38,14 +40,7 @@ public interface LessCompilationEngine {
      * @param less               LESS source
      * @param compilationOptions compilation options
      * @param resourceReader     ResourceReader for resolving imports
-     * @return the compiled CSS
+     * @return the compiled CSS en source map in a CompilationDetails instance
      */
-    String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader);
-
-    /**
-     * Returns the source map after a compilation.
-     *
-     * @return the source map or null if it was not generated
-     */
-    String getSourceMap();
+    CompilationDetails compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader);
 }

@@ -18,7 +18,6 @@ package com.github.houbie.lesscss.engine;
 
 
 import com.github.houbie.lesscss.LessParseException;
-import com.github.houbie.lesscss.Options;
 import com.github.houbie.lesscss.resourcereader.ResourceReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +29,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.SequenceInputStream;
+import java.util.Map;
+
+import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
 
 /**
  * LessCompilationEngine implementation that uses a standard {@link javax.script.ScriptEngine} implementation.
@@ -91,25 +93,21 @@ public class ScriptEngineLessCompilationEngine implements LessCompilationEngine 
 
 
     @Override
-    public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
-        Object result;
-        Object parseException;
+    public CompilationDetails compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
+        Map result;
         try {
-            result = ((Invocable) scriptEngine).invokeFunction("compile", less, compilationOptions, resourceReader);
-            parseException = scriptEngine.get("parseException");
+            result = (Map) ((Invocable) scriptEngine).invokeFunction("compile", less, compilationOptions, resourceReader);
         } catch (Exception e) {
             throw new RuntimeException("Exception while compiling less", e);
         }
-        if (parseException != null) {
-            throw new LessParseException(parseException.toString());
+        if (result.get("parseException") != null) {
+            throw new LessParseException(result.get("parseException").toString());
         }
-        return result.toString();
-    }
-
-    @Override
-    public String getSourceMap() {
-        Object sourceMap = scriptEngine.get("sourceMapContent");
-        return (sourceMap != null) ? sourceMap.toString() : null;
+        String sourceMap = null;
+        if (result.get("sourceMapContent") != null) {
+            sourceMap = result.get("sourceMapContent").toString();
+        }
+        return new CompilationDetails(result.get("css").toString(), sourceMap);
     }
 
     public ScriptEngine getScriptEngine() {

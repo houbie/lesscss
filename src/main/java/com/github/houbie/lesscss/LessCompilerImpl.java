@@ -134,10 +134,11 @@ public class LessCompilerImpl implements LessCompiler {
         TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
         engine.initialize(customJavaScriptReader);
         CompilationOptions compilationOptions = new CompilationOptions(options, sourceFilename, destinationFilename, sourceMapFilename);
-        String result = engine.compile(less, compilationOptions, trackingResourceReader);
+        CompilationDetails result = engine.compile(less, compilationOptions, trackingResourceReader);
+        result.setImports(trackingResourceReader.getReadResources());
 
         logger.debug("finished less compilation");
-        return new CompilationDetails(result, engine.getSourceMap(), trackingResourceReader.getReadResources());
+        return result;
     }
 
     private String getSourceMapFileName(String sourceFilename) {

@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.houbie.lesscss.LessCompiler.CompilationDetails;
 import static com.github.houbie.lesscss.utils.StringUtils.isEmpty;
 
 /**
@@ -31,7 +32,6 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
 
 
     private String executable;
-    private String sourceMapFilename;
 
     public CommandLineLesscCompilationEngine() {
         this(null);
@@ -49,9 +49,9 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
     }
 
     @Override
-    public String compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
+    public CompilationDetails compile(String less, CompilationOptions compilationOptions, ResourceReader resourceReader) {
         FileSystemResourceReader fileSystemResourceReader = getFileSystemResourceReader(resourceReader);
-        sourceMapFilename = compilationOptions.getSourceMapFilename();
+        String sourceMapFilename = compilationOptions.getSourceMapFilename();
 
         try {
             if (!compilationOptions.getOptions().isDependenciesOnly() && resourceReader != null) {
@@ -59,7 +59,8 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
                 forceReadImports(less, compilationOptions, fileSystemResourceReader, resourceReader);
             }
             String[] command = buildCommand(compilationOptions, fileSystemResourceReader, compilationOptions.getOptions().isDependenciesOnly());
-            return executeCommandline(less, command);
+            String css = executeCommandline(less, command);
+            return new CompilationDetails(css, getSourceMap(sourceMapFilename));
         } catch (LessParseException e) {
             throw e;
         } catch (Exception e) {
@@ -192,8 +193,7 @@ public class CommandLineLesscCompilationEngine implements LessCompilationEngine 
     }
 
 
-    @Override
-    public String getSourceMap() {
+    private String getSourceMap(String sourceMapFilename) {
         if (!StringUtils.isEmpty(sourceMapFilename)) {
             File sourceMap = new File(sourceMapFilename);
             if (sourceMap.canRead()) {
