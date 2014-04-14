@@ -19,6 +19,10 @@ package com.github.houbie.lesscss
 import com.github.houbie.lesscss.resourcereader.FileSystemResourceReader
 import spock.lang.Unroll
 
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 import static com.github.houbie.lesscss.Options.LineNumbersOutput.*
 
 class RhinoLessCompilerSpec extends AbstractLessCompilerSpec {
@@ -109,4 +113,51 @@ class RhinoLessCompilerSpec extends AbstractLessCompilerSpec {
         where:
         lessFile << new File('src/test/resources/less.js-tests/less').listFiles().findAll { it.name.endsWith('.less') }
     }
+
+    def "multi-threading"() {
+        def results = []
+
+        def tasks = []
+        1.upto(100) {
+            if (it % 2) {
+                tasks << new Callable<String>() {
+                    @Override
+                    String call() throws Exception {
+                        def file = new File('src/test/resources/less/import.less')
+                        return RhinoLessCompilerSpec.compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(sourceMap: true), file.name).result
+                    }
+                }
+            } else {
+                tasks << new Callable<String>() {
+                    @Override
+                    String call() throws Exception {
+                        def file = new File('src/test/resources/less/broken.less')
+                        try {
+                            RhinoLessCompilerSpec.compiler.compileWithDetails(file.text, new FileSystemResourceReader(file.parentFile), new Options(), file.name)
+                        } catch (LessParseException e) {
+                            return e.message
+                        }
+                        return null;
+                    }
+                }
+            }
+        }
+
+        when:
+        ExecutorService executorService = Executors.newFixedThreadPool(100)
+        def futures = executorService.invokeAll(tasks)
+        for (future in futures) {
+            results << future.get()
+        }
+
+        then:
+        results.size() == 100
+        results.unique().sort().size() == 2
+        results[0] == new File('src/test/resources/less/import.css').text + '/*# sourceMappingURL=import.less.map */'
+        results[1] == 'less parse exception: missing closing `}`\n' +
+                'in broken.less at line 1\n' +
+                'extract\n' +
+                '#broken less {'
+    }
+
 }

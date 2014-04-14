@@ -39,6 +39,7 @@ public class LogbackConfigurator {
      * Configure the LessCompilerImpl logger with a ConsoleAppender
      *
      * @param verbose set logger level to Level.ALL if true, otherwise Level.OFF
+     * @param daemon  set the level of the compilationTaskLogger to Level.INFO if true, otherwise Level.OFF
      */
     public static void configure(boolean verbose, boolean daemon) {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();

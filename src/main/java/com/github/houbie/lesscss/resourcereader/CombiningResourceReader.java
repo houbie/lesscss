@@ -38,7 +38,7 @@ public class CombiningResourceReader implements ResourceReader {
     }
 
     @Override
-    public boolean canRead(String location) throws IOException {
+    public boolean canRead(String location) {
         for (ResourceReader resourceReader : resourceReaders) {
             if (resourceReader.canRead(location)) {
                 return true;

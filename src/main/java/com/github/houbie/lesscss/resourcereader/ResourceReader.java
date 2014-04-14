@@ -31,16 +31,15 @@ public interface ResourceReader extends Serializable {
      *
      * @param location the location of the resource
      * @return true if the resource can be read
-     * @throws IOException
      */
-    boolean canRead(String location) throws IOException;
+    boolean canRead(String location);
 
     /**
      * Read a resource into a String
      *
      * @param location the location of the resource
      * @return the content of the resource, or null if the resource cannot be resolved
-     * @throws IOException
+     * @throws IOException if the resource cannot be read
      */
     String read(String location) throws IOException;
 
@@ -49,7 +48,7 @@ public interface ResourceReader extends Serializable {
      *
      * @param location the location of the resource
      * @return the content of the resource, or null if the resource cannot be resolved
-     * @throws IOException
+     * @throws IOException if the resource cannot be read
      */
     byte[] readBytes(String location) throws IOException;
 

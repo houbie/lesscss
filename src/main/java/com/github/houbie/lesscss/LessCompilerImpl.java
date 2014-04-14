@@ -40,8 +40,7 @@ public class LessCompilerImpl implements LessCompiler {
 
     private static final Logger logger = LoggerFactory.getLogger(LessCompilerImpl.class);
 
-    private Reader customJavaScriptReader;
-    private LessCompilationEngine engine;
+    private final LessCompilationEngine engine;
 
     /**
      * Default constructor
@@ -70,7 +69,7 @@ public class LessCompilerImpl implements LessCompiler {
      */
     public LessCompilerImpl(LessCompilationEngine engine, Reader customJavaScriptReader) {
         this.engine = engine;
-        this.customJavaScriptReader = customJavaScriptReader;
+        engine.initialize(customJavaScriptReader);
     }
 
     @Override
@@ -131,10 +130,12 @@ public class LessCompilerImpl implements LessCompiler {
             throw new NullPointerException("less string may not be null");
         }
         logger.debug("start less compilation");
+        CompilationDetails result;
         TrackingResourceReader trackingResourceReader = new TrackingResourceReader(importReader);
-        engine.initialize(customJavaScriptReader);
         CompilationOptions compilationOptions = new CompilationOptions(options, sourceFilename, destinationFilename, sourceMapFilename);
-        CompilationDetails result = engine.compile(less, compilationOptions, trackingResourceReader);
+        synchronized (engine) {
+            result = engine.compile(less, compilationOptions, trackingResourceReader);
+        }
         result.setImports(trackingResourceReader.getReadResources());
 
         logger.debug("finished less compilation");

@@ -88,8 +88,8 @@ class LesscSpec extends OutputCapturingSpec {
         expect:
         destination.text == expectedResult
         sysOutCapture.toString() == 'creating default Rhino less compilation engine\n' +
-                'start less compilation\n' +
                 'Using implementation version: Rhino 1.7 release 4 in package com.github.houbie 2014 03 14\n' +
+                'start less compilation\n' +
                 'finished less compilation\n'
     }
 

@@ -47,7 +47,7 @@ public class TrackingResourceReader implements ResourceReader {
     }
 
     @Override
-    public boolean canRead(String location) throws IOException {
+    public boolean canRead(String location) {
         return resourceReader.canRead(location);
     }
 
@@ -86,7 +86,7 @@ public class TrackingResourceReader implements ResourceReader {
         return imports;
     }
 
-    public ResourceReader getDelegate(){
+    public ResourceReader getDelegate() {
         return resourceReader;
     }
 }
