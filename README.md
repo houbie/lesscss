@@ -49,12 +49,15 @@ Type `lessc -h` to see the full list of options.
 
 ### Tip for compiling Twitter Bootstrap
 
-When using Twitter Bootstrap in multiple projects, it is not necessary to copy all the LESS files to all the projects.
+When using Twitter Bootstrap in multiple projects, it is not necessary to copy all the LESS files to all your projects.
 Only copy the ones that you want to customize (typically variables.less), and then compile with:
 
     lessc --include-path your/project/less:path/to/bootstrap-3.0.0/less bootstrap.less css/bootstrap.css
 
 This will first look for less files in _your/project/less_, and when not found it will fall back to _path/to/bootstrap-3.0.0/less_
+
+When you use the _lesscss-gradle-plugin_, you can even avoid downloading Twitter Bootstrap manually and nor will you have
+to  copy/modify any files. Read this [blog](http://houbie.blogspot.be/2014/04/customizing-twitter-bootstrap-with_9504.html) to see how.
 
 ## Lesscss API
 
@@ -89,11 +92,40 @@ There are 3 _ResourceReader_ implementations available for resolving source and 
 * _ClasspathResourceReader_ : search resources in the classpath relative to a base path, ex. `new ClasspathResourceReader('bootstrap/less')`
 * _CombiningResourceReader_ : delegates to the ResourceReader's in an array until the resource is resolved, ex. `new CombiningResourceReader(srcResourceReader, jarResourceReader)`
 
+## Options
+Except for the _cleancss_ option (see further), all standard lessc options ar supported:
+
+    Options options = new Options()
+    //standard LESS options
+    /////////////////////////
+    options.compress = true //Compress output by removing some whitespaces. Default: false
+    options.strictImports = true //Force evaluation of imports. Default: false
+    options.rootpath = /root/path //Set rootpath for url rewriting in relative imports and urls. Works with or without the relative-urls option. Default: null
+    options.relativeUrls = true //Re-write relative urls to the base less file. Default: false
+    options.minify = true //Compress output using YUI minifier (standard LESS uses clean-css, which is only available in node.js). Default: false
+    options.strictMath = true //In strict mode, math requires brackets. Default: false
+    options.strictUnits = true //Disallow mixed units, e.g. 1px+1em or 1px*1px which have units that cannot be represented. Default: false
+    options.ieCompat = false //Enable IE compatibility checks. Default: true
+    options.javascriptEnabled = false //Enable JavaScript in less files. Default: true
+    options.sourceMap = true //Outputs a v3 sourcemap.  Default: false
+    options.sourceMapRootpath = "/path/to/sourcemaps" //adds this path onto the sourcemap filename and less file paths. Default: null
+    options.sourceMapBasepath = file("$buildDir/css").absolutePath //Sets sourcemap base path (will be subtracted from generated paths). Default: null
+    options.sourceMapLessInline = true //Puts the less files into the map instead of referencing them. Default: false
+    options.sourceMapMapInline = true //Puts the map (and any less files) into the output css file. Default: false
+    options.sourceMapURL = "http://localhost:8080/myApp/css/source.map" //The complete url and filename put in the less file. Default: null (calculated)
+    options.globalVars = [fancyColor: "#123456"] //Defines a variable that can be referenced in the less. Default: empty Map
+    options.modifyVars = ["btn-warning-bg": "red"] //Modifies a variable already declared in the less. Default: empty Map
+
+    //deprecated options
+    options.optimizationLevel = 1 //Set the parser's optimization level. The lower the number, the less nodes it will create in the tree
+    options.dumpLineNumbers= NONE //Outputs filename and line numbers in comments (COMMENTS) or in a fake media query (MEDIA_QUERY). Use source maps instead.
+
+
 ## Compatibility
 
 Lesscss passes all the tests of the official JavaScript LESS 1.7.0 compiler.
 
-There is however one minor incompatibiliy: lesscss still uses the YUI minifier, while less.js 1.5+ switched to cleancss.
+There is however one minor incompatibility: lesscss still uses the YUI minifier, while less.js 1.5+ switched to cleancss.
 Unfortunately cleancss depends on node.js and is not usable on the JVM.
 
 ## Fast compilation in dev mode
@@ -125,6 +157,8 @@ Useful gradle tasks:
 * _installApp_ : installs lesscss in _build/install/lesscss_
 * _distZip_ : creates the zip distribution
 * _clean_, _test_, _jar_, etc.
+
+Note that some tests related to the `CommandLineLesscCompilationEngine` fail on Windows.
 
 ## What's up next?
 

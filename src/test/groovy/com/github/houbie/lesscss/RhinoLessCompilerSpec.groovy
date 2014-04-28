@@ -74,6 +74,13 @@ class RhinoLessCompilerSpec extends AbstractLessCompilerSpec {
                 '@import "doesNotExist";'
     }
 
+    def 'compile file with import starting with ../../'() {
+        def lessFile = new File('src/test/resources/less/relativeimports/main/content/main.less')
+        expect:
+        compiler.compile(lessFile, new Options()) == new File('src/test/resources/less/relativeimports/main/content/main.css').text
+    }
+
+
     def "less.js modify vars compatibility test"() {
         expect:
         compiler.compile(lessFile, new Options(modifyVars: getJson(lessFile))) == getCss(lessFile, 'modifyVars/').text
