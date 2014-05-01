@@ -69,6 +69,9 @@ var javaMapToObject = function (map) {
                         parseException: null
                     },
 
+                    sourceFileName = String(compilationOptions.sourceFilename),
+                    sourceDir = less.modules.path.dirname(sourceFileName),
+
                     lessOptions = {
                         silent: compilationOptions.options.silent,
                         lint: compilationOptions.options.lint,
@@ -82,7 +85,7 @@ var javaMapToObject = function (map) {
                         relativeUrls: compilationOptions.options.relativeUrls,
                         strictMath: compilationOptions.options.strictMath,
                         strictUnits: compilationOptions.options.strictUnits,
-                        filename: less.modules.path.basename(String(compilationOptions.sourceFilename))
+                        filename: less.modules.path.basename(sourceFileName)
                     },
                     additionalData = {
                         globalVars: javaMapToObject(compilationOptions.options.globalVars),
@@ -103,18 +106,18 @@ var javaMapToObject = function (map) {
                 rootpath: lessOptions.rootpath, //path to append to normal URLs for this node
                 currentDirectory: '', //path to the current file, absolute
                 rootFilename: lessOptions.filename, //filename of the base file
-                entryPath: '', //absolute path to the entry file
+                entryPath: sourceFileName, //absolute path to the entry file
 
                 readFileAsString: function (file) {
-                    var data = importReader.read(file);
-                    if (data === null) {
+                    var data = importReader.read(file) || importReader.read(less.modules.path.join(sourceDir, file));
+                    if (data == null) {
                         throw {type: 'File', message: "'" + file + "' wasn't found"};
                     }
                     return String(data);
                 },
 
                 readFileAsBytes: function (file) {
-                    var data = importReader.readBytes(file);
+                    var data = importReader.readBytes(file) || importReader.readBytes(less.modules.path.join(sourceDir, file));
                     if (data === null) {
                         throw {type: 'File', message: "'" + file + "' wasn't found"};
                     }

@@ -37,6 +37,24 @@ class LesscSpec extends OutputCapturingSpec {
         sysOutCapture.toString() == ''
     }
 
+    def 'compile file in subdirectory with --include'() {
+        setup:
+        Lessc.main("--cache-dir $cacheDir --include-path src/test/resources less/import.less build/tmp/lessc.css".split(' '))
+
+        expect:
+        destination.text == new File('src/test/resources/less/import.css').text
+        sysOutCapture.toString() == ''
+    }
+
+    def 'compile file in subdirectory without --include'() {
+        setup:
+        Lessc.main("--cache-dir $cacheDir src/test/resources/less/import.less build/tmp/lessc.css".split(' '))
+
+        expect:
+        destination.text == new File('src/test/resources/less/import.css').text
+        sysOutCapture.toString() == ''
+    }
+
     def 'run daemon'() {
         setup:
         String sourceLocation = 'src/test/resources/less/basic.less'
@@ -136,7 +154,7 @@ class LesscSpec extends OutputCapturingSpec {
         new File("build/tmp/$destinationDir/$mapFile").text == new File("src/test/resources/less/sourcemaps/$destinationDir/$mapFile").text
 
         where:
-        args                                                                              | mapFile         | destinationDir
+        args | mapFile | destinationDir
         '--source-map'                                                                    | 'basic.css.map' | 'defaults'
         '--source-map=build/tmp/source-map/basicMap.map'                                  | 'basicMap.map'  | 'source-map'
         '--source-map-map-inline'                                                         | 'basic.css'     | 'map-map-inline'
