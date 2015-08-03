@@ -1,6 +1,14 @@
 Java LESS CSS compiler
 ======================
 
+> *Active development of this project has stopped*
+
+> There are two alternatives:
+
+> * [less4j](https://github.com/SomMeri/less4j) : native java port of lesscss
+> * use the original javascript lesscss via npm, grunt, etc.
+
+
 Lesscss compiles LESS code into CSS stylesheets (see <http://lesscss.org>)
 
 Lesscss is compatible with LESS version 1.7.0. In fact, Lesscss executes the official JavaScript LESS compiler in a JVM.
