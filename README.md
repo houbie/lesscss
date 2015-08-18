@@ -24,7 +24,7 @@ Lesscss can be used at the commandline, but it also provides a simple API for em
 * Lesscss can start a daemon that automatically starts a compilation when the source is modified.
 * Lesscss caches information about imported source files so that an initial compilation to gather imports is rarely necessary.
 * Lesscss supports all options, which is not the case for the other Java implementations (at the time of writing).
-* Lesscss is up to 5 times faster then existing Java implementations.
+* Lesscss is up to 5 times faster than existing Java implementations.
 
 
 ## Download and installation
